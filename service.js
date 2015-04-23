@@ -12,4 +12,5 @@ seneca
   .use('postgresql-store', config["postgresql-store"])
   .use('./agreements.js')
   .use('./users.js')
+  .use('user')
   .listen();
