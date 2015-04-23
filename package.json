@@ -18,7 +18,8 @@
     "lodash": "^3.7.0",
     "mocha": "^2.2.4",
     "seneca": "^0.6.1",
-    "seneca-postgresql-store": "^0.6.0"
+    "seneca-postgresql-store": "git://github.com/iantocristian/seneca-postgresql-store.git",
+    "seneca-user": "0.2.10"
   },
   "devDependencies": {
     "mocha": "^2.2.4"
