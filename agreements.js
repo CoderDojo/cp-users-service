@@ -8,6 +8,7 @@ module.exports = function(options){
   var ENTITY_NS = 'cd/agreements';
 
   seneca.add({role: plugin, cmd: 'get_agreements'}, cmd_get_agreements);
+  seneca.add({role: plugin, cmd: 'count'}, cmd_count);
 
   function cmd_get_agreements(args, done){
     var seneca = this, usersIds = [], agreements_ent;
@@ -40,6 +41,23 @@ module.exports = function(options){
       return done(null, results);
     });
 
+  }
+
+  function cmd_count(args, done){
+    var seneca = this, query = {};
+
+    query = args.query ? args.query : {};
+    query.limit$ = query.limit$ ? query.limit$ : 'NULL';
+
+    seneca.make(ENTITY_NS).list$(query, function(err, agreements){
+      if(err){
+        return done(err);
+      }
+
+      var noOfAgreements = agreements.length;
+
+      done(null, {noOfAgreements: noOfAgreements});
+    });
   }
 
   return {
