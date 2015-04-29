@@ -2,45 +2,34 @@
 
 var async = require('async');
 
-module.exports = function(options){
+module.exports = function(options) {
   var seneca = this;
   var plugin = 'cd-agreements';
   var ENTITY_NS = 'cd/agreements';
 
-  seneca.add({role: plugin, cmd: 'get_agreements'}, cmd_get_agreements);
+  seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'count'}, cmd_count);
 
-  function cmd_get_agreements(args, done){
-    var seneca = this, usersIds = [], agreements_ent;
+  function cmd_list(args, done) {
+    var seneca = this;
 
-    usersIds = args.usersIds;
-    
-    if(!usersIds || !usersIds.length > 0){
-      done("An error occurred");
+    function get_user_agreements(userId, done) {
+      seneca.make(ENTITY_NS).list$({userId: userId}, done);
     }
 
-    agreements_ent =  seneca.make(ENTITY_NS);
-    
-    function get_agreement(id, cb){
-      var agreements_ent =  seneca.make(ENTITY_NS);
-
-      agreements_ent.list$({userId: id}, function(err, agreement){
-        if(err){
-          return cb(err);
+    async.mapSeries(args.userIds, function(userId, done) {
+      async.waterfall([
+        function(done) {
+          get_user_agreements(userId, done);
+        },
+        function(agreements, done) {
+          return done(null, {
+            userId: userId,
+            agreements: agreements
+          });
         }
-
-        return cb(null, agreement[0]);
-      });
-    }
-
-    async.mapSeries(usersIds, get_agreement, function(err, results){
-      if(err){
-        return done(err);
-      }
-
-      return done(null, results);
-    });
-
+      ], done);
+    }, done);
   }
 
   function cmd_count(args, done){
@@ -50,7 +39,7 @@ module.exports = function(options){
     query.limit$ = query.limit$ ? query.limit$ : 'NULL';
 
     seneca.make(ENTITY_NS).list$(query, function(err, agreements){
-      if(err){
+      if (err) {
         return done(err);
       }
 

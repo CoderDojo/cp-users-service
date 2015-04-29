@@ -1,38 +1,33 @@
 'use strict';
 
 var _ = require('lodash');
+var async = require('async');
 
 module.exports = function(options){
   var seneca = this;
   var plugin = 'cd-users';
   var ENTITY_NS = 'sys/user';
 
-  seneca.add({role: plugin, cmd: 'get_emails'}, cmd_get_emails);
-  seneca.add({role: plugin, cmd: 'register_user'}, cmd_register_user);
-  seneca.add({role: plugin, cmd: 'promote_user'}, cmd_promote_user);
+  seneca.add({role: plugin, cmd: 'list'}, cmd_list);
+  seneca.add({role: plugin, cmd: 'register'}, cmd_register);
+  seneca.add({role: plugin, cmd: 'promote'}, cmd_promote);
 
-  function cmd_get_emails(args, done){
-    var seneca = this, usersIds = [], user_ent, mappedUsers;
+  function cmd_list(args, done){
+    var seneca = this;
 
-    usersIds = args.usersIds;
-    console.log(args.usersIds);
-
-    user_ent = seneca.make(ENTITY_NS);
-    user_ent.list$({ids: usersIds}, function(err, users){
-      if(err){
-        return done(err);
+    async.waterfall([
+      function(done) {
+        seneca.make(ENTITY_NS).list$({ids: args.ids}, done);
+      },
+      function(users, done) {
+        return done(null, _.map(users, function (user) {
+          return user.data$();
+        }));
       }
-
-      mappedUsers = _.map(users, function(user){
-                      return {id: user.id, email: user.email};
-                    });
-
-      done(null, mappedUsers);
-    });
-    
+    ], done);
   }
 
-  function cmd_register_user(args, done) {
+  function cmd_register(args, done) {
     //Roles Available: basic-user, mentor, champion, cdf-admin
     var seneca = this;
     args.roles = ['basic-user'];
@@ -42,7 +37,7 @@ module.exports = function(options){
     });
   }
 
-  function cmd_promote_user(args, done) {
+  function cmd_promote(args, done) {
     var seneca = this;
     var newRoles = args.roles;
     var userId = args.id;
