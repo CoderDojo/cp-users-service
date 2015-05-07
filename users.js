@@ -11,6 +11,7 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'register'}, cmd_register);
   seneca.add({role: plugin, cmd: 'promote'}, cmd_promote);
+  seneca.add({role: plugin, cmd: 'get_users_by_emails'}, cmd_get_users_by_emails);
 
   function cmd_list(args, done){
     var seneca = this;
@@ -56,6 +57,27 @@ module.exports = function(options){
       });
     });
 
+  }
+
+  function cmd_get_users_by_emails(args, done){
+    var seneca = this, query = {};
+    
+    query.email = new RegExp(args.email);
+    query.limit$ = query.limit$ ? query.limit$ : 10;
+
+    seneca.make(ENTITY_NS).list$(query, function(err, users){
+      if(err){
+        return done(err);
+      }
+
+      users = _.map(users, function(user){
+        return {email: user.email, id: user.id};
+      });
+
+      users = _.uniq(users, 'email');
+
+      done(null, users);
+    });
   }
 
   return {
