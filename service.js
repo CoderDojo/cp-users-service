@@ -1,7 +1,6 @@
 'use strict';
 
-var config = require('config');
-
+var config = require('./config/config.js')();
 var seneca = require('seneca')();
 
 seneca.log.info('using config', JSON.stringify(config, null, 4));
