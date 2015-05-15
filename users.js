@@ -32,6 +32,7 @@ module.exports = function(options){
     //Roles Available: basic-user, mentor, champion, cdf-admin
     var seneca = this;
     args.roles = ['basic-user'];
+    args.mailingList = (args.mailingList) ? 1 : 0;
     seneca.act({role:'user', cmd:'register'}, args, function(err, response) {
       if(err) return done(err);
       done(null, response);
