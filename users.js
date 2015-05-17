@@ -63,7 +63,7 @@ module.exports = function(options){
   function cmd_get_users_by_emails(args, done){
     var seneca = this, query = {};
     
-    query.email = new RegExp(args.email);
+    query.email = new RegExp(args.email, 'i');
     query.limit$ = query.limit$ ? query.limit$ : 10;
 
     seneca.make(ENTITY_NS).list$(query, function(err, users){
