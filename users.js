@@ -8,10 +8,23 @@ module.exports = function(options){
   var plugin = 'cd-users';
   var ENTITY_NS = 'sys/user';
 
+  seneca.add({role: plugin, cmd: 'load'}, cmd_load);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'register'}, cmd_register);
   seneca.add({role: plugin, cmd: 'promote'}, cmd_promote);
   seneca.add({role: plugin, cmd: 'get_users_by_emails'}, cmd_get_users_by_emails);
+  seneca.add({role: plugin, cmd: 'update'}, cmd_update);
+
+  function cmd_load(args, done) {
+    var seneca = this;
+    var id = args.id;
+
+    var userEntity = seneca.make(ENTITY_NS);
+    userEntity.load$(id, function (err, response) {
+      if(err) return done(err);
+      done(null, response);
+    });
+  }
 
   function cmd_list(args, done){
     var seneca = this;
@@ -78,6 +91,18 @@ module.exports = function(options){
       users = _.uniq(users, 'email');
 
       done(null, users);
+    });
+  }
+
+  function cmd_update(args, done) {
+    var seneca = this;
+    var user = args.user;
+
+    var userEntity = seneca.make(ENTITY_NS);
+
+    userEntity.save$(user, function(err, response) {
+      if(err) return done(err);
+      done(null, response);
     });
   }
 
