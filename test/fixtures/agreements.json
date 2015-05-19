@@ -1,0 +1,14 @@
+[
+  {
+    "fullName": "Person One",
+    "ipAddress": "192.168.1.1",
+    "agreementVersion": 2,
+    "userId": "ab4402e8-f3f9-11e4-910d-070027c555c0"
+  },
+  {
+    "fullName": "Person Two",
+    "ipAddress": "192.168.1.2",
+    "agreementVersion": 2,
+    "userId": "dd8802e8-f3f9-11e4-910d-070027z444z0"
+  }
+]
