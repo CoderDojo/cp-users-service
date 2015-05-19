@@ -13,7 +13,7 @@ var role = "cd-users";
 console.log('using configuration', JSON.stringify(config, null, 4));
 seneca.options(config);
 
-var using_postgres = false; // can be set to true for debugging
+var using_postgres = true; // can be set to true for debugging
 if (using_postgres) seneca.use('postgresql-store', config["postgresql-store"]);
 
 seneca
@@ -30,9 +30,12 @@ var userEnt = seneca.make$('sys/user'),
 
 function expect_contain_properties(actual, expected){
     // console.log('comparing ' + util.inspect(actual) + ' against ' + util.inspect(expected));
+    // console.log('keys ' + util.inspect(Object.keys(expected)));
   _.each(Object.keys(expected), function(key){
-    // if (key.toString().indexOf('$') === -1) console.log('key: ' + key + '. Results: ' + util.inspect(actual[key]) + ' and ' + util.inspect(expected[key]));
-    if (key.toString().indexOf('$') === -1) expect(actual[key]).to.be.deep.equal(expected[key]);
+    if (key.toString().indexOf('$') === -1) {
+      // console.log('key: ' + key + '. Results: ' + util.inspect(actual[key]) + ' and ' + util.inspect(expected[key]));
+      expect(actual[key]).to.be.deep.equal(expected[key]);
+    }
   })
   return;
 }
@@ -122,14 +125,53 @@ describe('Users Microservice test', function(){
   });
 
   describe('Promote', function(){
-    it('Not Implemented', function(done){
-      done(new Error('Not implemented'));
+    it('append \'super-admin\' to user\'s role list', function(done){
+      userEnt.load$({email:users[0].email}, function(err, loadedUser){
+        if(err) return done(err);
+
+        // console.log('loadedUser: ' + util.inspect(loadedUser));
+        expect(loadedUser.roles).to.be.ok;
+        expect(loadedUser.roles).to.include('basic-user');
+
+        seneca.act({role: role, cmd: 'promote', roles:['super-admin']}, loadedUser, function(err, promotedUser){
+          if(err) return done(err);
+
+          // console.log('promotedUser: ' + util.inspect(promotedUser));
+          expect(promotedUser.roles).to.be.ok;
+          expect(promotedUser.roles).to.include('basic-user');
+          expect(promotedUser.roles).to.include('super-admin');
+
+          done();
+        });
+      });
     });
   });
 
   describe('Get users by emails', function(){
-    it('Not Implemented', function(done){
-      done(new Error('Not implemented'));
+    it('load user from db based on email', function(done){
+      userEnt.load$({email:users[0].email}, function(err, selectedUser){
+        if(err) return done(err);
+
+        // console.log('selectedUser: ' + util.inspect(selectedUser));
+        expect(selectedUser.roles).to.be.ok;
+
+        seneca.act({role: role, cmd: 'get_users_by_emails', email:selectedUser.email},
+          function(err, usersFound){
+          if(err) return done(err);
+
+          // console.log('usersFound: ' + util.inspect(usersFound));
+
+          expect(usersFound.length).to.be.equal(1);
+          expect(usersFound[0].email).to.be.equal(selectedUser.email);
+
+          userEnt.load$(usersFound[0].id, function(err, loadedUser){
+            if(err) return done(err);
+            expect_contain_properties(loadedUser, selectedUser);
+
+            done();
+          });
+        });
+      });
     });
   });
 
