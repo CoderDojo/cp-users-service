@@ -7,8 +7,12 @@
     "test": "test"
   },
   "scripts": {
-    "test": "NODE_ENV=test mocha ."
+    "test": "bash -c 'source ./config/development.env; NODE_ENV=test; istanbul cover node_modules/.bin/_mocha -- -u exports -R spec'",
+    "covrep": "sensible-browser coverage/lcov-report/index.html"
   },
+  "pre-commit": [
+    "test"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -21,6 +25,9 @@
     "seneca-user": "0.2.10"
   },
   "devDependencies": {
-    "mocha": "^2.2.4"
+    "mocha": "^2.2.4",
+    "chai": "~2.2.0",
+    "istanbul": "0.3.14",
+    "pre-commit": "1.0.x"
   }
 }
