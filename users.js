@@ -20,10 +20,7 @@ module.exports = function(options){
     var id = args.id;
 
     var userEntity = seneca.make(ENTITY_NS);
-    userEntity.load$(id, function (err, response) {
-      if(err) return done(err);
-      done(null, response);
-    });
+    userEntity.load$(id, done);
   }
 
   function cmd_list(args, done){
@@ -100,10 +97,7 @@ module.exports = function(options){
 
     var userEntity = seneca.make(ENTITY_NS);
 
-    userEntity.save$(user, function(err, response) {
-      if(err) return done(err);
-      done(null, response);
-    });
+    userEntity.save$(user, done);
   }
 
   return {
