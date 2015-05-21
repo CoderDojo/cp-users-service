@@ -48,6 +48,10 @@ psql --single-transaction -h $PG_HOST -U $POSTGRES_USERNAME -d $POSTGRES_NAME -f
 psql --single-transaction -h $PG_HOST -U $POSTGRES_USERNAME -d $POSTGRES_NAME -f $DIR/scripts/database/pg/populate-users.sql --port $PG_PORT
 
 
+#this inserts the two test users admin@example.com & manager@example.com
+#this is not done in zen-platform anymore
+$DIR/start.sh scripts/insert-test-users.js $1
+
 echo "-------------------------------------------------------"
 echo "----------Finished initializating users DB & ES--------"
 echo "-------------------------------------------------------"
