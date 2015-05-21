@@ -1,4 +1,5 @@
 'use strict';
+var _ =require('lodash');
 
 var config = require('./config/config.js')();
 var ESOptions = require('./es-options.js');
