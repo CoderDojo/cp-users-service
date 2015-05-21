@@ -14,6 +14,7 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'promote'}, cmd_promote);
   seneca.add({role: plugin, cmd: 'get_users_by_emails'}, cmd_get_users_by_emails);
   seneca.add({role: plugin, cmd: 'update'}, cmd_update);
+  seneca.add({role: plugin, cmd: 'get_roles'}, cmd_get_roles);
 
   function cmd_load(args, done) {
     var seneca = this;
@@ -98,6 +99,11 @@ module.exports = function(options){
     var userEntity = seneca.make(ENTITY_NS);
 
     userEntity.save$(user, done);
+  }
+
+  function cmd_get_roles(args, done) {
+    var roles = ['basic-user', 'mentor', 'champion'];
+    done(null, roles);
   }
 
   return {
