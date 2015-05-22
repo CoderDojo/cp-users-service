@@ -2,7 +2,6 @@
 Community Platform - Users Core Service
 
 ## Install:
-
 ```
 npm install
 ```
