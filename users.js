@@ -14,7 +14,6 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'promote'}, cmd_promote);
   seneca.add({role: plugin, cmd: 'get_users_by_emails'}, cmd_get_users_by_emails);
   seneca.add({role: plugin, cmd: 'update'}, cmd_update);
-  seneca.add({role: plugin, cmd: 'get_roles'}, cmd_get_roles);
 
   function cmd_load(args, done) {
     var seneca = this;
@@ -40,7 +39,9 @@ module.exports = function(options){
   }
 
   function cmd_register(args, done) {
-    //Roles Available: basic-user, mentor, champion, cdf-admin
+    //Roles Available: basic-user, cdf-admin
+    //TO-DO: define basic-user and cdf-admin permissions
+    //cdf-admin role should give user global access to the system.
     var seneca = this;
     args.roles = ['basic-user'];
     args.mailingList = (args.mailingList) ? 1 : 0;
@@ -100,12 +101,7 @@ module.exports = function(options){
 
     userEntity.save$(user, done);
   }
-
-  function cmd_get_roles(args, done) {
-    var roles = ['basic-user', 'mentor', 'champion'];
-    done(null, roles);
-  }
-
+  
   return {
     name: plugin
   };
