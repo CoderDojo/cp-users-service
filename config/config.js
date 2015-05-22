@@ -22,10 +22,22 @@ module.exports = function() {
       username: process.env.POSTGRES_USERNAME,
       password: process.env.POSTGRES_PASSWORD
     }
-  };
+  }
+
+  function esConfig() {
+    return {
+      connection: {
+        host : localhost() + ':9200',
+        index: process.env.ES_INDEX,
+        sniffOnStart: false,
+        sniffInterval: false
+      }
+    };
+  }
 
   return {
     'postgresql-store': pgConfig(),
+    elasticsearch: esConfig(),
     transport: {
       type: 'web',
       web: {
