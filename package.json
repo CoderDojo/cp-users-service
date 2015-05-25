@@ -10,6 +10,9 @@
     "test": "bash -c 'source ./config/development.env; NODE_ENV=test; istanbul cover node_modules/.bin/_mocha -- -u exports -R spec'",
     "covrep": "bash test/covrep.sh"
   },
+  "pre-commit": [
+    "test"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
