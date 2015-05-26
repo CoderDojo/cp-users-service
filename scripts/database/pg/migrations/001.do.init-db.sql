@@ -1,7 +1,5 @@
 
-DROP TABLE IF EXISTS sys_entity;
-
-CREATE TABLE sys_entity
+CREATE TABLE IF NOT EXISTS sys_entity
 (
   id character varying NOT NULL,
   base character varying,
@@ -16,9 +14,7 @@ WITH (
 );
 
 
-DROP TABLE IF EXISTS sys_account;
-
-CREATE TABLE sys_account
+CREATE TABLE IF NOT EXISTS sys_account
 (
   id character varying NOT NULL,
   orignick character varying,
@@ -33,10 +29,7 @@ WITH (
 );
 
 
-
-DROP TABLE IF EXISTS sys_login CASCADE;
-
-CREATE TABLE sys_login
+CREATE TABLE IF NOT EXISTS sys_login
 (
   id character varying,
   nick character varying,
@@ -55,10 +48,7 @@ WITH (
 );
 
 
-
-DROP TABLE IF EXISTS sys_user CASCADE;
-
-CREATE TABLE sys_user
+CREATE TABLE IF NOT EXISTS sys_user
 (
   id character varying NOT NULL,
   nick character varying,
@@ -93,9 +83,7 @@ WITH (
 );
 
 
-DROP TABLE IF EXISTS cd_agreements CASCADE;
-
-CREATE TABLE cd_agreements(
+CREATE TABLE IF NOT EXISTS cd_agreements(
   mysql_user_id int,
   full_name character varying,
   ip_address character varying,
@@ -111,9 +99,7 @@ WITH (
 );
 
 
-DROP TABLE IF EXISTS sys_reset CASCADE;
-
-CREATE TABLE sys_reset
+CREATE TABLE IF NOT EXISTS sys_reset
 (
   id character varying NOT NULL,
   nick character varying,
