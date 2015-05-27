@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "bash -c 'source ./config/development.env; NODE_ENV=test; istanbul cover node_modules/.bin/_mocha -- -u exports -R spec'",
-    "covrep": "sensible-browser coverage/lcov-report/index.html"
+    "covrep": "bash test/covrep.sh"
   },
   "pre-commit": [
     "test"
@@ -19,7 +19,6 @@
     "async": "^0.9.0",
     "js-yaml": "^3.2.7",
     "lodash": "^3.7.0",
-    "mocha": "^2.2.4",
     "optimist": "^0.6.1",
     "seneca": "^0.6.1",
     "seneca-elasticsearch": "git://github.com/sigismondm/seneca-elasticsearch.git",
