@@ -43,13 +43,10 @@ else
 fi
 
 
-psql --single-transaction -h $PG_HOST -U $POSTGRES_USERNAME -d $POSTGRES_NAME -f $DIR/scripts/database/pg/create-schema.sql --port $PG_PORT
+$DIR/start.sh $1 scripts/migrate-psql-db.js || exit 1;
 
 psql --single-transaction -h $PG_HOST -U $POSTGRES_USERNAME -d $POSTGRES_NAME -f $DIR/scripts/database/pg/populate-users.sql --port $PG_PORT
 
-
-#this inserts the two test users admin@example.com & manager@example.com
-#this is not done in zen-platform anymore
 $DIR/start.sh $1 scripts/insert-test-users.js
 
 echo "-------------------------------------------------------"
