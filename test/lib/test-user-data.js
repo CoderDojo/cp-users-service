@@ -7,8 +7,8 @@ module.exports = function (options) {
   var seneca = this;
   var plugin = 'test-user-data';
   var users = [
-    { nick: 'admin@example.com', name: 'Admin', email: 'admin@example.com', password: 'test', roles: ['admin'] },
-    { nick: 'manager@example.com', name: 'Manager', email: 'manager@example.com', password: 'test', roles: ['manager'] }
+    { nick: 'admin@example.com', name: 'Admin', email: 'admin@example.com', password: 'test', roles: ['cdf-admin'] },
+    { nick: 'manager@example.com', name: 'Manager', email: 'manager@example.com', password: 'test', roles: ['cdf-admin'] }
   ];
 
   seneca.add({ role: plugin, cmd: 'insert' }, function (args, done) {
