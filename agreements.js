@@ -7,8 +7,21 @@ module.exports = function(options) {
   var plugin = 'cd-agreements';
   var ENTITY_NS = 'cd/agreements';
 
+  seneca.add({role: plugin, cmd: 'save'}, cmd_save);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'count'}, cmd_count);
+
+  function cmd_save(args, done){
+    var agreementEntity = seneca.make$(ENTITY_NS);
+    var agreement = args.agreement;
+
+    agreement.timestamp = new Date();
+
+    agreementEntity.save$(agreement, function(err, response) {
+      if(err) return done(err);
+      done(null, response);
+    });
+  }
 
   function cmd_list(args, done) {
     var seneca = this;
