@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS parent_guardian_profiles;
 
-CREATE TABLE parent_guardian_profiles
+CREATE TABLE cd_parentguardianprofiles
 (
   id character varying,
   name character varying,
@@ -16,7 +16,7 @@ WITH (
 
 DROP TABLE IF EXISTS youth_profiles;
 
-CREATE TABLE youth_profiles
+CREATE TABLE cd_youthprofiles
 (
   id character varying,
   name character varying,
