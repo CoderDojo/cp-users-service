@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS sys_user
   locale character varying,
   banned smallint,
   ban_reason character varying,
+  join_requests json[],
   CONSTRAINT pk_sys_user_id PRIMARY KEY (id)
 )
 WITH (
