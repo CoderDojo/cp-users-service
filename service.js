@@ -14,6 +14,7 @@ seneca.use('postgresql-store', config["postgresql-store"]);
 seneca.use('elasticsearch', _.defaults(config["elasticsearch"], ESOptions));
 seneca.use(require('./es.js'));
 seneca.use(require('./agreements.js'));
+seneca.use(require('./parent-guardian-profiles.js'));
 seneca.use(require('./users.js'));
 seneca.use('user');
 

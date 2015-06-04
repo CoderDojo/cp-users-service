@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS parent_guardian_profiles;
 CREATE TABLE cd_parentguardianprofiles
 (
   id character varying,
+  parent_guardian_id character varying,
   name character varying,
   dob date,
   email character varying NOT NULL,
@@ -19,6 +20,7 @@ DROP TABLE IF EXISTS youth_profiles;
 CREATE TABLE cd_youthprofiles
 (
   id character varying,
+  youth_id character varying,
   name character varying,
   dob date,
   email character varying,
