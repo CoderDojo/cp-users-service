@@ -1,22 +1,13 @@
 #! /bin/bash
 
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd );
-FILE="$DIR/config/$1".env && shift
-START="$DIR/$1" && shift
-USAGE="Usage: ./start.sh <config> <startscript> [startscript_opts]..."
+PROJECT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
+SCRIPT=$(basename "${BASH_SOURCE[0]}")
+USAGE="Usage: ./$SCRIPT <config> <startscript> [startscript_opts]..."
 
-if [ ! -r $FILE ] ; then
-  echo "config file not found"
-  echo $USAGE
-  exit 1
+source "$PROJECT_DIR/scripts/exec_on_env.sh"
+
+if [ -z $DONOTMIGRATE ] ; then
+  run_js "$PROJECT_DIR/scripts/migrate-psql-db.js" || exit 1;
 fi
 
-if [ ! -r $START ] ; then
-  echo "start script not found"
-  echo $USAGE
-  exit 1
-fi
-
-source $FILE
-
-exec node $START $@
+exec_js $@
