@@ -1,4 +1,7 @@
 'use strict';
+
+require('newrelic');
+
 var _ =require('lodash');
 
 var config = require('./config/config.js')();
