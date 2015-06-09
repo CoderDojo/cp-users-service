@@ -9,15 +9,15 @@ CREATE TABLE cd_profiles
   country character varying,
   address character varying,
   last_editied timestamp,
-  email charachter varying,
-  phone charachter varying,
+  email character varying,
+  phone character varying,
   parents text[],
   children text[],
-  linkedin charachter varying,
-  twitter charachter varying,
+  linkedin character varying,
+  twitter character varying,
   languages text[],
   programming_languages text[],
-  notes charachter varying,
+  notes character varying,
   projects text[]
 )
 WITH (
