@@ -19,6 +19,7 @@ if (using_postgres) seneca.use('postgresql-store', config["postgresql-store"]);
 seneca
   .use(__dirname + '/../users.js')
   .use(__dirname + '/../agreements.js')
+  .use(__dirname + '/../profiles.js')
   .use('user');
 
 var userEnt = seneca.make$('sys/user'),
@@ -95,7 +96,8 @@ describe('Users Microservice test', function(){
         "name": "test6",
         "email": "test6@example.com",
         "password": "pass6",
-        "termsConditionsAccepted": true
+        "termsConditionsAccepted": true,
+        "initUserType": "mentor"
       }
 
       seneca.act({role: role, cmd: 'register'}, user, function(err, savedUser){

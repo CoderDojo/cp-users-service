@@ -3,30 +3,35 @@
     "name": "test1",
     "email": "test1@example.com",
     "password": "pass1",
-    "termsConditionsAccepted": true
+    "termsConditionsAccepted": true,
+    "initUserType":"attendee-u13"
   },
   {
     "name": "test2",
     "email": "test2@example.com",
     "password": "pass2",
-    "termsConditionsAccepted": true
+    "termsConditionsAccepted": true,
+    "initUserType":"attendee-o13"
   },
   {
     "name": "test3",
     "email": "test3@example.com",
     "password": "pass3",
-    "termsConditionsAccepted": true
+    "termsConditionsAccepted": true,
+    "initUserType":"parent-guardian"
   },
   {
     "name": "test4",
     "email": "test4@example.com",
     "password": "pass4",
-    "termsConditionsAccepted": true
+    "termsConditionsAccepted": true,
+    "initUserType":"mentor"
   },
   {
     "name": "test5",
     "email": "test5@example.com",
     "password": "pass5",
-    "termsConditionsAccepted": true
+    "termsConditionsAccepted": true,
+    "initUserType":"champion"
   }
 ]
