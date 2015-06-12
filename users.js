@@ -14,6 +14,7 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'promote'}, cmd_promote);
   seneca.add({role: plugin, cmd: 'get_users_by_emails'}, cmd_get_users_by_emails);
   seneca.add({role: plugin, cmd: 'update'}, cmd_update);
+  seneca.add({role: plugin, cmd: 'nodebb_profile_info'}, cmd_nodebb_profile_info);
 
   function cmd_load(args, done) {
     var seneca = this;
@@ -101,7 +102,23 @@ module.exports = function(options){
 
     userEntity.save$(user, done);
   }
-  
+
+  function cmd_nodebb_profile_info(args, done) {
+    var seneca = this;
+    var user = args.user;
+    var accessToken = args.access_token;
+    var userEntity = seneca.make(ENTITY_NS);
+    // fetch the username here, so that it knows what's going on, from postgres.
+    return done(null, {id:'123', name:'Robert Myers', email:'robert.myers@nearform.com'})
+
+    userEntity.load$(userId, function(err, response) {
+      if(err) return done(err);
+      console.log('response from seneca moadel load: ', response);
+      var user = {"id": response.id, "name": response.name, "email": response.email};
+      done(null, response);
+    });
+  }
+
   return {
     name: plugin
   };
