@@ -1,24 +1,46 @@
-DROP TABLE IF EXISTS cd_profiles;
-
-CREATE TABLE cd_profiles
+CREATE TABLE IF NOT EXISTS cd_profiles
 (
   id character varying,
+  name character varying,
   user_id character varying,
   alias character varying,
   dob date,
-  country character varying,
+  "country" json,
+  city json,
+  private boolean,
+  place json,
+  gender character varying,
   address character varying,
-  last_editied timestamp,
+  last_edited timestamp default CURRENT_TIMESTAMP,
   email character varying,
   phone character varying,
   parents text[],
   children text[],
   linkedin character varying,
   twitter character varying,
-  languages text[],
+  languages_spoken text[],
   programming_languages text[],
   notes character varying,
-  projects text[]
+  projects text[],
+  badges text[],
+  countryName character varying,
+  countryNumber character varying,
+  continent character varying,
+  alpha2 character varying,
+  alpha3 character varying,
+  admin1_code character varying,
+  admin1_name character varying,
+  admin2_code character varying,
+  admin2_name character varying,
+  admin3_code character varying,
+  admin3_name character varying,
+  admin4_code character varying,
+  admin4_name character varying,
+  state json,
+  county json,
+  place_geoname_id character varying,
+  place_name character varying,
+  CONSTRAINT pk_cd_profiles_id PRIMARY KEY (id)
 )
 WITH (
   OIDS=FALSE

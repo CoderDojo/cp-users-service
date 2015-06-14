@@ -12,8 +12,8 @@ module.exports = function(options) {
 
   function cmd_create(args, done){
     var profile = args.profile;
-    
-    profile.parentGuardianId = args.user.id;
+    profile.userId = args.user;
+    console.log(JSON.stringify(args));
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, done);
   }
 
