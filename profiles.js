@@ -5,6 +5,16 @@ module.exports = function(options) {
 
   var PARENT_GUARDIAN_PROFILE_ENTITY = 'cd/profiles';
   var plugin = 'cd-profiles';
+  var _ = require('lodash');
+
+  var mentorPublicFields = [
+    'name',
+    'dojos',
+    'languagesSpoken',
+    'programmingLanguages',
+    'linkedin',
+    'twitter',
+  ];
 
   seneca.add({role: plugin, cmd: 'create'}, cmd_create);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
@@ -20,7 +30,22 @@ module.exports = function(options) {
   function cmd_list(args, done){
     var query = args.query;
     
-    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$(query, done);
+
+    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$(query, function(err, profiles){
+      if(err){
+        return done(err);
+      }
+
+      var profile = profiles[0];
+      var ownProfileFlag = profile.userId === user.userId ? true : false;
+
+      if(!ownProfileFlag){
+        profile = _.pick(profile, mentorPublicFields);
+      }
+
+      return done(null, profile);
+
+    });
   }
 
   function cmd_save(args, done) {
