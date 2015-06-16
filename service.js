@@ -18,4 +18,6 @@ seneca.use(require('./profiles.js'));
 seneca.use(require('./users.js'));
 seneca.use('user');
 
-seneca.listen();
+
+seneca.listen()
+  .client({type: 'web', host: process.env.TARGETIP || '127.0.0.1', port: 10301, pin: 'role:cd-dojos,cmd:*'});
