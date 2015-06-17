@@ -2,6 +2,13 @@
 
 var _ = require('lodash');
 var async = require('async');
+var oauthserver = require('oauth2-server');
+
+var oauth = oauthserver({
+  model: require('./oauth-model'),
+  grants: ['authorization_code'],
+  debug: true
+});
 
 module.exports = function(options){
   var seneca = this;
@@ -14,7 +21,9 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'promote'}, cmd_promote);
   seneca.add({role: plugin, cmd: 'get_users_by_emails'}, cmd_get_users_by_emails);
   seneca.add({role: plugin, cmd: 'update'}, cmd_update);
-  seneca.add({role: plugin, cmd: 'nodebb_profile_info'}, cmd_nodebb_profile_info);
+  seneca.add({role: plugin, cmd: 'authorize'}, cmd_oauth_authorize);
+  seneca.add({role: plugin, cmd: 'token'}, cmd_oauth_token);
+  seneca.add({role: plugin, cmd: 'userprofile'}, cmd_oauth_userprofile);
 
   function cmd_load(args, done) {
     var seneca = this;
@@ -103,20 +112,36 @@ module.exports = function(options){
     userEntity.save$(user, done);
   }
 
-  function cmd_nodebb_profile_info(args, done) {
+  function cmd_oauth_authorize(args, done) {
     var seneca = this;
     var user = args.user;
-    var accessToken = args.access_token;
-    var userEntity = seneca.make(ENTITY_NS);
-    // fetch the username here, so that it knows what's going on, from postgres.
-    return done(null, {id:'123', name:'Robert Myers', email:'robert.myers@nearform.com'})
+    console.log('calling authorize');
+    oauth.authCodeGrant(function(args, done){
+      console.log('in authCodeGrant()')
+      done(null, true)
+    })
 
-    userEntity.load$(userId, function(err, response) {
-      if(err) return done(err);
-      console.log('response from seneca moadel load: ', response);
-      var user = {"id": response.id, "name": response.name, "email": response.email};
-      done(null, response);
-    });
+
+
+    done(null, "nonce")
+  }
+
+  function cmd_oauth_token(args, done){
+    var seneca = this;
+    var user = args.user;
+
+    console.log('calling token')
+
+    done(null, 'nonce')
+  }
+
+  function cmd_oauth_userprofile(args, done){
+    var seneca = this;
+    var user = args.user;
+
+    console.log('calling userprofile')
+
+    done(null, 'nonce')
   }
 
   return {
