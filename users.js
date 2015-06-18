@@ -116,6 +116,7 @@ module.exports = function(options){
     var seneca = this;
     var user = args.user;
     console.log('calling authorize');
+    console.log('args:', args)
     oauth.authCodeGrant(function(args, done){
       console.log('in authCodeGrant()')
       done(null, true)
@@ -123,7 +124,7 @@ module.exports = function(options){
 
 
 
-    done(null, "nonce")
+    //done(null, "nonce")
   }
 
   function cmd_oauth_token(args, done){
