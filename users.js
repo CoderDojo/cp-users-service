@@ -46,6 +46,8 @@ module.exports = function(options){
     var seneca = this;
     args.roles = ['basic-user'];
     args.mailingList = (args.mailingList) ? 1 : 0;
+
+    console.log("args", args);
     seneca.act({role:'user', cmd:'register'}, args, function (err, registerResponse) {
       if(err) return done(err);
       var user = registerResponse.user;
