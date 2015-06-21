@@ -7,6 +7,7 @@ module.exports = function(options) {
   var plugin = 'cd-profiles';
   var _ = require('lodash');
   var async = require('async');
+  var uuid = require('node-uuid');
 
   var mentorPublicFields = [
     'name',
@@ -69,13 +70,13 @@ module.exports = function(options) {
 
   function cmd_save_youth_child(args, done){
     var profile = args.profile;
-    var parents = [];
-    parents.push(args.profile.parent);
+    profile.parents = [];
+    profile.parents.push(args.profile.parent);
     
     //TODO add validation for profile types
 
     //Send error
-    if(!_.contains(parents, args.user)){
+    if(!_.contains(profile.parents, args.user)){
       return done('Cannot add child');
     }
 
@@ -98,49 +99,62 @@ module.exports = function(options) {
       roles: ['basic-user']
     };
 
-    seneca.act({role: 'user', cmd: 'register'}, user ,function(err, data){
-      if(err){
-        console.log("registration failed");
-        return done(err);
-      }
-
-      //TODO update errors on front-end
-      if(!data.ok){
-        console.log("error", data.why)
-        return done(data.why);
-      }
-
-      profile.userId = data && data.user && data.user.id;
-      console.log("initUserType", typeof data.user.initUserType, data.user.initUserType);
-      profile.userType = data && data.user && data.user.initUserType && data.user.initUserType.name;
-
-      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
+    if(initUserType === 'attendee-o13'){
+      seneca.act({role: 'user', cmd: 'register'}, user ,function(err, data){
         if(err){
-          console.log("could not save profile");
+          console.log("registration failed");
           return done(err);
         }
 
-        console.log("###################parentId", parentId);
-        seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: parentId}, function(err, results){
-          var parent = results[0];
+        //TODO update errors on front-end
+        if(!data.ok){
+          console.log("error", data.why)
+          return done(data.why);
+        }
 
+
+        profile.userId = data && data.user && data.user.id;
+        console.log("initUserType", typeof data.user.initUserType, data.user.initUserType);
+        profile.userType = data && data.user && data.user.initUserType && data.user.initUserType.name;
+
+        //Save child
+        saveChild(profile, parentId , done)
+
+      });
+    } else if(initUserType === 'attendee-u13') {
+      //If the child is under 13 create a user id
+      profile.userId = uuid.v4();
+
+      saveChild(profile, parentId, done);
+    }
+  }
+
+  function saveChild(profile, parentId,done){
+    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
+      if(err){
+        console.log("could not save profile");
+        return done(err);
+      }
+
+      console.log("###################parentId", parentId);
+      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: parentId}, function(err, results){
+        var parent = results[0];
+
+        if(err){
+          console.log("could not load profile")
+          return done(err);
+        }
+
+        parent.children = parent.children ? parent.children : [];
+        parent.children.push(profile.userId);
+
+        parent.save$(function(err){
           if(err){
-            console.log("could not load profile")
+            console.log("could not save parent profile");
             return done(err);
           }
-
-          parent.children = parent.children ? parent.children : [];
-          parent.children.push(profile.userId);
-
-          parent.save$(function(err){
-            if(err){
-              console.log("could not save parent profile");
-              return done(err);
-            }
-            return done(null, profile);
-          });
+          return done(null, profile);
         });
-
       });
 
     });
@@ -184,8 +198,11 @@ module.exports = function(options) {
             profile.userTypes.push(profile.userType);
           }
 
+          profile.myChild = _.contains(profile.parents, args.user) ? true : false;
           //Logic for public profiles
-          if(!ownProfileFlag && ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian') || _.contains(profile.parents, args.user)) ){
+          if(!ownProfileFlag &&
+             !profile.myChild &&
+            ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian'))){
             _.each(profile.userTypes, function(userType){
               publicFields = _.union(publicFields, fieldWhiteList[userType]);
             });
