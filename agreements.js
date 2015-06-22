@@ -10,6 +10,7 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'save'}, cmd_save);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'count'}, cmd_count);
+  seneca.add({role: plugin, cmd: 'load_user_agreement'}, cmd_load_user_agreement);
 
   function cmd_save(args, done){
     var agreementEntity = seneca.make$(ENTITY_NS);
@@ -59,6 +60,14 @@ module.exports = function(options) {
       var noOfAgreements = agreements.length;
 
       done(null, {noOfAgreements: noOfAgreements});
+    });
+  }
+
+  function cmd_load_user_agreement(args, done) {
+    var seneca = this;
+
+    seneca.make(ENTITY_NS).load$({userId: args.id}, function(err, result){
+      done(null, result);
     });
   }
 
