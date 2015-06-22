@@ -55,7 +55,8 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'create'}, cmd_create);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'save'}, cmd_save);
-  seneca.add({role: plugin, cmd: 'save-youth-profile'}, cmd_save_youth_child);
+  seneca.add({role: plugin, cmd: 'save-youth-profile'}, cmd_save_youth_profile);
+  seneca.add({role: plugin, cmd: 'update-youth-profile'}, cmd_update_youth);
 
   function cmd_create(args, done){
     var profile = args.profile;
@@ -68,11 +69,10 @@ module.exports = function(options) {
 
   //TODO: clean up with async
 
-  function cmd_save_youth_child(args, done){
+  function cmd_save_youth_profile(args, done){
     var profile = args.profile;
     profile.parents = [];
-    profile.parents.push(args.profile.parent);
-    
+    profile.parents.push(args.user);
     //TODO add validation for profile types
 
     //Send error
@@ -82,11 +82,6 @@ module.exports = function(options) {
 
     var initUserType =  profile.userTypes[0];
     var password = profile.password;
-    var parentId = profile.parent;
-
-    delete profile.userTypes;
-    delete profile.password;
-    delete profile.parent;
 
     var nick = profile.alias || profile.name;
     
@@ -102,62 +97,74 @@ module.exports = function(options) {
     if(initUserType === 'attendee-o13'){
       seneca.act({role: 'user', cmd: 'register'}, user ,function(err, data){
         if(err){
-          console.log("registration failed");
           return done(err);
         }
 
         //TODO update errors on front-end
         if(!data.ok){
-          console.log("error", data.why)
           return done(data.why);
         }
 
-
         profile.userId = data && data.user && data.user.id;
-        console.log("initUserType", typeof data.user.initUserType, data.user.initUserType);
         profile.userType = data && data.user && data.user.initUserType && data.user.initUserType.name;
+        
+        profile = _.omit(profile,['userTypes', 'password']);
 
-        //Save child
-        saveChild(profile, parentId , done)
+        saveChild(profile, args.user , done);
 
       });
     } else if(initUserType === 'attendee-u13') {
       //If the child is under 13 create a user id
+      profile = _.omit(profile,['userTypes', 'password']);
       profile.userId = uuid.v4();
-
-      saveChild(profile, parentId, done);
+      saveChild(profile, args.user, done);
     }
   }
 
-  function saveChild(profile, parentId,done){
+  function cmd_update_youth(args, done){
+    var profile = args.profile;
+    
+    //limit scope of fields that can be updated
+    profile = _.omit(profile, ['password','userTypes', 'myChild', 'ownProfileFlag', 'dojos', 'email']);
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
       if(err){
-        console.log("could not save profile");
         return done(err);
       }
 
-      console.log("###################parentId", parentId);
-      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: parentId}, function(err, results){
-        var parent = results[0];
+      return done(null, profile);
+    });
+  }
 
+  function saveChild(profile, parentId, done){
+    if(_.contains(profile.parents, parentId)){
+      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
         if(err){
-          console.log("could not load profile")
           return done(err);
         }
 
-        parent.children = parent.children ? parent.children : [];
-        parent.children.push(profile.userId);
+        seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: parentId}, function(err, results){
+          var parent = results[0];
 
-        parent.save$(function(err){
           if(err){
-            console.log("could not save parent profile");
             return done(err);
           }
-          return done(null, profile);
-        });
-      });
 
-    });
+          parent.children = parent.children ? parent.children : [];
+          parent.children.push(profile.userId);
+
+          parent.save$(function(err){
+            if(err){
+              return done(err);
+            }
+
+            return done(null, profile);
+          });
+        });
+
+      });
+    } else {
+      return done('not your child');
+    }
   }
 
   function cmd_list(args, done){
@@ -225,12 +232,10 @@ module.exports = function(options) {
           if(!_.isEmpty(profile.children) && _.contains(profile.userTypes, 'parent-guardian')){
             async.each(profile.children, function(child, callback){
               seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: child}, function(err, results){
-                console.log("returned children", results);
                 if(err){
                   return callback(err);
                 } 
                 resolvedChildren.push(results[0]);
-                console.log("resolvedChildren", resolvedChildren);
                 return callback();
               });
             }, function(err){
@@ -238,7 +243,6 @@ module.exports = function(options) {
                 return done(err);
               }
 
-              console.log("resolvedChildren", resolvedChildren);
               profile.resolvedChildren = resolvedChildren;
               profile.ownProfileFlag = ownProfileFlag;
 
