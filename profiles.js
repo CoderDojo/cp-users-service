@@ -54,8 +54,8 @@ module.exports = function(options) {
 
   seneca.add({role: plugin, cmd: 'create'}, cmd_create);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
-  seneca.add({role: plugin, cmd: 'save'}, cmd_save);
   seneca.add({role: plugin, cmd: 'save-youth-profile'}, cmd_save_youth_profile);
+  seneca.add({role: plugin, cmd: 'save'}, cmd_save);
   seneca.add({role: plugin, cmd: 'update-youth-profile'}, cmd_update_youth);
 
   function cmd_create(args, done){
@@ -77,7 +77,7 @@ module.exports = function(options) {
 
     //Send error
     if(!_.contains(profile.parents, args.user)){
-      return done('Cannot add child');
+      return done(new Error('Unable to save child profile'));
     }
 
     var initUserType =  profile.userTypes[0];
@@ -122,9 +122,11 @@ module.exports = function(options) {
   }
 
   function cmd_update_youth(args, done){
+    if(_.contains(profile.parents, args.user)){
+      return done(new Error('Not authorized to update profile'));
+    }
     var profile = args.profile;
     
-    //limit scope of fields that can be updated
     profile = _.omit(profile, ['password','userTypes', 'myChild', 'ownProfileFlag', 'dojos', 'email']);
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
       if(err){
@@ -169,17 +171,25 @@ module.exports = function(options) {
 
   function cmd_list(args, done){
     var query = args.query;
+    if(!query.userId){
+      return done(new Error('Internal Error'));
+    }
+
     var publicFields = [];
 
-    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$(query, function(err, profiles){
+    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: query.userId}, function(err, profiles){
       if(err){
         return done(err);
       }
 
       var profile = profiles[0];
 
+      if(!profile.userId){
+        return done(new Error('Invalid Profile'));
+      }
+
       var query = {userId: profile.userId};
-      seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: query}, function(err, usersDojos){
+      seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: query.userId}}, function(err, usersDojos){
         if(err){
           done(err);
         }
@@ -262,9 +272,9 @@ module.exports = function(options) {
 
   function cmd_save(args, done) {
     var profile = args.profile;
-
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, done);
   }
+
 
   return {
     name: plugin
