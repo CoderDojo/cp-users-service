@@ -122,7 +122,7 @@ module.exports = function(options) {
   }
 
   function cmd_update_youth(args, done){
-    if(_.contains(profile.parents, args.user)){
+    if(!_.contains(args.profile.parents, args.user)){
       return done(new Error('Not authorized to update profile'));
     }
     var profile = args.profile;
