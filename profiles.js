@@ -184,7 +184,9 @@ module.exports = function(options) {
 
       var profile = profiles[0];
 
-      if(!profile.userId){
+
+
+      if(!profile || !profile.userId){
         return done(new Error('Invalid Profile'));
       }
 
