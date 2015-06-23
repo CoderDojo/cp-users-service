@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS cd_profiles
   name character varying,
   user_id character varying,
   alias character varying,
-  dob date,
+  dob timestamp with time zone,
   "country" json,
   city json,
   private boolean,
