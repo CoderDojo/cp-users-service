@@ -14,6 +14,7 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'promote'}, cmd_promote);
   seneca.add({role: plugin, cmd: 'get_users_by_emails'}, cmd_get_users_by_emails);
   seneca.add({role: plugin, cmd: 'update'}, cmd_update);
+  seneca.add({role: plugin, cmd: 'get_init_user_types'}, cmd_get_init_user_types);
 
   function cmd_load(args, done) {
     var seneca = this;
@@ -45,9 +46,22 @@ module.exports = function(options){
     var seneca = this;
     args.roles = ['basic-user'];
     args.mailingList = (args.mailingList) ? 1 : 0;
-    seneca.act({role:'user', cmd:'register'}, args, function(err, response) {
+
+    console.log("args", args);
+    seneca.act({role:'user', cmd:'register'}, args, function (err, registerResponse) {
       if(err) return done(err);
-      done(null, response);
+      var user = registerResponse.user;
+      var initUserType = user.initUserType;
+      //Create user profile based on initial user type.
+      var profileData = {
+        userId:user.id,
+        email:user.email,
+        userType:initUserType.name
+      };
+      seneca.act({role:'cd-profiles', cmd:'save', profile: profileData}, function (err, profile) {
+        if(err) return done(err);
+        done(null, registerResponse);
+      });
     });
   }
 
@@ -100,6 +114,19 @@ module.exports = function(options){
     var userEntity = seneca.make(ENTITY_NS);
 
     userEntity.save$(user, done);
+  }
+
+  function cmd_get_init_user_types(args, done) {
+    var seneca = this;
+    //These types can be selected during registration on the platform.
+    var initUserTypes = [
+      {title: 'Youth Under 13', name: 'attendee-u13'},
+      {title: 'Youth Over 13', name: 'attendee-o13'},
+      {title: 'Parent/Guardian', name: 'parent-guardian'},
+      {title: 'Mentor/Volunteer', name: 'mentor'},
+      {title: 'Champion', name: 'champion'}
+    ];
+    done(null, initUserTypes);
   }
   
   return {
