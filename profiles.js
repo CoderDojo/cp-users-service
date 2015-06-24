@@ -58,6 +58,16 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'save'}, cmd_save);
   seneca.add({role: plugin, cmd: 'update-youth-profile'}, cmd_update_youth);
   seneca.add({role: plugin, cmd: 'invite-parent-guardian'}, cmd_invite_parent_guardian);
+  seneca.add({role: plugin, cmd: 'search'}, cmd_search);
+
+
+  function cmd_search(args, done){
+    if(!args.query){
+      return done(new Error('Empty query'));
+    }
+
+    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$(args.query, done);
+  }
 
   function cmd_create(args, done){
     var profile = args.profile;
@@ -301,7 +311,7 @@ module.exports = function(options) {
     ], done);
     //TODO: Add error if child doesnt belong to the parent/guardian
     function resolveChild(done){
-      seneca.act({role: plugin, cmd: 'list'}, childQuery, function(err, results){
+      seneca.act({role: plugin, cmd: 'search'}, {query: childQuery}, function(err, results){
         if(err){
           return done(err);
         }
@@ -315,7 +325,7 @@ module.exports = function(options) {
     }
 
     function resolveRequestingParent(childProfile, done){
-      seneca.act({role: plugin, cmd: 'list'}, parentQuery, function(err, results){
+      seneca.act({role: plugin, cmd: 'search'}, {query: parentQuery}, function(err, results){
         if(err){
           return done(err);
         }
@@ -340,6 +350,10 @@ module.exports = function(options) {
         timestamp: timestamp
       };
 
+      if(!parentProfile.inviteRequests){
+        parentProfile.inviteRequests = [];
+      }
+
       parentProfile.inviteRequests.push(inviteRequest);
       
       //TODO figure out a way to keep the most recent invite per child and req email
@@ -347,7 +361,8 @@ module.exports = function(options) {
         .sortBy(function(inviteRequest){
           return inviteRequest.timestamp;
         })
-        .reverse();
+        .reverse()
+        .value();
 
 
       seneca.act({role: plugin, cmd: 'save'}, {profile: parentProfile},function(err, parentProfile){
@@ -359,7 +374,7 @@ module.exports = function(options) {
       });
     }
 
-    function sendEmail(childProfile, parentProfile, inviteRequest, done){
+    function sendEmail(parentProfile, childProfile, inviteRequest, done){
       if(!childProfile || !parentProfile){
         return done(new Error('An error has occured while sending email'));
       }
@@ -368,12 +383,13 @@ module.exports = function(options) {
         link: 'http://localhost:8000/accept_parent_guardian_request/' + parentProfile.userId + '/' + childProfile.userId + '/' + inviteToken,
         childName: childProfile.name,
         parentName: parentProfile.name 
-      }
+      };
+
 
       var code = 'invite-parent-guardian';
-      var payload = {to: inviteRequest.invitedParentEmail, code: code, content: content};
+      var to =  inviteRequest.invitedParentEmail;
 
-      seneca.act({role: plugin, cmd: 'send_email', payload: payload}, done);
+      seneca.act({role:'email-notifications', cmd: 'send', to:to, content:content, code: code}, done);
     }
 
   }
