@@ -49,7 +49,7 @@ module.exports = function(options) {
 
 
   //var userTypes = ['champion', 'mentor', 'parent-guardian', 'attendee-o13', 'attendee-u13'];
-  var userTypes = ['attendee-u13', 'attendee-o13', 'parent-guardian', 'mentor', 'champion'];
+  //var userTypes = ['attendee-u13', 'attendee-o13', 'parent-guardian', 'mentor', 'champion'];
 
 
   seneca.add({role: plugin, cmd: 'create'}, cmd_create);
@@ -57,6 +57,7 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'save-youth-profile'}, cmd_save_youth_profile);
   seneca.add({role: plugin, cmd: 'save'}, cmd_save);
   seneca.add({role: plugin, cmd: 'update-youth-profile'}, cmd_update_youth);
+  seneca.add({role: plugin, cmd: 'invite-parent-guardian'}, cmd_invite_parent_guardian);
 
   function cmd_create(args, done){
     var profile = args.profile;
@@ -275,6 +276,106 @@ module.exports = function(options) {
   function cmd_save(args, done) {
     var profile = args.profile;
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, done);
+  }
+
+  function cmd_invite_parent_guardian(args, done){
+    var inviteToken = uuid.v4();
+    var data = args.data;
+    var invitedParentEmail = data.invitedParentEmail;
+    var childId = data.childId;
+    var requestingParentId = args.user;
+    
+    var childQuery = {
+      userId: childId
+    };
+
+    var parentQuery = {
+      userId: requestingParentId
+    };
+
+    async.waterfall([
+      resolveChild,
+      resolveRequestingParent,
+      updateParentProfile,
+      sendEmail,
+    ], done);
+    //TODO: Add error if child doesnt belong to the parent/guardian
+    function resolveChild(done){
+      seneca.act({role: plugin, cmd: 'list'}, childQuery, function(err, results){
+        if(err){
+          return done(err);
+        }
+
+        if(_.isEmpty(results)){
+          return done(new Error('Unable to find child profile'));
+        }
+
+        done(null, results[0]);
+      });
+    }
+
+    function resolveRequestingParent(childProfile, done){
+      seneca.act({role: plugin, cmd: 'list'}, parentQuery, function(err, results){
+        if(err){
+          return done(err);
+        }
+
+       if(_.isEmpty(results)){
+          return done(new Error('Unable to find parent profile'));
+        }
+
+
+        var parentProfile = results[0];
+        return done(null, parentProfile, childProfile);
+      });
+    }
+
+    function updateParentProfile(parentProfile, childProfile, done){
+      var timestamp = new Date();
+      
+      var inviteRequest = {
+        token: inviteToken,
+        invitedParentEmail: invitedParentEmail,
+        childProfileId: childProfile.userId,
+        timestamp: timestamp
+      };
+
+      parentProfile.inviteRequests.push(inviteRequest);
+      
+      //TODO figure out a way to keep the most recent invite per child and req email
+      parentProfile.inviteRequests = _.chain(parentProfile.inviteRequests)
+        .sortBy(function(inviteRequest){
+          return inviteRequest.timestamp;
+        })
+        .reverse();
+
+
+      seneca.act({role: plugin, cmd: 'save'}, {profile: parentProfile},function(err, parentProfile){
+        if(err){
+          return done(err);
+        }
+
+        done(err, parentProfile, childProfile, inviteRequest);
+      });
+    }
+
+    function sendEmail(childProfile, parentProfile, inviteRequest, done){
+      if(!childProfile || !parentProfile){
+        return done(new Error('An error has occured while sending email'));
+      }
+
+      var content = {
+        link: 'http://localhost:8000/accept_parent_guardian_request/' + parentProfile.userId + '/' + childProfile.userId + '/' + inviteToken,
+        childName: childProfile.name,
+        parentName: parentProfile.name 
+      }
+
+      var code = 'invite-parent-guardian';
+      var payload = {to: inviteRequest.invitedParentEmail, code: code, content: content};
+
+      seneca.act({role: plugin, cmd: 'send_email', payload: payload}, done);
+    }
+
   }
 
 
