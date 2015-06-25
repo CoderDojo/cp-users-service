@@ -352,7 +352,8 @@ module.exports = function(options) {
         token: inviteToken,
         invitedParentEmail: invitedParentEmail,
         childProfileId: childProfile.userId,
-        timestamp: timestamp
+        timestamp: timestamp,
+        status: 'valid'
       };
 
       if(!parentProfile.inviteRequests){
@@ -385,7 +386,7 @@ module.exports = function(options) {
       }
 
       var content = {
-        link: 'http://localhost:8000/accept_parent_guardian_request/' + parentProfile.userId + '/' + childProfile.userId + '/' + inviteToken,
+        link: 'http://localhost:8000/accept-parent-guardian-request/' + parentProfile.userId + '/' + childProfile.userId + '/' + inviteToken,
         childName: childProfile.name,
         parentName: parentProfile.name 
       };
@@ -412,10 +413,16 @@ module.exports = function(options) {
       validateInvite,
       updateInviteParentProfile,
       updateChildProfile
-    ], done);
+    ], function(err){
+      if(err){
+        return done(err);
+      }
+
+      return done();
+    });
 
     function getParentProfile(done){
-      seneca.act({role: plugin, cmd: 'search'}, {userId : parentProfileId}, function(err, results){
+      seneca.act({role: plugin, cmd: 'search'}, {query: {userId : parentProfileId}}, function(err, results){
         if(err){
           return done(err);
         }
@@ -437,7 +444,7 @@ module.exports = function(options) {
     }
 
     function getChildProfile(inviteRequests, done){
-      seneca.act({role: plugin, cmd: 'search'}, {userId: childProfileId}, function(err, results){
+      seneca.act({role: plugin, cmd: 'search'}, {query: {userId: childProfileId}}, function(err, results){
         if(err){
           return done(err);
         }
@@ -454,7 +461,7 @@ module.exports = function(options) {
       if(!args && args.user){
         return done(new Error('An error occured while attempting to get profile'));
       }
-      seneca.act({role: plugin, cmd: 'search'}, {userId: args.user}, function(err, results){
+      seneca.act({role: plugin, cmd: 'search'}, {query: {userId: args.user}}, function(err, results){
         if(err){
           return done(err);
         }
@@ -471,7 +478,7 @@ module.exports = function(options) {
     
     function validateInvite(inviteRequests, childProfile, invitedParent ,done){
       var foundInvite = _.find(inviteRequests, function(inviteRequest){
-        return  inviteToken === inviteRequest.inviteToken &&
+        return  inviteToken === inviteRequest.token &&
                 childProfile.userId === inviteRequest.childProfileId &&
                 invitedParent.email === inviteRequest.invitedParentEmail;
       });
@@ -495,7 +502,7 @@ module.exports = function(options) {
           return done(err);
         }
 
-        done(null, invitedParent, childProfile);
+        return done(null, invitedParent, childProfile);
       });
     }
 
@@ -506,7 +513,13 @@ module.exports = function(options) {
 
       childProfile.parents.push(invitedParent.userId);
 
-      childProfile.save$(done);
+      childProfile.save$(function(err, child){
+        if(err){
+          return done(err);
+        }
+
+        return done(null, child);
+      });
     }
   }
 
