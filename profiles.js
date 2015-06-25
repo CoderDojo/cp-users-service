@@ -353,7 +353,7 @@ module.exports = function(options) {
         invitedParentEmail: invitedParentEmail,
         childProfileId: childProfile.userId,
         timestamp: timestamp,
-        status: 'valid'
+        valid: true
       };
 
       if(!parentProfile.inviteRequests){
@@ -412,7 +412,8 @@ module.exports = function(options) {
       getInvitedParentProfile,
       validateInvite,
       updateInviteParentProfile,
-      updateChildProfile
+      updateChildProfile,
+      invalidateInvitation
     ], function(err){
       if(err){
         return done(err);
@@ -437,13 +438,11 @@ module.exports = function(options) {
           return done(new Error('Cannot add child'));
         }
 
-        var inviteRequests = parent.inviteRequests;
-
-        return done(null, inviteRequests);
+        return done(null, parent);
       });
     }
 
-    function getChildProfile(inviteRequests, done){
+    function getChildProfile(parent, done){
       seneca.act({role: plugin, cmd: 'search'}, {query: {userId: childProfileId}}, function(err, results){
         if(err){
           return done(err);
@@ -453,11 +452,11 @@ module.exports = function(options) {
           return done(new Error('Invalid invite'));
         }
 
-        return done(null, inviteRequests, results[0]);
+        return done(null, parent, results[0]);
       });
     }
 
-    function getInvitedParentProfile (inviteRequests, childProfile, done){
+    function getInvitedParentProfile (parent, childProfile, done){
       if(!args && args.user){
         return done(new Error('An error occured while attempting to get profile'));
       }
@@ -470,27 +469,39 @@ module.exports = function(options) {
           return done(new Error('An error occured while attempting to get profile'));
         }
 
-        return done(null, inviteRequests, childProfile, results[0]);
+        return done(null, parent, childProfile, results[0]);
       });
     }
 
 
     
-    function validateInvite(inviteRequests, childProfile, invitedParent ,done){
+    function validateInvite(parent, childProfile, invitedParent ,done){
+      var inviteRequests = parent.inviteRequests;
       var foundInvite = _.find(inviteRequests, function(inviteRequest){
         return  inviteToken === inviteRequest.token &&
                 childProfile.userId === inviteRequest.childProfileId &&
-                invitedParent.email === inviteRequest.invitedParentEmail;
+                invitedParent.email === inviteRequest.invitedParentEmail && 
+                inviteRequest.valid;
       });
+
+      //Check if user was registered as parent
+      if(parent.userType !== 'parent-guardian'){
+        return done(new Error('Invitee is not a parent/guardian'));
+      }
+
+      //Ensure that same parent cannot be added twice
+      if(_.contains(childProfile.parents, invitedParent.userId)){
+        return done(new Error('Invitee is already a parent of child'));
+      }
       
       if(!foundInvite){
         return done(new Error('Invalid invite'));
       } else { 
-        return done(null, invitedParent, childProfile);
+        return done(null, parent, invitedParent, childProfile);
       }
     }
 
-    function updateInviteParentProfile(invitedParent, childProfile, done){
+    function updateInviteParentProfile(parent, invitedParent, childProfile, done){
       if(!invitedParent.children) {
         invitedParent.children = [];
       }
@@ -502,11 +513,11 @@ module.exports = function(options) {
           return done(err);
         }
 
-        return done(null, invitedParent, childProfile);
+        return done(null, parent, invitedParent, childProfile);
       });
     }
 
-    function updateChildProfile(invitedParent, childProfile, done){
+    function updateChildProfile(parent, invitedParent, childProfile, done){
       if(!childProfile.parents){
         childProfile.parents = [];
       }
@@ -518,8 +529,21 @@ module.exports = function(options) {
           return done(err);
         }
 
-        return done(null, child);
+        return done(null, parent, invitedParent, childProfile);
       });
+    }
+
+    function invalidateInvitation(parent, invitedParent, childProfile, done){
+      var inviteRequests = parent.inviteRequests;
+      var foundInvite = _.find(inviteRequests, function(inviteRequest){
+        return  inviteToken === inviteRequest.token &&
+                childProfile.userId === inviteRequest.childProfileId &&
+                invitedParent.email === inviteRequest.invitedParentEmail;
+      });
+
+      foundInvite.valid = false;
+
+      parent.save$(done);
     }
   }
 
