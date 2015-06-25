@@ -59,6 +59,7 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'update-youth-profile'}, cmd_update_youth);
   seneca.add({role: plugin, cmd: 'invite-parent-guardian'}, cmd_invite_parent_guardian);
   seneca.add({role: plugin, cmd: 'search'}, cmd_search);
+  seneca.add({role: plugin, cmd: 'accept-invite'}, cmd_accept_invite);
 
 
   function cmd_search(args, done){
@@ -320,6 +321,10 @@ module.exports = function(options) {
           return done(new Error('Unable to find child profile'));
         }
 
+        if(!_.contains(results[0].parents, args.user)){
+          return done(new Error('Not an existing parent or guardian'));
+        }
+
         done(null, results[0]);
       });
     }
@@ -393,6 +398,118 @@ module.exports = function(options) {
     }
 
   }
+
+  function cmd_accept_invite(args, done){
+    var data = args.data;
+    var inviteToken = data.inviteToken;
+    var childProfileId = data.childProfileId;
+    var parentProfileId = data.parentProfileId;
+
+    async.waterfall([
+      getParentProfile,
+      getChildProfile,
+      getInvitedParentProfile,
+      validateInvite,
+      updateInviteParentProfile,
+      updateChildProfile
+    ], done);
+
+    function getParentProfile(done){
+      seneca.act({role: plugin, cmd: 'search'}, {userId : parentProfileId}, function(err, results){
+        if(err){
+          return done(err);
+        }
+
+        if(_.isEmpty(results)){
+          return done(new Error('Invalid invite'));
+        }
+
+        var parent =  results[0];
+
+        if(!_.contains(parent.children, childProfileId)){
+          return done(new Error('Cannot add child'));
+        }
+
+        var inviteRequests = parent.inviteRequests;
+
+        return done(null, inviteRequests);
+      });
+    }
+
+    function getChildProfile(inviteRequests, done){
+      seneca.act({role: plugin, cmd: 'search'}, {userId: childProfileId}, function(err, results){
+        if(err){
+          return done(err);
+        }
+
+        if(_.isEmpty(results)){
+          return done(new Error('Invalid invite'));
+        }
+
+        return done(null, inviteRequests, results[0]);
+      });
+    }
+
+    function getInvitedParentProfile (inviteRequests, childProfile, done){
+      if(!args && args.user){
+        return done(new Error('An error occured while attempting to get profile'));
+      }
+      seneca.act({role: plugin, cmd: 'search'}, {userId: args.user}, function(err, results){
+        if(err){
+          return done(err);
+        }
+        
+        if(_.isEmpty(results)){
+          return done(new Error('An error occured while attempting to get profile'));
+        }
+
+        return done(null, inviteRequests, childProfile, results[0]);
+      });
+    }
+
+
+    
+    function validateInvite(inviteRequests, childProfile, invitedParent ,done){
+      var foundInvite = _.find(inviteRequests, function(inviteRequest){
+        return  inviteToken === inviteRequest.inviteToken &&
+                childProfile.userId === inviteRequest.childProfileId &&
+                invitedParent.email === inviteRequest.invitedParentEmail;
+      });
+      
+      if(!foundInvite){
+        return done(new Error('Invalid invite'));
+      } else { 
+        return done(null, invitedParent, childProfile);
+      }
+    }
+
+    function updateInviteParentProfile(invitedParent, childProfile, done){
+      if(!invitedParent.children) {
+        invitedParent.children = [];
+      }
+
+      invitedParent.children.push(childProfileId);
+
+      invitedParent.save$(function(err, invitedParent){
+        if(err){
+          return done(err);
+        }
+
+        done(null, invitedParent, childProfile);
+      });
+    }
+
+    function updateChildProfile(invitedParent, childProfile, done){
+      if(!childProfile.parents){
+        childProfile.parents = [];
+      }
+
+      childProfile.parents.push(invitedParent.userId);
+
+      childProfile.save$(done);
+    }
+  }
+
 
 
   return {
