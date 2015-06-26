@@ -13,12 +13,20 @@ module.exports = function (options) {
 
   seneca.add({ role: plugin, cmd: 'insert' }, function (args, done) {
 
-    var register = function(profile, done){
-      seneca.act({role: 'cd-users', cmd: 'register'}, profile, done);
-    };
+    var userpin = seneca.pin({ role: 'user', cmd: '*' });
 
     var registerusers = function (done) {
-      async.eachSeries(users, register, done);
+      async.eachSeries(users, function(user, cb){
+        userpin.register(user, function(err, response){
+          if(err) { return done(err) }
+          var profileData = {
+            userId:   response.user.id,
+            email:    response.user.email,
+            userType: response.user.initUserType.name
+          };
+          seneca.act({role:'cd-profiles', cmd:'save', profile: profileData}, cb);
+        });
+      }, done);
     };
 
     async.series([
