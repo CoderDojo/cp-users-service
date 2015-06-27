@@ -252,6 +252,13 @@ module.exports = function(options) {
             profile = {};
           }
 
+          //Hide optional fields if neccessary 
+          _.forOwn(profile.optionalHiddenFields, function(key, value){
+            if(value){
+              profile = _.omit(profile, key);
+            }
+          });
+
           var resolvedChildren = [];
           if(!_.isEmpty(profile.children) && _.contains(profile.userTypes, 'parent-guardian')){
             async.each(profile.children, function(child, callback){
