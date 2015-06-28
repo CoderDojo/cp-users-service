@@ -203,6 +203,7 @@ module.exports = function(options) {
       assignUserTypes,
       addFlags,
       optionalFieldsFilter,
+      privateFilter,
       publicProfilesFilter,
       under13Filter,
       resolveChildren
@@ -285,15 +286,28 @@ module.exports = function(options) {
     }
 
     function optionalFieldsFilter(profile, done){
-      _.forOwn(profile.optionalHiddenFields, function(value, key){
-        if(value){
-          profile = _.omit(profile, key);
-        }
-      });
+      if(!profile.ownProfileFlag && !profile.myChild){
+        _.forOwn(profile.optionalHiddenFields, function(value, key){
+          if(value){
+            profile = _.omit(profile, key);
+          }
+        });
+      }
 
       return done(null, profile);
     }
 
+    function privateFilter(profile, done){
+      if(profile.ownProfileFlag || profile.myChild){
+        return done(null, profile);
+      }
+
+      if(profile.private){
+        profile = {};
+      }
+
+      return done(null, profile);
+    }
     //TODO cdf-admin role should be able to see all profiles
     function publicProfilesFilter(profile, done){
       var publicProfileFlag = !profile.ownProfileFlag && 
@@ -323,17 +337,16 @@ module.exports = function(options) {
     }
 
     function under13Filter(profile, done){
-        //Ensure that only parents of children can retrieve their full public profile
-      if(_.contains(profile.userTypes, 'attendee-u13') &&
-        !_.contains(profile.parents, profile.userId)){
+      //Ensure that only parents of children can retrieve their full public profile
+      if(_.contains(profile.userTypes, 'attendee-u13') && !_.contains(profile.parents, profile.userId)){
 
         profile = {};
-
         return done(null, profile);
       }
 
       return done(null, profile);
     }
+
 
     function resolveChildren(profile, done){
       var resolvedChildren = [];
@@ -390,7 +403,8 @@ module.exports = function(options) {
       updateParentProfile,
       sendEmail,
     ], done);
-    //TODO: Add error if child doesnt belong to the parent/guardian
+
+
     function resolveChild(done){
       seneca.act({role: plugin, cmd: 'search'}, {query: childQuery}, function(err, results){
         if(err){
@@ -442,7 +456,6 @@ module.exports = function(options) {
 
       parentProfile.inviteRequests.push(inviteRequest);
       
-      //TODO figure out a way to keep the most recent invite per child and req email
       parentProfile.inviteRequests = _.chain(parentProfile.inviteRequests)
         .sortBy(function(inviteRequest){
           return inviteRequest.timestamp;
