@@ -148,7 +148,7 @@ module.exports = function(options) {
     var profile = args.profile;
     var derivedFields = ['password','userTypes', 'myChild', 'ownProfileFlag', 'dojos'];
 
-    var fieldsToBeRemoved = derivedFields.join(immutableFields);
+    var fieldsToBeRemoved = _.union(derivedFields, immutableFields);
     
     profile = _.omit(profile, fieldsToBeRemoved);
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
@@ -306,7 +306,11 @@ module.exports = function(options) {
         });
 
         if(_.contains(profile.userTypes, 'attendee-o13')){
-          publicFields = _.xor(publicFields, youthBlackList);
+          publicFields = _.remove(publicFields, function(publicField){
+            var idx =  youthBlackList.indexOf(publicField);
+
+            return idx > -1 ? false : true;
+          });
         }
 
         profile = _.pick(profile, publicFields);
