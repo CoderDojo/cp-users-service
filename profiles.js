@@ -231,6 +231,13 @@ module.exports = function(options) {
 
           profile.myChild = _.contains(profile.parents, args.user) ? true : false;
           //Logic for public profiles
+          //Hide optional fields if neccessary 
+          _.forOwn(profile.optionalHiddenFields, function(value, key){
+            if(value){
+              profile = _.omit(profile, key);
+            }
+          });
+
           if(!ownProfileFlag &&
              !profile.myChild &&
             ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian'))){
@@ -252,12 +259,6 @@ module.exports = function(options) {
             profile = {};
           }
 
-          //Hide optional fields if neccessary 
-          _.forOwn(profile.optionalHiddenFields, function(key, value){
-            if(value){
-              profile = _.omit(profile, key);
-            }
-          });
 
           var resolvedChildren = [];
           if(!_.isEmpty(profile.children) && _.contains(profile.userTypes, 'parent-guardian')){
