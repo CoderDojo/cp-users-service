@@ -339,7 +339,7 @@ module.exports = function(options) {
 
     function under13Filter(profile, done){
       //Ensure that only parents of children can retrieve their full public profile
-      if(_.contains(profile.userTypes, 'attendee-u13') && !_.contains(profile.parents, profile.userId)){
+      if(_.contains(profile.userTypes, 'attendee-u13') && !_.contains(profile.parents, args.user)){
 
         profile = {};
         return done(null, profile);
