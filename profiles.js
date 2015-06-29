@@ -137,6 +137,7 @@ module.exports = function(options) {
       //If the child is under 13 create a user id
       profile = _.omit(profile,['userTypes', 'password']);
       profile.userId = uuid.v4();
+      profile.userType = initUserType;
       saveChild(profile, args.user, done);
     }
   }
