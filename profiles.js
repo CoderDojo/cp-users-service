@@ -100,6 +100,7 @@ module.exports = function(options) {
     if(profile.id){
       profile = _.omit(profile, immutableFields);
     }
+
     var initUserType =  profile.userTypes[0];
     var password = profile.password;
 
@@ -113,8 +114,9 @@ module.exports = function(options) {
       password: password,
       roles: ['basic-user']
     };
-
+  
     if(initUserType === 'attendee-o13'){
+    
       seneca.act({role: 'user', cmd: 'register'}, user ,function(err, data){
         if(err){
           return done(err);
@@ -134,11 +136,25 @@ module.exports = function(options) {
 
       });
     } else if(initUserType === 'attendee-u13') {
-      //If the child is under 13 create a user id
-      profile = _.omit(profile,['userTypes', 'password']);
-      profile.userId = uuid.v4();
-      profile.userType = initUserType;
-      saveChild(profile, args.user, done);
+      //If the child is under 13 create a sys_user object with is_under_13 set to true.
+      //Delete email and password so this user can't login.
+      delete user.email;
+      delete user.password;
+      
+      user.isUnder_13 = true;
+
+      seneca.act({role: 'user', cmd: 'register'}, user, function (err, data) {
+        if(err) return done(err);
+        if(!data.ok) return done(data.why);
+
+        profile.userId = data && data.user && data.user.id;
+        profile.userType = data && data.user && data.user.initUserType && data.user.initUserType.name;
+        
+        profile = _.omit(profile,['userTypes', 'password']);
+
+        saveChild(profile, args.user , done);
+      });
+
     }
   }
 
@@ -224,13 +240,12 @@ module.exports = function(options) {
       }
 
       var publicFields = [];
-      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: query.userId}, function(err, results){
+      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId:query.userId}, function(err, results){
         if(err){
           return done(err);
         }
 
         var profile = results[0];
-
         if(!profile || !profile.userId){
           return done(new Error('Invalid Profile'));
         }
