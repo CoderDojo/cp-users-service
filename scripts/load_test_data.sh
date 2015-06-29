@@ -40,7 +40,8 @@ function system_params {
 }
 
 function postgres_test_data {
-    psql --single-transaction -h $PG_HOST -U $POSTGRES_USERNAME -d $POSTGRES_NAME -f "$PROJECT_DIR/scripts/database/pg/populate-users.sql" --port $PG_PORT
+    # Don't import this test users for now.
+    #psql --single-transaction -h $PG_HOST -U $POSTGRES_USERNAME -d $POSTGRES_NAME -f "$PROJECT_DIR/scripts/database/pg/populate-users.sql" --port $PG_PORT
 }
 
 function delete_elasticsearch_index {
