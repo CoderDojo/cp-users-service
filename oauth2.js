@@ -12,12 +12,46 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'token'}, cmd_token);
   seneca.add({role: plugin, cmd: 'profile'}, cmd_profile);
 
+  // Note: currently got from the config, this may be moved to the database in the near future..
+  function _verifyClientId(clientId, cb) {
+    setImmediate(function() {
+      if (!options.clients[clientId]) return cb('Invalid client_id: ' + clientId);
+      return cb();
+    });
+  };
+
+  function _getAccessCodeForUser(user, cb) {
+
+  };
+
   function cmd_authorize(args, done) {
     console.log("AUTHORIZE", args, args.user);
-    return done(null, {
-      http$:{
-        redirect: args['redirect_uri'] + '?code=' + args.user.id
+
+    if (args.response_type !== 'code') {
+      return done(null, {error: 'Only authorization code auth supported!'});
+    }
+
+    _verifyClientId(args.client_id, function(err) {
+      if (err) return done(null, {error: err});
+
+      // TODO - need a redirect here on login also..
+      if (!args.user) {
+        return done(null, {
+          http$:{
+            redirect: '/login'
+          }
+        });
       }
+
+      _getAccessCodeForUser(args.user.id, function(err, code) {
+        if (err) return done(err);
+
+        done(null, {
+          http$:{
+            redirect: args['redirect_uri'] + '?code=' + args.user.id
+          }
+        });
+      });
     });
   };
 
