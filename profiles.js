@@ -45,6 +45,14 @@ module.exports = function(options) {
     'attendee-o13': attendeeO13PublicFields
   };
 
+  var allowedOptionalFieldsYouth = ['dojos', 'linkedin', 'twitter', 'badges'];
+  var allowedOptionalFieldsChampion = ['notes', 'projects'];
+
+  var allowedOptionalFields = {
+    'champion': allowedOptionalFieldsChampion,
+    'attendee-o13': allowedOptionalFieldsYouth
+  };
+
   var immutableFields = ['email', 'userType'];
 
   var youthBlackList = ['name'];
@@ -286,9 +294,19 @@ module.exports = function(options) {
     }
 
     function optionalFieldsFilter(profile, done){
+      var allowedFields = [];
+      
+      if(_.contains(profile.userTypes, 'attendee-o13')){
+        allowedFields = _.union(allowedFields, allowedOptionalFields['attendee-o13']);
+      }
+
+      if(_.contains(profile.userTypes, 'champion')){
+        allowedFields = _.union(allowedFields, allowedOptionalFields['champion']);
+      }
+
       if(!profile.ownProfileFlag && !profile.myChild){
         _.forOwn(profile.optionalHiddenFields, function(value, key){
-          if(value){
+          if(value && _.contains(allowedFields, key)){
             profile = _.omit(profile, key);
           }
         });
