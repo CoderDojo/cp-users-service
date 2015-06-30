@@ -231,7 +231,8 @@ module.exports = function(options) {
       privateFilter,
       publicProfilesFilter,
       under13Filter,
-      resolveChildren
+      resolveChildren,
+      resolveParents
       ],function(err, profile){
         if(err){
           return done(err);
@@ -405,6 +406,34 @@ module.exports = function(options) {
         });
       } else {
         profile.resolvedChildren = resolvedChildren;
+
+        return done(null, profile);
+      }
+    }
+
+    function resolveParents(profile, done){
+      var resolvedParents = [];
+
+      if(!_.isEmpty(profile.parents)){
+        async.each(profile.parents, function(parent, callback){
+          seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: parent}, function(err, results){
+            if(err){
+              return callback(err);
+            } 
+            resolvedParents.push(results[0]);
+            return callback();
+          });
+        }, function(err){
+          if(err){
+            return done(err);
+          }
+
+          profile.resolvedParents = resolvedParents;
+
+          return done(null, profile);
+        });
+      } else {
+        profile.resolvedParents = resolvedParents;
 
         return done(null, profile);
       }
