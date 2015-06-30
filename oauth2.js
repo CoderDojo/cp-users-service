@@ -2,6 +2,11 @@
 
 var _ = require('lodash');
 var async = require('async');
+var cuid = require('cuid');
+
+// TMP!!
+var codes = {};
+var tokens = {};
 
 module.exports = function(options){
   var seneca = this;
@@ -21,7 +26,25 @@ module.exports = function(options){
   };
 
   function _getAccessCodeForUser(user, cb) {
+    if (codes[user.id]) return cb(null, codes[user.id]);
 
+    var code = cuid();
+    codes[code] = user;
+    return cb(null, code);
+  };
+
+  function _getAccessTokenForAccessCode(code, cb) {
+    var user = codes[code];
+    if (!user) return cb('No access code found: ' + code);
+    var token = code + '-' + user.id;
+    tokens[token] = user;
+    return cb(null, token);
+  }
+
+  function _getUserForAccessToken(token, cb) {
+    var user = tokens[token];
+    if (!user) return cb('No token found: ' + token);
+    return cb(null, user);
   };
 
   function cmd_authorize(args, done) {
@@ -43,12 +66,12 @@ module.exports = function(options){
         });
       }
 
-      _getAccessCodeForUser(args.user.id, function(err, code) {
-        if (err) return done(err);
+      _getAccessCodeForUser(args.user, function(err, code) {
+        if (err) return done(null, {error: err, http$: {status: 500}});
 
         done(null, {
           http$:{
-            redirect: args['redirect_uri'] + '?code=' + args.user.id
+            redirect: args['redirect_uri'] + '?code=' + code
           }
         });
       });
@@ -58,21 +81,28 @@ module.exports = function(options){
   function cmd_token(args, done) {
     console.log("TOKEN - code", args.code);
 
-    var resp = {
-      'access_token': 'abcdefg',
-      'refresh_token': 'zxcvb'
-    };
-    return done(null, resp);
+    _getAccessTokenForAccessCode(args.code, function(err, access_token) {
+      if (err) return done(null, {error: err, http$: {status: 500}});
+
+      var resp = {
+        'access_token': access_token,
+      };
+      return done(null, resp);
+    });
   };
 
   function cmd_profile(args, done) {
     console.log("PROFILE", args);
-    var profile = {
-      id: '12345',
-      name: 'foo',
-      email: 'foo@example.com'
-    };
-    return done(null, profile);
+    _getUserForAccessToken(args.access_token, function(err, user) {
+      if (err) return done(null, {error: err, http$: {status: 500}});
+      console.log("USER", user);
+      var profile = {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      };
+      return done(null, profile);
+    });
   };
 
   return {
