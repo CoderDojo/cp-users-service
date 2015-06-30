@@ -86,7 +86,7 @@ module.exports = function(options){
 
   function cmd_get_users_by_emails(args, done){
     var seneca = this, query = {};
-    
+
     query.email = new RegExp(args.email, 'i');
     query.limit$ = query.limit$ ? query.limit$ : 10;
 
@@ -126,8 +126,9 @@ module.exports = function(options){
     ];
     done(null, initUserTypes);
   }
-  
+
   return {
     name: plugin
   };
+
 };
