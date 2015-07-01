@@ -114,9 +114,15 @@ module.exports = function(options) {
       password: password,
       roles: ['basic-user']
     };
-  
-    if(initUserType === 'attendee-o13'){
     
+    function registerUser(youth, done) {
+
+      if(youth) {
+        delete user.email;
+        delete user.password;
+        user.is_under_13 = true;
+      }
+
       seneca.act({role: 'user', cmd: 'register'}, user ,function(err, data){
         if(err){
           return done(err);
@@ -132,29 +138,52 @@ module.exports = function(options) {
         
         profile = _.omit(profile,['userTypes', 'password']);
 
-        saveChild(profile, args.user , done);
+        saveChild(profile, args.user, done);
 
       });
-    } else if(initUserType === 'attendee-u13') {
-      //If the child is under 13 create a sys_user object with is_under_13 set to true.
-      //Delete email and password so this user can't login.
-      delete user.email;
-      delete user.password;
+    }
+
+    function addUserToParentsDojos(profile, done) {
+      var parentsDojos = [];
+      var userType = profile.userType;
+      async.each(profile.parents, function (parent, cb) {
+        //Load parents dojos
+        var query = {userId: parent};
+
+        seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: query}, function(err, usersDojos){
+          if(err) return done(err);
+          _.each(usersDojos, function (userDojo) {
+            parentsDojos.push(userDojo.dojoId);
+          });
+          cb();
+        });
+      }, function (err) {
+        async.each(parentsDojos, function (parentDojo, cb) {
+          var userDojo = {
+            userId:profile.userId,
+            owner:0,
+            dojoId:parentDojo,
+            userTypes:[userType]
+          };
+          seneca.act({role: 'cd-dojos', cmd: 'save_usersdojos', userDojo: userDojo}, cb);
+        }, done);
+      });
       
-      user.isUnder_13 = true;
+    }
 
-      seneca.act({role: 'user', cmd: 'register'}, user, function (err, data) {
-        if(err) return done(err);
-        if(!data.ok) return done(data.why);
+    if(initUserType === 'attendee-o13'){
 
-        profile.userId = data && data.user && data.user.id;
-        profile.userType = data && data.user && data.user.initUserType && data.user.initUserType.name;
-        
-        profile = _.omit(profile,['userTypes', 'password']);
+      async.waterfall([
+        async.apply(registerUser, false),
+        addUserToParentsDojos
+      ], done);
 
-        saveChild(profile, args.user , done);
-      });
-
+    } else if(initUserType === 'attendee-u13') {
+      
+      async.waterfall([
+        async.apply(registerUser, true),
+        addUserToParentsDojos
+      ], done)
     }
   }
 
@@ -297,12 +326,13 @@ module.exports = function(options) {
     function addFlags(profile, done){
       profile.ownProfileFlag = profile && profile.userId === args.user ? true : false;
       profile.myChild = _.contains(profile.parents, args.user) ? true : false;
-
+      //TODO: Add isTicketingAdmin flag
+      profile.isTicketingAdmin = true;
       return done(null, profile);
     }
 
     function optionalFieldsFilter(profile, done){
-      if(!profile.ownProfileFlag && !profile.myChild){
+      if(!profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin){
         _.forOwn(profile.optionalHiddenFields, function(value, key){
           if(value){
             profile = _.omit(profile, key);
@@ -314,52 +344,72 @@ module.exports = function(options) {
     }
 
     function privateFilter(profile, done){
-      if(profile.ownProfileFlag || profile.myChild){
+      if(profile.ownProfileFlag || profile.myChild || profile.isTicketingAdmin){
         return done(null, profile);
       }
-
+      
       if(profile.private){
         profile = {};
       }
 
       return done(null, profile);
     }
+
     //TODO cdf-admin role should be able to see all profiles
-    function publicProfilesFilter(profile, done){
-      var publicProfileFlag = !profile.ownProfileFlag && 
-                              !profile.myChild &&
-                              ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian')); 
-      
-      if(publicProfileFlag){
-         _.each(profile.userTypes, function(userType) {
-          publicFields = _.union(publicFields, fieldWhiteList[userType]);
+    function publicProfilesFilter(profile, done) {
+      var requesterIsTicketingAdmin = false;
+      seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: args.user}}, function (err, response) {
+        if(err) return done(err);
+        //Check if any profile.dojos and requesting user dojos match.
+        var usersDojos = response;
+        var match = _.find(usersDojos, function (userDojo) {
+          return _.find(profile.dojos, function (profileDojo) {
+            return profileDojo.id === userDojo.dojoId;
+          });
         });
-
-        if(_.contains(profile.userTypes, 'attendee-o13')){
-          publicFields = _.remove(publicFields, function(publicField){
-            var idx =  youthBlackList.indexOf(publicField);
-
-            return idx > -1 ? false : true;
+        
+        if(match) {
+          //Check if requesting user is a ticketing admin
+          requesterIsTicketingAdmin = _.find(match.userPermissions, function (userPermission) {
+            return userPermission.name === 'ticketing-admin';
           });
         }
 
-        profile = _.pick(profile, publicFields);
+        var publicProfileFlag = !profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian')); 
+        if(publicProfileFlag){
+           _.each(profile.userTypes, function(userType) {
+            publicFields = _.union(publicFields, fieldWhiteList[userType]);
+          });
 
-        return done(null, profile);
+          if(_.contains(profile.userTypes, 'attendee-o13')){
+            publicFields = _.remove(publicFields, function(publicField){
+              var idx =  youthBlackList.indexOf(publicField);
 
-      } else {
-        return done(null, profile);
-      }
+              return idx > -1 ? false : true;
+            });
+          }
+
+          profile = _.pick(profile, publicFields);
+
+          return done(null, profile);
+
+        } else {
+          return done(null, profile);
+        }
+
+      });
+
+      
     }
 
     function under13Filter(profile, done){
       //Ensure that only parents of children can retrieve their full public profile
-      if(_.contains(profile.userTypes, 'attendee-u13') && !_.contains(profile.parents, args.user)){
-
-        profile = {};
-        return done(null, profile);
+      if(!profile.isTicketingAdmin) {
+        if(_.contains(profile.userTypes, 'attendee-u13') && !_.contains(profile.parents, args.user)){
+          profile = {};
+          return done(null, profile);
+        }
       }
-
       return done(null, profile);
     }
 
