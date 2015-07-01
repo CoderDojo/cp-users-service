@@ -8,6 +8,7 @@ module.exports = function(options) {
   var _ = require('lodash');
   var async = require('async');
   var uuid = require('node-uuid');
+  var hiddenFields = require('./data/hidden-fields.js');
 
   var mentorPublicFields = [
     'name',
@@ -45,6 +46,21 @@ module.exports = function(options) {
     'attendee-o13': attendeeO13PublicFields
   };
 
+  ///var allowedOptionalFieldsYouth = ['dojos', 'linkedin', 'twitter', 'badges'];
+  var allowedOptionalFieldsYouth = _.filter(hiddenFields, function(field){
+    return _.contains(field.allowedUserTypes, 'attendee-o13');
+  });
+
+  //var allowedOptionalFieldsChampion = ['notes', 'projects'];
+  var allowedOptionalFieldsChampion = _.filter(hiddenFields, function(field){
+    return _.contains(field.allowedUserTypes, 'champion');
+  });
+
+  var allowedOptionalFields = {
+    'champion': allowedOptionalFieldsChampion,
+    'attendee-o13': allowedOptionalFieldsYouth
+  };
+
   var immutableFields = ['email', 'userType'];
 
   var youthBlackList = ['name'];
@@ -62,6 +78,7 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'invite-parent-guardian'}, cmd_invite_parent_guardian);
   seneca.add({role: plugin, cmd: 'search'}, cmd_search);
   seneca.add({role: plugin, cmd: 'accept-invite'}, cmd_accept_invite);
+  seneca.add({role: plugin, cmd: 'load_hidden_fields'}, cmd_load_hidden_fields);
 
 
   function cmd_search(args, done){
@@ -114,37 +131,19 @@ module.exports = function(options) {
       password: password,
       roles: ['basic-user']
     };
-  
-    if(initUserType === 'attendee-o13'){
     
-      seneca.act({role: 'user', cmd: 'register'}, user ,function(err, data){
-        if(err){
-          return done(err);
-        }
+    function registerUser(youth, done) {
+
+      if(youth) {
+        delete user.email;
+        delete user.password;
+        user.is_under_13 = true;
+      }
+
+      seneca.act({role: 'user', cmd: 'register'}, user, function(err, data){
+        if(err) return done(err);
 
         //TODO update errors on front-end
-        if(!data.ok){
-          return done(data.why);
-        }
-
-        profile.userId = data && data.user && data.user.id;
-        profile.userType = data && data.user && data.user.initUserType && data.user.initUserType.name;
-        
-        profile = _.omit(profile,['userTypes', 'password']);
-
-        saveChild(profile, args.user , done);
-
-      });
-    } else if(initUserType === 'attendee-u13') {
-      //If the child is under 13 create a sys_user object with is_under_13 set to true.
-      //Delete email and password so this user can't login.
-      delete user.email;
-      delete user.password;
-      
-      user.isUnder_13 = true;
-
-      seneca.act({role: 'user', cmd: 'register'}, user, function (err, data) {
-        if(err) return done(err);
         if(!data.ok) return done(data.why);
 
         profile.userId = data && data.user && data.user.id;
@@ -152,9 +151,58 @@ module.exports = function(options) {
         
         profile = _.omit(profile,['userTypes', 'password']);
 
-        saveChild(profile, args.user , done);
+        saveChild(profile, args.user, done);
+
+      });
+    }
+
+    function addUserToParentsDojos(profile, done) {
+      var parentsDojos = [];
+      var userType = profile.userType;
+      async.each(profile.parents, function (parent, cb) {
+        //Load parents dojos
+        var query = {userId: parent};
+
+        seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: query}, function(err, usersDojos){
+          if(err) return done(err);
+          _.each(usersDojos, function (userDojo) {
+            parentsDojos.push(userDojo.dojoId);
+          });
+          cb();
+        });
+      }, function (err) {
+        async.each(parentsDojos, function (parentDojo, cb) {
+          var userDojo = {
+            userId:profile.userId,
+            owner:0,
+            dojoId:parentDojo,
+            userTypes:[userType]
+          };
+          seneca.act({role: 'cd-dojos', cmd: 'save_usersdojos', userDojo: userDojo}, cb);
+        }, done);
+      });
+      
+    }
+
+    if(initUserType === 'attendee-o13'){
+
+      async.waterfall([
+        async.apply(registerUser, false),
+        addUserToParentsDojos
+      ], function (err, res) {
+        if(err) return done(null, {error: err})
+        return done(null, res);
       });
 
+    } else if(initUserType === 'attendee-u13') {
+      
+      async.waterfall([
+        async.apply(registerUser, true),
+        addUserToParentsDojos
+      ], function (err, res) {
+        if(err) return done(null, {error: err});
+        return done(null, res);
+      });
     }
   }
 
@@ -223,12 +271,10 @@ module.exports = function(options) {
       privateFilter,
       publicProfilesFilter,
       under13Filter,
-      resolveChildren
+      resolveChildren,
+      resolveParents
       ],function(err, profile){
-        if(err){
-          return done(err);
-        }
-
+        if(err) return done(null, {error: err});
         return done(null, profile);
       });
 
@@ -297,14 +343,25 @@ module.exports = function(options) {
     function addFlags(profile, done){
       profile.ownProfileFlag = profile && profile.userId === args.user ? true : false;
       profile.myChild = _.contains(profile.parents, args.user) ? true : false;
-
+      //TODO: Add isTicketingAdmin flag
+      profile.isTicketingAdmin = true;
       return done(null, profile);
     }
 
-    function optionalFieldsFilter(profile, done){
-      if(!profile.ownProfileFlag && !profile.myChild){
+    function optionalFieldsFilter(profile, done) {
+      var allowedFields = [];
+      
+      if(_.contains(profile.userTypes, 'attendee-o13')){
+        allowedFields = _.union(allowedFields, allowedOptionalFields['attendee-o13']);
+      }
+
+      if(_.contains(profile.userTypes, 'champion')){
+        allowedFields = _.union(allowedFields, allowedOptionalFields['champion']);
+      }
+
+      if(!profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin){
         _.forOwn(profile.optionalHiddenFields, function(value, key){
-          if(value){
+          if(value && _.contains(allowedFields, key)){
             profile = _.omit(profile, key);
           }
         });
@@ -314,52 +371,72 @@ module.exports = function(options) {
     }
 
     function privateFilter(profile, done){
-      if(profile.ownProfileFlag || profile.myChild){
+      if(profile.ownProfileFlag || profile.myChild || profile.isTicketingAdmin){
         return done(null, profile);
       }
-
+      
       if(profile.private){
         profile = {};
       }
 
       return done(null, profile);
     }
+
     //TODO cdf-admin role should be able to see all profiles
-    function publicProfilesFilter(profile, done){
-      var publicProfileFlag = !profile.ownProfileFlag && 
-                              !profile.myChild &&
-                              ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian')); 
-      
-      if(publicProfileFlag){
-         _.each(profile.userTypes, function(userType) {
-          publicFields = _.union(publicFields, fieldWhiteList[userType]);
+    function publicProfilesFilter(profile, done) {
+      var requesterIsTicketingAdmin = false;
+      seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: args.user}}, function (err, response) {
+        if(err) return done(err);
+        //Check if any profile.dojos and requesting user dojos match.
+        var usersDojos = response;
+        var match = _.find(usersDojos, function (userDojo) {
+          return _.find(profile.dojos, function (profileDojo) {
+            return profileDojo.id === userDojo.dojoId;
+          });
         });
-
-        if(_.contains(profile.userTypes, 'attendee-o13')){
-          publicFields = _.remove(publicFields, function(publicField){
-            var idx =  youthBlackList.indexOf(publicField);
-
-            return idx > -1 ? false : true;
+        
+        if(match) {
+          //Check if requesting user is a ticketing admin
+          requesterIsTicketingAdmin = _.find(match.userPermissions, function (userPermission) {
+            return userPermission.name === 'ticketing-admin';
           });
         }
 
-        profile = _.pick(profile, publicFields);
+        var publicProfileFlag = !profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian')); 
+        if(publicProfileFlag){
+           _.each(profile.userTypes, function(userType) {
+            publicFields = _.union(publicFields, fieldWhiteList[userType]);
+          });
 
-        return done(null, profile);
+          if(_.contains(profile.userTypes, 'attendee-o13')){
+            publicFields = _.remove(publicFields, function(publicField){
+              var idx =  youthBlackList.indexOf(publicField);
 
-      } else {
-        return done(null, profile);
-      }
+              return idx > -1 ? false : true;
+            });
+          }
+
+          profile = _.pick(profile, publicFields);
+
+          return done(null, profile);
+
+        } else {
+          return done(null, profile);
+        }
+
+      });
+
+      
     }
 
     function under13Filter(profile, done){
       //Ensure that only parents of children can retrieve their full public profile
-      if(_.contains(profile.userTypes, 'attendee-u13') && !_.contains(profile.parents, args.user)){
-
-        profile = {};
-        return done(null, profile);
+      if(!profile.isTicketingAdmin) {
+        if(_.contains(profile.userTypes, 'attendee-u13') && !_.contains(profile.parents, args.user)){
+          profile = {};
+          return done(null, profile);
+        }
       }
-
       return done(null, profile);
     }
 
@@ -387,6 +464,34 @@ module.exports = function(options) {
         });
       } else {
         profile.resolvedChildren = resolvedChildren;
+
+        return done(null, profile);
+      }
+    }
+
+    function resolveParents(profile, done){
+      var resolvedParents = [];
+
+      if(!_.isEmpty(profile.parents)){
+        async.each(profile.parents, function(parent, callback){
+          seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: parent}, function(err, results){
+            if(err){
+              return callback(err);
+            } 
+            resolvedParents.push(results[0]);
+            return callback();
+          });
+        }, function(err){
+          if(err){
+            return done(err);
+          }
+
+          profile.resolvedParents = resolvedParents;
+
+          return done(null, profile);
+        });
+      } else {
+        profile.resolvedParents = resolvedParents;
 
         return done(null, profile);
       }
@@ -654,6 +759,10 @@ module.exports = function(options) {
 
       parent.save$(done);
     }
+  }
+
+  function cmd_load_hidden_fields(args, done){
+    done(null, hiddenFields);
   }
 
 
