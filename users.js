@@ -19,7 +19,6 @@ module.exports = function(options){
   function cmd_load(args, done) {
     var seneca = this;
     var id = args.id;
-
     var userEntity = seneca.make(ENTITY_NS);
     userEntity.load$(id, done);
   }

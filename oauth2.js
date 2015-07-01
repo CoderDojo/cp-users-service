@@ -4,14 +4,10 @@ var _ = require('lodash');
 var async = require('async');
 var cuid = require('cuid');
 
-// TMP!!
-var codes = {};
-var tokens = {};
-
 module.exports = function(options){
   var seneca = this;
   var plugin = 'cd-oauth2';
-  var ENTITY_NS = 'cd/oauth2';
+  var OAUTH2_ENTITY = 'cd/oauth2';
 
   seneca.add({role: plugin, cmd: 'authorize'}, cmd_authorize);
   seneca.add({role: plugin, cmd: 'token'}, cmd_token);
@@ -26,25 +22,37 @@ module.exports = function(options){
   };
 
   function _getAccessCodeForUser(user, cb) {
-    if (codes[user.id]) return cb(null, codes[user.id]);
+    seneca.make$(OAUTH2_ENTITY).list$({userid: user.id}, function(err, auths){
+      if (err) return cb(err);
+      if (auths.length > 0) return cb(null, auths[0].code);
 
-    var code = cuid();
-    codes[code] = user;
-    return cb(null, code);
+      var code = cuid();
+      var ucEnt = seneca.make$(OAUTH2_ENTITY);
+      ucEnt.userid = user.id;
+      ucEnt.code = code;
+      ucEnt.token = cuid();
+      ucEnt.created = new Date();
+      ucEnt.save$(function(err) {
+        if (err) return cb(err);
+        return cb(null, code);
+      });
+    });
   };
 
   function _getAccessTokenForAccessCode(code, cb) {
-    var user = codes[code];
-    if (!user) return cb('No access code found: ' + code);
-    var token = code + '-' + user.id;
-    tokens[token] = user;
-    return cb(null, token);
-  }
+    seneca.make$(OAUTH2_ENTITY).list$({code:code}, function(err, auths){
+      if (err) return cb(err);
+      if (auths.length === 0) return cb('No token found for code: ' + code);
+      return cb(null, auths[0].token);
+    });
+  };
 
   function _getUserForAccessToken(token, cb) {
-    var user = tokens[token];
-    if (!user) return cb('No token found: ' + token);
-    return cb(null, user);
+    seneca.make$(OAUTH2_ENTITY).list$({token:token}, function(err, auths){
+      if (err) return cb(err);
+      if (auths.length === 0) return cb('No user found for token: ' + token);
+      seneca.act({role: 'cd-users', cmd:'load', id: auths[0].userid}, cb);
+    });
   };
 
   function cmd_authorize(args, done) {

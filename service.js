@@ -23,19 +23,5 @@ seneca.use(require('./oauth2.js'), config.oauth2);
 seneca.use(require('./users.js'));
 seneca.use('user');
 
-
-// test stuff - do not commit
-var msg = { user: {id:'22da5bf6-859e-4e02-994f-8f9147b36bb0'},
-  cmd: 'authorize',
-  role: 'cd-oauth2',
-  response_type: 'code',
-  redirect_uri: 'http://localhost:4567/auth/coderdojo/callback',
-  scope: '',
-  client_id: 'coderdojoforums'
-};
-seneca.act(msg, function() {
-  console.log(arguments);
-});
-
 seneca.listen()
   .client({type: 'web', host: process.env.TARGETIP || '127.0.0.1', port: 10301, pin: 'role:cd-dojos,cmd:*'});
