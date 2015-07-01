@@ -131,15 +131,11 @@ module.exports = function(options) {
         user.is_under_13 = true;
       }
 
-      seneca.act({role: 'user', cmd: 'register'}, user ,function(err, data){
-        if(err){
-          return done(err);
-        }
+      seneca.act({role: 'user', cmd: 'register'}, user, function(err, data){
+        if(err) return done(err);
 
         //TODO update errors on front-end
-        if(!data.ok){
-          return done(data.why);
-        }
+        if(!data.ok) return done(data.why);
 
         profile.userId = data && data.user && data.user.id;
         profile.userType = data && data.user && data.user.initUserType && data.user.initUserType.name;
@@ -184,14 +180,20 @@ module.exports = function(options) {
       async.waterfall([
         async.apply(registerUser, false),
         addUserToParentsDojos
-      ], done);
+      ], function (err, res) {
+        if(err) return done(null, {error: err})
+        return done(null, res);
+      });
 
     } else if(initUserType === 'attendee-u13') {
       
       async.waterfall([
         async.apply(registerUser, true),
         addUserToParentsDojos
-      ], done)
+      ], function (err, res) {
+        if(err) return done(null, {error: err});
+        return done(null, res);
+      });
     }
   }
 
@@ -263,10 +265,7 @@ module.exports = function(options) {
       resolveChildren,
       resolveParents
       ],function(err, profile){
-        if(err){
-          return done(err);
-        }
-
+        if(err) return done(null, {error: err});
         return done(null, profile);
       });
 
