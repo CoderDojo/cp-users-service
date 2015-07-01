@@ -8,6 +8,7 @@ module.exports = function(options) {
   var _ = require('lodash');
   var async = require('async');
   var uuid = require('node-uuid');
+  var hiddenFields = require('./data/hidden-fields.js');
 
   var mentorPublicFields = [
     'name',
@@ -45,8 +46,15 @@ module.exports = function(options) {
     'attendee-o13': attendeeO13PublicFields
   };
 
-  var allowedOptionalFieldsYouth = ['dojos', 'linkedin', 'twitter', 'badges'];
-  var allowedOptionalFieldsChampion = ['notes', 'projects'];
+  ///var allowedOptionalFieldsYouth = ['dojos', 'linkedin', 'twitter', 'badges'];
+  var allowedOptionalFieldsYouth = _.filter(hiddenFields, function(field){
+    return _.contains(field.allowedUserTypes, 'attendee-o13');
+  });
+
+  //var allowedOptionalFieldsChampion = ['notes', 'projects'];
+  var allowedOptionalFieldsChampion = _.filter(hiddenFields, function(field){
+    return _.contains(field.allowedUserTypes, 'champion');
+  });
 
   var allowedOptionalFields = {
     'champion': allowedOptionalFieldsChampion,
@@ -70,6 +78,7 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'invite-parent-guardian'}, cmd_invite_parent_guardian);
   seneca.add({role: plugin, cmd: 'search'}, cmd_search);
   seneca.add({role: plugin, cmd: 'accept-invite'}, cmd_accept_invite);
+  seneca.add({role: plugin, cmd: 'load_hidden_fields'}, cmd_load_hidden_fields);
 
 
   function cmd_search(args, done){
@@ -750,6 +759,10 @@ module.exports = function(options) {
 
       parent.save$(done);
     }
+  }
+
+  function cmd_load_hidden_fields(args, done){
+    done(null, hiddenFields);
   }
 
 
