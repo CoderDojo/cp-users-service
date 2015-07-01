@@ -76,7 +76,7 @@ module.exports = function() {
     },
     oauth2: {
       clients: {
-        coderdojoforums: process.env.CODERDOJO_FORUMS_SECRET || 'ilikecode'
+        coderdojoadultforums: process.env.CODERDOJO_FORUMS_SECRET || 'ilikecode'
       }
     }
   };

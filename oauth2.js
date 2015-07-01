@@ -48,8 +48,6 @@ module.exports = function(options){
   };
 
   function cmd_authorize(args, done) {
-    console.log("AUTHORIZE", args, args.user);
-
     if (args.response_type !== 'code') {
       return done(null, {error: 'Only authorization code auth supported!'});
     }
@@ -79,8 +77,6 @@ module.exports = function(options){
   };
 
   function cmd_token(args, done) {
-    console.log("TOKEN - code", args.code);
-
     _getAccessTokenForAccessCode(args.code, function(err, access_token) {
       if (err) return done(null, {error: err, http$: {status: 500}});
 
@@ -92,10 +88,8 @@ module.exports = function(options){
   };
 
   function cmd_profile(args, done) {
-    console.log("PROFILE", args);
     _getUserForAccessToken(args.access_token, function(err, user) {
       if (err) return done(null, {error: err, http$: {status: 500}});
-      console.log("USER", user);
       var profile = {
         id: user.id,
         name: user.name,
