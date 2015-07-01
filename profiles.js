@@ -45,6 +45,14 @@ module.exports = function(options) {
     'attendee-o13': attendeeO13PublicFields
   };
 
+  var allowedOptionalFieldsYouth = ['dojos', 'linkedin', 'twitter', 'badges'];
+  var allowedOptionalFieldsChampion = ['notes', 'projects'];
+
+  var allowedOptionalFields = {
+    'champion': allowedOptionalFieldsChampion,
+    'attendee-o13': allowedOptionalFieldsYouth
+  };
+
   var immutableFields = ['email', 'userType'];
 
   var youthBlackList = ['name'];
@@ -252,7 +260,8 @@ module.exports = function(options) {
       privateFilter,
       publicProfilesFilter,
       under13Filter,
-      resolveChildren
+      resolveChildren,
+      resolveParents
       ],function(err, profile){
         if(err){
           return done(err);
@@ -331,10 +340,20 @@ module.exports = function(options) {
       return done(null, profile);
     }
 
-    function optionalFieldsFilter(profile, done){
+    function optionalFieldsFilter(profile, done) {
+      var allowedFields = [];
+      
+      if(_.contains(profile.userTypes, 'attendee-o13')){
+        allowedFields = _.union(allowedFields, allowedOptionalFields['attendee-o13']);
+      }
+
+      if(_.contains(profile.userTypes, 'champion')){
+        allowedFields = _.union(allowedFields, allowedOptionalFields['champion']);
+      }
+
       if(!profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin){
         _.forOwn(profile.optionalHiddenFields, function(value, key){
-          if(value){
+          if(value && _.contains(allowedFields, key)){
             profile = _.omit(profile, key);
           }
         });
@@ -437,6 +456,34 @@ module.exports = function(options) {
         });
       } else {
         profile.resolvedChildren = resolvedChildren;
+
+        return done(null, profile);
+      }
+    }
+
+    function resolveParents(profile, done){
+      var resolvedParents = [];
+
+      if(!_.isEmpty(profile.parents)){
+        async.each(profile.parents, function(parent, callback){
+          seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: parent}, function(err, results){
+            if(err){
+              return callback(err);
+            } 
+            resolvedParents.push(results[0]);
+            return callback();
+          });
+        }, function(err){
+          if(err){
+            return done(err);
+          }
+
+          profile.resolvedParents = resolvedParents;
+
+          return done(null, profile);
+        });
+      } else {
+        profile.resolvedParents = resolvedParents;
 
         return done(null, profile);
       }
