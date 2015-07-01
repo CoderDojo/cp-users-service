@@ -63,7 +63,6 @@ module.exports = function(options){
     _verifyClientId(args.client_id, function(err) {
       if (err) return done(null, {error: err});
 
-      // TODO - need a redirect here on login also..
       if (!args.user) {
         return done(null, {
           http$:{
