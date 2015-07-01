@@ -46,8 +46,15 @@ module.exports = function(options) {
     'attendee-o13': attendeeO13PublicFields
   };
 
-  var allowedOptionalFieldsYouth = ['dojos', 'linkedin', 'twitter', 'badges'];
-  var allowedOptionalFieldsChampion = ['notes', 'projects'];
+  ///var allowedOptionalFieldsYouth = ['dojos', 'linkedin', 'twitter', 'badges'];
+  var allowedOptionalFieldsYouth = _.filter(hiddenFields, function(field){
+    return _.contains(field.allowedUserTypes, 'attendee-o13');
+  });
+
+  //var allowedOptionalFieldsChampion = ['notes', 'projects'];
+  var allowedOptionalFieldsChampion = _.filter(hiddenFields, function(field){
+    return _.contains(field.allowedUserTypes, 'champion');
+  });
 
   var allowedOptionalFields = {
     'champion': allowedOptionalFieldsChampion,
