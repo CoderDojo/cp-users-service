@@ -67,7 +67,7 @@ module.exports = function(options){
       if (!args.user) {
         return done(null, {
           http$:{
-            redirect: '/login'
+            redirect: '/login?redirect=' + args['redirect_uri']
           }
         });
       }
