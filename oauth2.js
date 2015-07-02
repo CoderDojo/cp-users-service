@@ -100,7 +100,8 @@ module.exports = function(options){
       var profile = {
         id: user.id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        isAdmin: _.contains(user.roles, 'cdf-admin')
       };
       return done(null, profile);
     });
