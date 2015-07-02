@@ -43,11 +43,11 @@ function check_script {
 function run_js {
     JSFILE=$(get_abs_filename "$1") && shift
     check_script "$JSFILE"
-    node "$JSFILE" $@
+    node --debug "$JSFILE" $@
 }
 
 function exec_js {
     JSFILE=$(get_abs_filename "$1") && shift
     check_script "$JSFILE"
-    exec node "$JSFILE" $@
+    exec node --debug "$JSFILE" $@
 }

@@ -2,11 +2,14 @@
 
 var _ = require('lodash');
 var async = require('async');
+//var request
 
 module.exports = function(options){
   var seneca = this;
   var plugin = 'cd-users';
   var ENTITY_NS = 'sys/user';
+
+  console.log("#########options", options);
 
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'register'}, cmd_register);

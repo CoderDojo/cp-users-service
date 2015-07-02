@@ -38,6 +38,7 @@ module.exports = function() {
   return {
     'postgresql-store': pgConfig(),
     elasticsearch: esConfig(),
+    'recaptcha_secret_key': process.env.RECAPTCHA_SECRET_KEY,
     transport: {
       type: 'web',
       web: {
