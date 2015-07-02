@@ -1,7 +1,6 @@
 'use strict';
 
 require('newrelic');
-
 var _ =require('lodash');
 
 var config = require('./config/config.js')();
@@ -20,9 +19,9 @@ seneca.use('mail', config['mail']);
 seneca.use(require('./email-notifications.js'));
 seneca.use(require('./agreements.js'));
 seneca.use(require('./profiles.js'));
+seneca.use(require('./oauth2.js'), config.oauth2);
 seneca.use(require('./users.js'));
 seneca.use('user');
-
 
 seneca.listen()
   .client({type: 'web', host: process.env.TARGETIP || '127.0.0.1', port: 10301, pin: 'role:cd-dojos,cmd:*'});

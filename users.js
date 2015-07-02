@@ -19,7 +19,6 @@ module.exports = function(options){
   function cmd_load(args, done) {
     var seneca = this;
     var id = args.id;
-
     var userEntity = seneca.make(ENTITY_NS);
     userEntity.load$(id, done);
   }
@@ -86,7 +85,7 @@ module.exports = function(options){
 
   function cmd_get_users_by_emails(args, done){
     var seneca = this, query = {};
-    
+
     query.email = new RegExp(args.email, 'i');
     query.limit$ = query.limit$ ? query.limit$ : 10;
 
@@ -126,8 +125,9 @@ module.exports = function(options){
     ];
     done(null, initUserTypes);
   }
-  
+
   return {
     name: plugin
   };
+
 };

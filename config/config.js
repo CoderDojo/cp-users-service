@@ -12,7 +12,7 @@ module.exports = function() {
     }
     if (process.env.TARGETIP) {
       return process.env.TARGETIP;
-    } 
+    }
     return '127.0.0.1';
   }
 
@@ -72,6 +72,11 @@ module.exports = function() {
       web: {
         host: '0.0.0.0',
         port: 10303
+      }
+    },
+    oauth2: {
+      clients: {
+        coderdojoadultforums: process.env.CODERDOJO_FORUMS_SECRET || 'ilikecode'
       }
     }
   };
