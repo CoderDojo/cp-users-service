@@ -55,7 +55,8 @@ function test_data {
 }
 
 system_params
-postgres_test_data
+# Don't import this test users for now.
+#postgres_test_data
 delete_elasticsearch_index
 test_data
 
