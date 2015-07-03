@@ -36,7 +36,7 @@ module.exports = function(options){
     var seneca = this;
 
     if(!args['g-recaptcha-response']){
-      done(new Error('Error with captcha'));
+      return done(new Error('Error with captcha'));
     }
 
     var secret = so['recaptcha_secret_key'];
