@@ -1,7 +1,7 @@
 'use strict';
 
 var seneca = require('seneca')(),
-    config = require(__dirname + '/../config/config.js')(),
+    config = require(__dirname + '/config/config.js')(),
     util   = require('util'),
     async  = require('async'),
     _      = require('lodash'),
