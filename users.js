@@ -28,13 +28,41 @@ module.exports = function(options){
     ], done);
   }
 
+  function updateSalesForce(user) {
+    // ideally would be done in a workqueue
+    process.nextTick(function() {
+      if (process.env.SALESFORCE_ENABLED !== 'true') return;
+
+      var lead = {
+        PlatformId__c: user.id,
+        PlatformUrl__c: 'https://zen.coderdojo.com/dashboard/profile/' + user.id,
+        Email: user.email,
+        LastName: user.name,
+        Company: 'n/a'
+      };
+
+      seneca.act('role:cd-salesforce,cmd:save_lead', {userId: user.id, lead: lead}, function (err, res){
+        if (err) return seneca.log.error('Error creating lead in SalesForce!', err);
+        seneca.log.info('Created lead in SalesForce', lead, res);
+      });
+    });
+  }
+
   function cmd_register(args, done) {
+    // TODO - this is a bit of a temporary hack until phase1 catches up with master!
+    // Then the champion registers via the 'Start Dojo' wizard, we need to know if it's
+    // a champion that's registering and if so, update salesforce
+    var isChampion = args.isChampion === true;
+    delete args.isChampion;
+
     //Roles Available: basic-user, mentor, champion, cdf-admin
     var seneca = this;
     args.roles = ['basic-user'];
     args.mailingList = (args.mailingList) ? 1 : 0;
     seneca.act({role:'user', cmd:'register'}, args, function(err, response) {
       if(err) return done(err);
+      if (isChampion === true) updateSalesForce(response.user);
+
       done(null, response);
     });
   }
@@ -62,7 +90,7 @@ module.exports = function(options){
 
   function cmd_get_users_by_emails(args, done){
     var seneca = this, query = {};
-    
+
     query.email = new RegExp(args.email, 'i');
     query.limit$ = query.limit$ ? query.limit$ : 10;
 

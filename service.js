@@ -20,4 +20,5 @@ seneca.use(require('./agreements.js'));
 seneca.use(require('./users.js'));
 seneca.use('user');
 
-seneca.listen();
+seneca.listen()
+  .client({type: 'web', host: process.env.TARGETIP || '127.0.0.1', port: 10304, pin: 'role:cd-salesforce,cmd:*'});
