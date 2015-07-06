@@ -8,6 +8,7 @@ module.exports = function(options){
   var seneca = this;
   var plugin = 'cd-users';
   var ENTITY_NS = 'sys/user';
+  var DOJO_LEADS_ENTITY_NS = "cd/dojoleads";
 
   var so = seneca.options();
 
@@ -15,6 +16,7 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'register'}, cmd_register);
   seneca.add({role: plugin, cmd: 'promote'}, cmd_promote);
   seneca.add({role: plugin, cmd: 'get_users_by_emails'}, cmd_get_users_by_emails);
+  seneca.add({role: plugin, cmd: 'is_champion'}, cmd_is_champion);
 
   function cmd_list(args, done){
     var seneca = this;
@@ -119,6 +121,68 @@ module.exports = function(options){
       users = _.uniq(users, 'email');
 
       done(null, users);
+    });
+  }
+
+  /**
+   * This function returns if true if a user is champion and it's dojos if any.
+   */
+  function cmd_is_champion(args, done){
+    var seneca = this;
+
+    seneca.make(ENTITY_NS).load$({id: args.id}, function(err, user) {
+      if (err) {
+        return done(err)
+      }
+
+      user = user.data$();
+
+      var query = {
+        query: {
+          filtered: {
+            query: {
+              match_all: {}
+            },
+            filter: {
+              bool: {
+                must: [{
+                  term: {userId: args.id}
+                }]
+              }
+            }
+          }
+        }
+      };
+
+      seneca.act({
+        role: 'cd-dojos',
+        cmd: 'search',
+        search: query,
+        type: 'cd_dojoleads',
+        user: user
+      }, function (err, dojoLeads) {
+        if (err) {
+          return done(err)
+        }
+
+        if (dojoLeads.total > 0) {
+          seneca.act({role: 'cd-dojos', cmd: 'my_dojos', user: user}, function (err, myDojos) {
+            if (err) {
+              return done(err)
+            }
+
+            return done(null, {
+              isChampion: true,
+              dojos: myDojos
+            });
+          });
+        } else {
+          return done(null, {isChampion: false});
+        }
+
+
+      });
+
     });
   }
 
