@@ -2,11 +2,14 @@
 
 var _ = require('lodash');
 var async = require('async');
+var request = require('request');
 
 module.exports = function(options){
   var seneca = this;
   var plugin = 'cd-users';
   var ENTITY_NS = 'sys/user';
+
+  var so = seneca.options();
 
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'register'}, cmd_register);
@@ -57,14 +60,56 @@ module.exports = function(options){
 
     //Roles Available: basic-user, mentor, champion, cdf-admin
     var seneca = this;
-    args.roles = ['basic-user'];
-    args.mailingList = (args.mailingList) ? 1 : 0;
-    seneca.act({role:'user', cmd:'register'}, args, function(err, response) {
-      if(err) return done(err);
-      if (isChampion === true) updateSalesForce(response.user);
 
-      done(null, response);
-    });
+    if(!args['g-recaptcha-response']){
+      return done(new Error('Error with captcha'));
+    }
+
+    var secret = so['recaptcha_secret_key'];
+    var captchaResponse = args['g-recaptcha-response'];
+
+    var postData = {
+                    url: 'https://www.google.com/recaptcha/api/siteverify',
+                    form: {
+                      response: captchaResponse,
+                      secret: secret
+                    }
+                  };
+
+    function verifyCaptcha(done){
+      request.post(postData, function(err, response, body){
+        if(err){
+          return done(err);
+        }
+
+        body = JSON.parse(body);
+
+        if(!body.success){
+          return done(JSON.stringify(body['error-codes']));
+        }
+
+        return done(null, body.success);
+      });
+    }
+
+    function registerUser(success, done){
+      args = _.omit(args, ['g-recaptcha-response']);
+
+      args.roles = ['basic-user'];
+      args.mailingList = (args.mailingList) ? 1 : 0;
+      seneca.act({role:'user', cmd:'register'}, args, function(err, response) {
+        if(err) return done(err);
+        if (isChampion === true) updateSalesForce(response.user);
+
+        done(null, response);
+      });
+
+    }
+
+    async.waterfall([
+      verifyCaptcha,
+      registerUser
+    ], done);
   }
 
   function cmd_promote(args, done) {
