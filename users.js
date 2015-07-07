@@ -8,15 +8,28 @@ module.exports = function(options){
   var seneca = this;
   var plugin = 'cd-users';
   var ENTITY_NS = 'sys/user';
-  var DOJO_LEADS_ENTITY_NS = "cd/dojoleads";
 
   var so = seneca.options();
 
+  seneca.add({role: plugin, cmd: 'load'}, cmd_load);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'register'}, cmd_register);
   seneca.add({role: plugin, cmd: 'promote'}, cmd_promote);
   seneca.add({role: plugin, cmd: 'get_users_by_emails'}, cmd_get_users_by_emails);
   seneca.add({role: plugin, cmd: 'is_champion'}, cmd_is_champion);
+
+  function cmd_load(args, done){
+    var seneca = this;
+
+    async.waterfall([
+      function(done) {
+        seneca.make(ENTITY_NS).load$({id: args.id}, done);
+      },
+      function(user, done) {
+        return done(null, user.data$());
+      }
+    ], done);
+  }
 
   function cmd_list(args, done){
     var seneca = this;
