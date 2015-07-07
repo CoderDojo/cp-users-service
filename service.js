@@ -21,4 +21,5 @@ seneca.use(require('./users.js'));
 seneca.use('user');
 
 seneca.listen()
-  .client({type: 'web', host: process.env.TARGETIP || '127.0.0.1', port: 10304, pin: 'role:cd-salesforce,cmd:*'});
+  .client({type: 'web', host: process.env.TARGETIP || '127.0.0.1', port: 10304, pin: 'role:cd-salesforce,cmd:*'})
+  .client({type: 'web', host: process.env.TARGETIP || '127.0.0.1', port: 10301, pin: 'role:cd-dojos,cmd:*'});
