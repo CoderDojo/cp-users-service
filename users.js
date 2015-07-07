@@ -31,23 +31,40 @@ module.exports = function(options){
     ], done);
   }
 
+  // We create an Account in Salesforce with the champion information,
+  // and we also create a Lead
   function updateSalesForce(user) {
     // ideally would be done in a workqueue
     process.nextTick(function() {
       if (process.env.SALESFORCE_ENABLED !== 'true') return;
 
+      var account = {
+        PlatformId__c: user.id,
+        PlatformUrl__c: 'https://zen.coderdojo.com/dashboard/profile/' + user.id,
+        Email__c: user.email,
+        Name: user.name,
+        //RecordTypeId: "0121100000051tU" // TODO - not working
+      };
+
+      seneca.act('role:cd-salesforce,cmd:save_account', {userId: user.id, account:account}, function (err, res){
+        if (err) return seneca.log.error('Error creating Account in SalesForce!', err);
+        seneca.log.info('Created Account in SalesForce', account, res);
+      });
+
       var lead = {
         PlatformId__c: user.id,
         PlatformUrl__c: 'https://zen.coderdojo.com/dashboard/profile/' + user.id,
-        Email: user.email,
+        Email__c: user.email,
         LastName: user.name,
-        Company: 'n/a'
+        //RecordTypeId: "0121100000051tU", // TODO - not working
+        Company: '<n/a>'
       };
 
-      seneca.act('role:cd-salesforce,cmd:save_lead', {userId: user.id, lead: lead}, function (err, res){
-        if (err) return seneca.log.error('Error creating lead in SalesForce!', err);
-        seneca.log.info('Created lead in SalesForce', lead, res);
+      seneca.act('role:cd-salesforce,cmd:save_lead', {userId: user.id, lead:lead}, function (err, res){
+        if (err) return seneca.log.error('Error creating Lead in SalesForce!', err);
+        seneca.log.info('Created Lead in SalesForce', account, res);
       });
+
     });
   }
 
@@ -99,7 +116,8 @@ module.exports = function(options){
       args.mailingList = (args.mailingList) ? 1 : 0;
       seneca.act({role:'user', cmd:'register'}, args, function(err, response) {
         if(err) return done(err);
-        if (isChampion === true) updateSalesForce(response.user);
+        //console.log("RESPONSE", response);
+        if (response.ok === true && isChampion === true) updateSalesForce(response.user);
 
         done(null, response);
       });
