@@ -95,11 +95,15 @@ module.exports = function(options){
       seneca.act({role:'user', cmd:'register'}, args, function (err, registerResponse) {
         if(err) return done(err);
         var user = registerResponse.user;
+
         //Create user profile based on initial user type.
+        var userType = 'attendee-o13';
+        if (user.initUserType) userType.name = user.initUserType.name
+
         var profileData = {
           userId:user.id,
           email:user.email,
-          userType:user.initUserType.name
+          userType: userType
         };
         seneca.act({role:'cd-profiles', cmd:'save', profile: profileData}, function (err, profile) {
           if(err) return done(err);
