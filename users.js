@@ -50,10 +50,48 @@ module.exports = function(options){
     ], done);
   }
 
+  // We create an Account in Salesforce with the champion information and we also create a Lead.
+  // The user.id is used for both Account and Leads.
+  function updateSalesForce(user) {
+    // ideally would be done in a workqueue
+    process.nextTick(function() {
+      if (process.env.SALESFORCE_ENABLED !== 'true') return;
+
+      var account = {
+        PlatformId__c: user.id,
+        PlatformUrl__c: 'https://zen.coderdojo.com/dashboard/profile/' + user.id,
+        Email__c: user.email,
+        Name: user.name,
+        //RecordTypeId: "0121100000051tU" // TODO - not working
+      };
+
+      seneca.act('role:cd-salesforce,cmd:save_account', {userId: user.id, account:account}, function (err, res){
+        if (err) return seneca.log.error('Error creating Account in SalesForce!', err);
+        seneca.log.info('Created Account in SalesForce', account, res);
+
+        var lead = {
+          PlatformId__c: user.id,
+          PlatformUrl__c: 'https://zen.coderdojo.com/dashboard/profile/' + user.id,
+          Email__c: user.email,
+          LastName: user.name,
+          //RecordTypeId: "0121100000051tU", // TODO - not working
+          Company: '<n/a>',
+          "ChampionAccount__c": res.id$
+        };
+
+        seneca.act('role:cd-salesforce,cmd:save_lead', {userId: user.id, lead:lead}, function (err, res){
+          if (err) return seneca.log.error('Error creating Lead in SalesForce!', err);
+          seneca.log.info('Created Lead in SalesForce', account, res);
+        });
+      });
+    });
+  }
+
   function cmd_register(args, done) {
-    //Roles Available: basic-user, cdf-admin
-    //TO-DO: define basic-user and cdf-admin permissions
-    //cdf-admin role should give user global access to the system.
+    var isChampion = args.isChampion === true;
+    delete args.isChampion;
+
+    //Roles Available: basic-user, mentor, champion, cdf-admin
     var seneca = this;
 
     if(!args['g-recaptcha-response']){
@@ -98,7 +136,7 @@ module.exports = function(options){
 
         //Create user profile based on initial user type.
         var userType = 'attendee-o13';
-        if (user.initUserType) userType.name = user.initUserType.name
+        if (user.initUserType) userType.name = user.initUserType.name;
 
         var profileData = {
           userId:user.id,
@@ -107,6 +145,7 @@ module.exports = function(options){
         };
         seneca.act({role:'cd-profiles', cmd:'save', profile: profileData}, function (err, profile) {
           if(err) return done(err);
+          if (registerResponse.ok === true && isChampion === true) updateSalesForce(registerResponse.user);
           done(null, registerResponse);
         });
       });
