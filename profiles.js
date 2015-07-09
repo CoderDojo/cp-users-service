@@ -80,6 +80,7 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'accept-invite'}, cmd_accept_invite);
   seneca.add({role: plugin, cmd: 'load_hidden_fields'}, cmd_load_hidden_fields);
   seneca.add({role: plugin, cmd: 'list_query'}, cmd_list_query);
+  seneca.add({role: plugin, cmd: 'change_avatar'}, cmd_change_avatar);
 
 
   function cmd_search(args, done){
@@ -764,6 +765,11 @@ module.exports = function(options) {
 
   function cmd_load_hidden_fields(args, done){
     done(null, hiddenFields);
+  }
+
+  function cmd_change_avatar(args, done){
+    console.log('AVATAR CHANGED');
+    done(null, 'avatar changed');
   }
 
   function cmd_list_query(args, done) {
