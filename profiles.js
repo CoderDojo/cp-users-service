@@ -79,6 +79,7 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'search'}, cmd_search);
   seneca.add({role: plugin, cmd: 'accept-invite'}, cmd_accept_invite);
   seneca.add({role: plugin, cmd: 'load_hidden_fields'}, cmd_load_hidden_fields);
+  seneca.add({role: plugin, cmd: 'list_query'}, cmd_list_query);
 
 
   function cmd_search(args, done){
@@ -763,6 +764,13 @@ module.exports = function(options) {
 
   function cmd_load_hidden_fields(args, done){
     done(null, hiddenFields);
+  }
+
+  function cmd_list_query(args, done) {
+    var query = args.query;
+
+    var profilesEntity = seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY);
+    profilesEntity.list$(query, done);
   }
 
 

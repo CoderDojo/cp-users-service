@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS cd_profiles
   programming_languages text[],
   notes character varying,
   projects text[],
-  badges text[],
+  badges json[],
   countryName character varying,
   countryNumber character varying,
   continent character varying,
