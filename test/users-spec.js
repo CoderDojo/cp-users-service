@@ -19,6 +19,7 @@ if (using_postgres) seneca.use('postgresql-store', config["postgresql-store"]);
 seneca
   .use(__dirname + '/../users.js')
   .use(__dirname + '/../agreements.js')
+  .use(__dirname + '/../profiles.js')
   .use('user');
 
 var userEnt = seneca.make$('sys/user'),
@@ -91,12 +92,13 @@ describe('Users Microservice test', function(){
 
   describe('Register', function(){
     it('save user to db', function(done){
-      
+
       var user = {
         "name": "test6",
         "email": "test6@example.com",
         "password": "pass6",
         "termsConditionsAccepted": true,
+        "initUserType": "mentor",
         "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
       }
 

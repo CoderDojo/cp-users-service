@@ -8,7 +8,6 @@ module.exports = function(options){
   var seneca = this;
   var plugin = 'cd-users';
   var ENTITY_NS = 'sys/user';
-
   var so = seneca.options();
 
   seneca.add({role: plugin, cmd: 'load'}, cmd_load);
@@ -16,10 +15,15 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'register'}, cmd_register);
   seneca.add({role: plugin, cmd: 'promote'}, cmd_promote);
   seneca.add({role: plugin, cmd: 'get_users_by_emails'}, cmd_get_users_by_emails);
+  seneca.add({role: plugin, cmd: 'update'}, cmd_update);
+  seneca.add({role: plugin, cmd: 'get_init_user_types'}, cmd_get_init_user_types);
   seneca.add({role: plugin, cmd: 'is_champion'}, cmd_is_champion);
 
-  function cmd_load(args, done){
+  function cmd_load(args, done) {
     var seneca = this;
+    var id = args.id;
+    var userEntity = seneca.make(ENTITY_NS);
+    userEntity.load$(id, done);
 
     async.waterfall([
       function(done) {
@@ -84,9 +88,6 @@ module.exports = function(options){
   }
 
   function cmd_register(args, done) {
-    // TODO - this is a bit of a temporary hack until phase1 catches up with master!
-    // Then the champion registers via the 'Start Dojo' wizard, we need to know if it's
-    // a champion that's registering and if so, update salesforce
     var isChampion = args.isChampion === true;
     delete args.isChampion;
 
@@ -101,12 +102,12 @@ module.exports = function(options){
     var captchaResponse = args['g-recaptcha-response'];
 
     var postData = {
-                    url: 'https://www.google.com/recaptcha/api/siteverify',
-                    form: {
-                      response: captchaResponse,
-                      secret: secret
-                    }
-                  };
+      url: 'https://www.google.com/recaptcha/api/siteverify',
+      form: {
+        response: captchaResponse,
+        secret: secret
+      }
+    };
 
     function verifyCaptcha(done){
       request.post(postData, function(err, response, body){
@@ -129,12 +130,25 @@ module.exports = function(options){
 
       args.roles = ['basic-user'];
       args.mailingList = (args.mailingList) ? 1 : 0;
-      seneca.act({role:'user', cmd:'register'}, args, function(err, response) {
+      seneca.act({role:'user', cmd:'register'}, args, function (err, registerResponse) {
         if(err) return done(err);
-        if (response.ok === true && isChampion === true) updateSalesForce(response.user);
-        done(null, response);
-      });
+        var user = registerResponse.user;
 
+        //Create user profile based on initial user type.
+        var userType = 'attendee-o13';
+        if (user.initUserType) userType.name = user.initUserType.name;
+
+        var profileData = {
+          userId:user.id,
+          email:user.email,
+          userType: userType
+        };
+        seneca.act({role:'cd-profiles', cmd:'save', profile: profileData}, function (err, profile) {
+          if(err) return done(err);
+          if (registerResponse.ok === true && isChampion === true) updateSalesForce(registerResponse.user);
+          done(null, registerResponse);
+        });
+      });
     }
 
     async.waterfall([
@@ -183,6 +197,28 @@ module.exports = function(options){
 
       done(null, users);
     });
+  }
+
+  function cmd_update(args, done) {
+    var seneca = this;
+    var user = args.user;
+
+    var userEntity = seneca.make(ENTITY_NS);
+
+    userEntity.save$(user, done);
+  }
+
+  function cmd_get_init_user_types(args, done) {
+    var seneca = this;
+    //These types can be selected during registration on the platform.
+    var initUserTypes = [
+      {title: 'Youth Under 13', name: 'attendee-u13'},
+      {title: 'Youth Over 13', name: 'attendee-o13'},
+      {title: 'Parent/Guardian', name: 'parent-guardian'},
+      {title: 'Mentor/Volunteer', name: 'mentor'},
+      {title: 'Champion', name: 'champion'}
+    ];
+    done(null, initUserTypes);
   }
 
   /**
@@ -240,14 +276,12 @@ module.exports = function(options){
         } else {
           return done(null, {isChampion: false});
         }
-
-
       });
-
     });
   }
 
   return {
     name: plugin
   };
+
 };
