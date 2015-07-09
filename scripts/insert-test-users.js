@@ -19,6 +19,7 @@ seneca.use('elasticsearch', _.defaults(config["elasticsearch"], ESOptions));
 
 seneca
   .use('user')
+  .use('../profiles.js')
   .use(require('../test/lib/test-user-data.js'));
 
 seneca.ready(function() {

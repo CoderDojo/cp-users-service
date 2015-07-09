@@ -1,3 +1,5 @@
+'use strict';
+var path = require('path');
 
 module.exports = function() {
 
@@ -38,12 +40,44 @@ module.exports = function() {
   return {
     'postgresql-store': pgConfig(),
     elasticsearch: esConfig(),
+    'email-notifications': {
+      sendemail:true,
+      email: {
+        'invite-parent-guardian':{
+          subject:'test'
+        }
+      }
+    },
+    mail: {
+      folder: path.resolve(__dirname + '/../email-templates'),
+      mail: {
+        from:'no-reply@coderdojo.com'
+      },
+      config: {
+        host: process.env.MAIL_HOST,
+        port: process.env.MAIL_PORT,
+        auth: {
+          user: process.env.MAIL_USER,
+          pass: process.env.MAIL_PASS
+        }
+        // service: 'Gmail',
+        // auth: {
+        //   user: 'youremail@example.com',
+        //   pass: 'yourpass'
+        // }
+      }
+    },
     'recaptcha_secret_key': process.env.RECAPTCHA_SECRET_KEY,
     transport: {
       type: 'web',
       web: {
         host: '0.0.0.0',
         port: 10303
+      }
+    },
+    oauth2: {
+      clients: {
+        coderdojoadultforums: process.env.CODERDOJO_FORUMS_SECRET || 'ilikecode'
       }
     }
   };
