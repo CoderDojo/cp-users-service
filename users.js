@@ -2,11 +2,13 @@
 
 var _ = require('lodash');
 var async = require('async');
+var request = require('request');
 
 module.exports = function(options){
   var seneca = this;
   var plugin = 'cd-users';
   var ENTITY_NS = 'sys/user';
+  var so = seneca.options();
 
   seneca.add({role: plugin, cmd: 'load'}, cmd_load);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
@@ -15,12 +17,22 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'get_users_by_emails'}, cmd_get_users_by_emails);
   seneca.add({role: plugin, cmd: 'update'}, cmd_update);
   seneca.add({role: plugin, cmd: 'get_init_user_types'}, cmd_get_init_user_types);
+  seneca.add({role: plugin, cmd: 'is_champion'}, cmd_is_champion);
 
   function cmd_load(args, done) {
     var seneca = this;
     var id = args.id;
     var userEntity = seneca.make(ENTITY_NS);
     userEntity.load$(id, done);
+
+    async.waterfall([
+      function(done) {
+        seneca.make(ENTITY_NS).load$({id: args.id}, done);
+      },
+      function(user, done) {
+        return done(null, user.data$());
+      }
+    ], done);
   }
 
   function cmd_list(args, done){
@@ -43,23 +55,63 @@ module.exports = function(options){
     //TO-DO: define basic-user and cdf-admin permissions
     //cdf-admin role should give user global access to the system.
     var seneca = this;
-    args.roles = ['basic-user'];
-    args.mailingList = (args.mailingList) ? 1 : 0;
 
-    seneca.act({role:'user', cmd:'register'}, args, function (err, registerResponse) {
-      if(err) return done(err);
-      var user = registerResponse.user;
-      //Create user profile based on initial user type.
-      var profileData = {
-        userId:user.id,
-        email:user.email,
-        userType:user.initUserType.name
-      };
-      seneca.act({role:'cd-profiles', cmd:'save', profile: profileData}, function (err, profile) {
-        if(err) return done(err);
-        done(null, registerResponse);
+    if(!args['g-recaptcha-response']){
+      return done(new Error('Error with captcha'));
+    }
+
+    var secret = so['recaptcha_secret_key'];
+    var captchaResponse = args['g-recaptcha-response'];
+
+    var postData = {
+      url: 'https://www.google.com/recaptcha/api/siteverify',
+      form: {
+        response: captchaResponse,
+        secret: secret
+      }
+    };
+
+    function verifyCaptcha(done){
+      request.post(postData, function(err, response, body){
+        if(err){
+          return done(err);
+        }
+
+        body = JSON.parse(body);
+
+        if(!body.success){
+          return done(JSON.stringify(body['error-codes']));
+        }
+
+        return done(null, body.success);
       });
-    });
+    }
+
+    function registerUser(success, done){
+      args = _.omit(args, ['g-recaptcha-response']);
+
+      args.roles = ['basic-user'];
+      args.mailingList = (args.mailingList) ? 1 : 0;
+      seneca.act({role:'user', cmd:'register'}, args, function (err, registerResponse) {
+        if(err) return done(err);
+        var user = registerResponse.user;
+        //Create user profile based on initial user type.
+        var profileData = {
+          userId:user.id,
+          email:user.email,
+          userType:user.initUserType.name
+        };
+        seneca.act({role:'cd-profiles', cmd:'save', profile: profileData}, function (err, profile) {
+          if(err) return done(err);
+          done(null, registerResponse);
+        });
+      });
+    }
+
+    async.waterfall([
+      verifyCaptcha,
+      registerUser
+    ], done);
   }
 
   function cmd_promote(args, done) {
@@ -124,6 +176,65 @@ module.exports = function(options){
       {title: 'Champion', name: 'champion'}
     ];
     done(null, initUserTypes);
+  }
+
+  /**
+   * This function returns if true if a user is champion and it's dojos if any.
+   */
+  function cmd_is_champion(args, done){
+    var seneca = this;
+
+    seneca.make(ENTITY_NS).load$({id: args.id}, function(err, user) {
+      if (err) {
+        return done(err)
+      }
+
+      user = user.data$();
+
+      var query = {
+        query: {
+          filtered: {
+            query: {
+              match_all: {}
+            },
+            filter: {
+              bool: {
+                must: [{
+                  term: {userId: args.id}
+                }]
+              }
+            }
+          }
+        }
+      };
+
+      seneca.act({
+        role: 'cd-dojos',
+        cmd: 'search',
+        search: query,
+        type: 'cd_dojoleads',
+        user: user
+      }, function (err, dojoLeads) {
+        if (err) {
+          return done(err)
+        }
+
+        if (dojoLeads.total > 0) {
+          seneca.act({role: 'cd-dojos', cmd: 'my_dojos', user: user}, function (err, myDojos) {
+            if (err) {
+              return done(err)
+            }
+
+            return done(null, {
+              isChampion: true,
+              dojos: myDojos
+            });
+          });
+        } else {
+          return done(null, {isChampion: false});
+        }
+      });
+    });
   }
 
   return {
