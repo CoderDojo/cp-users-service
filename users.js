@@ -97,9 +97,7 @@ module.exports = function(options){
         var user = registerResponse.user;
 
         //Create user profile based on initial user type.
-        var userType = {
-          name: 'attendee-o13'
-        };
+        var userType = 'attendee-o13';
         if (user.initUserType) userType.name = user.initUserType.name
 
         var profileData = {
