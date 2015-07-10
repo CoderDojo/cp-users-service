@@ -18,7 +18,7 @@ seneca.use(require('./es.js'));
 seneca.use('mail', config['mail']);
 seneca.use(require('./email-notifications.js'));
 seneca.use(require('./agreements.js'));
-seneca.use(require('./profiles.js'));
+seneca.use(require('./profiles.js'), {postgresql: config["postgresql-store"]});
 seneca.use(require('./oauth2.js'), config.oauth2);
 seneca.use(require('./users.js'));
 seneca.use('user');
