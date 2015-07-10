@@ -132,8 +132,9 @@ module.exports = function(options){
       args.mailingList = (args.mailingList) ? 1 : 0;
       seneca.act({role:'user', cmd:'register'}, args, function (err, registerResponse) {
         if(err) return done(err);
-        var user = registerResponse.user;
+        if(!registerResponse.ok) return done(new Error(registerResponse.why));
 
+        var user = registerResponse.user;
         //Create user profile based on initial user type.
         var userType = 'attendee-o13';
         if (user.initUserType) userType.name = user.initUserType.name;
