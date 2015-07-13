@@ -79,6 +79,16 @@ module.exports = function() {
       clients: {
         coderdojoadultforums: process.env.CODERDOJO_FORUMS_SECRET || 'ilikecode'
       }
-    }
+    },
+    supportedLanguages:[{
+        'name': 'English',
+        'code': 'en_US',
+        'country': 'United States'
+      },
+      {
+        'name': 'Deutsch',
+        'code': 'de_DE',
+        'country': 'Deutschland'
+      }]
   };
-}
+};

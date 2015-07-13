@@ -9,6 +9,9 @@ module.exports = function(options) {
   var async = require('async');
   var uuid = require('node-uuid');
   var hiddenFields = require('./data/hidden-fields.js');
+  var locale = require('locale');
+  var localeUtils = require('./locale.js');
+  var sprintf = require('sprintf-js').sprintf;
 
   var mentorPublicFields = [
     'name',
@@ -107,6 +110,7 @@ module.exports = function(options) {
       seneca.act({role: 'cd-profiles', cmd: 'list', query: query, user: args.user}, done);
     });
   }
+
 
   //TODO: clean up with async
 
@@ -509,8 +513,15 @@ module.exports = function(options) {
     var data = args.data;
     var invitedParentEmail = data.invitedParentEmail;
     var childId = data.childId;
+    var supportedLanguages = seneca.options().supportedLanguages;
     var requestingParentId = args.user;
-    
+
+    var availableLocales = new locale.Locales(_.pluck(supportedLanguages, 'code'));
+    var requestLocales = new locale.Locales(args.locale);
+    var localeCode = requestLocales.best(availableLocales).code;
+    var translator = localeUtils.getTranslator(localeCode);
+   
+
     var childQuery = {
       userId: childId
     };
@@ -599,11 +610,37 @@ module.exports = function(options) {
       if(!childProfile || !parentProfile){
         return done(new Error('An error has occured while sending email'));
       }
-
-      var content = {
+      var details = {
         link: 'http://localhost:8000/accept-parent-guardian-request/' + parentProfile.userId + '/' + childProfile.userId + '/' + inviteToken,
         childName: childProfile.name,
         parentName: parentProfile.name 
+      };
+
+      var translatedFooterText = {};
+
+      translatedFooterText.line1  = translator.translate('footer.closing').fetch();
+      translatedFooterText.line1 = sprintf(translatedFooterText.line1, 2015);
+      translatedFooterText.line2 = translator.translate('Our mailing address is').fetch();
+      translatedFooterText.line3 = translator.translate('The CoderDojo Foundation').fetch();
+      translatedFooterText.line4 = translator.translate('Unit 1, The CHQ Building, Custom House Quay').fetch();
+      translatedFooterText.line5 = translator.translate('Dublin 1').fetch();
+      translatedFooterText.line6 = translator.translate('Ireland').fetch();
+
+
+
+      var translatedBody = translator.translate('invite.parent');
+
+      translatedBody = translatedBody.fetch();
+      translatedBody = sprintf(translatedBody, details.childName, details.link);
+
+      var content = {
+        body: translatedBody, 
+        line1: sprintf(translatedFooterText.line1, 2015),
+        line2: translatedFooterText.line2,
+        line3: translatedFooterText.line3,
+        line4: translatedFooterText.line4,
+        line5: translatedFooterText.line5,
+        line6: translatedFooterText.line6
       };
 
 
