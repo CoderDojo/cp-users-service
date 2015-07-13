@@ -9,6 +9,9 @@ module.exports = function(options) {
   var async = require('async');
   var uuid = require('node-uuid');
   var hiddenFields = require('./data/hidden-fields.js');
+  var fs = require('fs');
+  var path = require('path');
+  var so = seneca.options(); 
 
   var mentorPublicFields = [
     'name',
@@ -607,7 +610,19 @@ module.exports = function(options) {
       };
 
 
-      var code = 'invite-parent-guardian';
+      var code = 'invite-parent-guardian-' + args.locality;
+      var templates = {};
+
+      try {
+        templates.html = fs.statSync(path.join(so.mail.folder , code, 'html.ejs'));
+        templates.text = fs.statSync(path.join(so.mail.folder , code, 'text.ejs'));
+
+
+      } catch(err){
+        console.log(err);
+        code = 'invite-parent-guardian-' + 'en_US';
+      }
+
       var to =  inviteRequest.invitedParentEmail;
 
       seneca.act({role:'email-notifications', cmd: 'send', to:to, content:content, code: code}, done);
