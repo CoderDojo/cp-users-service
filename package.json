@@ -19,11 +19,14 @@
     "async": "0.9.0",
     "cuid": "1.2.5",
     "ejs": "1.0.0",
+    "jed": "1.0.2",
     "js-yaml": "3.2.7",
+    "locale": "0.0.20",
     "lodash": "3.7.0",
     "newrelic": "1.19.2",
     "node-uuid": "1.4.3",
     "optimist": "0.6.1",
+    "po2json": "^0.4.1",
     "postgrator": "2.2.0",
     "request": "2.58.0",
     "seneca": "0.6.1",
@@ -31,7 +34,8 @@
     "seneca-mail": "git://github.com/iantocristian/seneca-mail.git#0.1.6",
     "seneca-postgresql-store": "git://github.com/iantocristian/seneca-postgresql-store.git",
     "seneca-user": "0.2.10",
-    "shortid": "2.2.2"
+    "shortid": "2.2.2",
+    "sprintf-js": "^1.0.3"
   },
   "devDependencies": {
     "mocha": "2.2.4",
