@@ -603,10 +603,12 @@ module.exports = function(options) {
         return done(new Error('An error has occured while sending email'));
       }
 
+      //Externalize year
       var content = {
         link: 'http://localhost:8000/accept-parent-guardian-request/' + parentProfile.userId + '/' + childProfile.userId + '/' + inviteToken,
         childName: childProfile.name,
-        parentName: parentProfile.name 
+        parentName: parentProfile.name,
+        year: 2015 
       };
 
 
