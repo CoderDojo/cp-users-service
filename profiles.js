@@ -4,6 +4,7 @@ var pg = require('pg');
 var LargeObjectManager = require('pg-large-object').LargeObjectManager;
 var streamifier = require('streamifier');
 var mime = require('mime');
+var fs = require('fs');
 
 module.exports = function(options) {
   var seneca = this;
@@ -811,7 +812,7 @@ module.exports = function(options) {
             return;
           }
 
-          var fileStream = streamifier.createReadStream(file.base64);
+          var fileStream = streamifier.createReadStream(file.base64, {encoding: 'base64'});
           fileStream.pipe(stream);
 
           fileStream.on('data', function (chunk) {
@@ -854,7 +855,6 @@ module.exports = function(options) {
 
   function cmd_get_avatar(args, done){
     var profileId = args.id;
-    var res = args.res$;
 
     //pg conf properties
     options.postgresql.database= options.postgresql.name;
@@ -890,19 +890,23 @@ module.exports = function(options) {
                 client.end();
                 return done(err);
               }
+              var bufs = [];
+
+              stream.on('data', function(d) {
+                bufs.push(d);
+              })
 
               stream.on('end', function () {
                 client.query('COMMIT', function () {
                   client.end();
                 });
+
+                var buf = bufs.length > 1 ? Buffer.concat(bufs) : Buffer(bufs);
+                done(null, {imageData: buf.toString('base64'), imageInfo: profile.avatar});
               });
 
-              done(undefined, {httpResponseProcessed$: true});
-
-              res.setHeader('Content-disposition', 'attachment; filename=' + avatar.fileName);
-              var mimetype = mime.lookup(filename);
-              res.setHeader('Content-Type', mimetype);
-              stream.pipe(res);
+              var fileStream = require('fs').createWriteStream('my-file.png');
+              stream.pipe(fileStream);
             });
           });
         });
