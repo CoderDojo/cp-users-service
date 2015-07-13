@@ -812,10 +812,13 @@ module.exports = function(options) {
             return;
           }
 
-          var fileStream = streamifier.createReadStream(file.base64, {encoding: 'base64'});
-          fileStream.pipe(stream);
+          var buf = new Buffer(file.base64, 'base64');
 
-          fileStream.on('data', function (chunk) {
+          stream.write(buf, 'base64', function() {
+            stream.end();
+          });
+
+          stream.on('data', function (chunk) {
             seneca.log.info('got ' + chunk.length + ' bytes of data');
             avatarInfo.sizeBytes += chunk.length;
           });
@@ -901,12 +904,9 @@ module.exports = function(options) {
                   client.end();
                 });
 
-                var buf = bufs.length > 1 ? Buffer.concat(bufs) : Buffer(bufs);
+                var buf = bufs.length > 1 ? Buffer.concat(bufs) : Buffer(bufs[0]);
                 done(null, {imageData: buf.toString('base64'), imageInfo: profile.avatar});
               });
-
-              var fileStream = require('fs').createWriteStream('my-file.png');
-              stream.pipe(fileStream);
             });
           });
         });
