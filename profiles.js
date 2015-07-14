@@ -1,5 +1,8 @@
 'use strict';
 
+var pg = require('pg');
+var LargeObjectManager = require('pg-large-object').LargeObjectManager;
+
 module.exports = function(options) {
   var seneca = this;
 
@@ -72,6 +75,7 @@ module.exports = function(options) {
 
   seneca.add({role: plugin, cmd: 'create'}, cmd_create);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
+  seneca.add({role: plugin, cmd: 'load'}, cmd_load);
   seneca.add({role: plugin, cmd: 'save-youth-profile'}, cmd_save_youth_profile);
   seneca.add({role: plugin, cmd: 'save'}, cmd_save);
   seneca.add({role: plugin, cmd: 'update-youth-profile'}, cmd_update_youth);
@@ -80,6 +84,8 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'accept-invite'}, cmd_accept_invite);
   seneca.add({role: plugin, cmd: 'load_hidden_fields'}, cmd_load_hidden_fields);
   seneca.add({role: plugin, cmd: 'list_query'}, cmd_list_query);
+  seneca.add({role: plugin, cmd: 'change_avatar'}, cmd_change_avatar);
+  seneca.add({role: plugin, cmd: 'get_avatar'}, cmd_get_avatar);
 
 
   function cmd_search(args, done){
@@ -766,14 +772,157 @@ module.exports = function(options) {
     done(null, hiddenFields);
   }
 
-  function cmd_list_query(args, done) {
+  function cmd_change_avatar(args, done){
+    var file = args.file;
+
+    //pg conf properties
+    options.postgresql.database= options.postgresql.name;
+    options.postgresql.user= options.postgresql.username;
+
+    pg.connect(options.postgresql, function (err, client) {
+      if (err) { return seneca.log.error('Could not connect to postgres', err); }
+
+      var man = new LargeObjectManager(client);
+
+      client.query('BEGIN', function (err) {
+        if (err) {
+          seneca.log.error('Unable to create transaction');
+          done(err);
+          return;
+        }
+
+        var bufferSize = 16384;
+        man.createAndWritableStream(bufferSize, function (err, oid, stream) {
+          var noop = function () {};
+          var avatarInfo = {
+            oid: oid.toString(),
+            sizeBytes: 0,
+            name: file.name,
+            type: file.type
+          };
+
+          if (err) {
+            seneca.log.error('Unable to create a new large object');
+            client.end();
+            done(err);
+            done = noop;
+            return;
+          }
+
+          var buf = new Buffer(file.base64, 'base64');
+
+          stream.write(buf, 'base64', function() {
+            stream.end();
+          });
+
+          stream.on('data', function (chunk) {
+            seneca.log.info('got ' + chunk.length + ' bytes of data');
+            avatarInfo.sizeBytes += chunk.length;
+          });
+
+          stream.on('finish', function () {
+            seneca.log.info('Uploaded largeObject. committing...', oid);
+            client.query('COMMIT', function () {
+              client.end();
+              seneca.log.info('Saved LargeObject', oid);
+
+              //update profile record with avatarInfo
+              var profile = {
+                id: args.profileId,
+                avatar: avatarInfo
+              }
+              seneca.act({role: plugin, cmd: 'save'}, {profile: profile},function(err, profile){
+                if(err){
+                  return done(err);
+                }
+
+                done(undefined, profile);
+                done = noop;
+              })
+
+            });
+          });
+
+          stream.on('error', function (err) {
+            seneca.log.error('postgresql filestore error', err);
+            done(err);
+            done = noop;
+          });
+        });
+      });
+    });
+  }
+
+  function cmd_get_avatar(args, done){
+    var profileId = args.id;
+
+    //pg conf properties
+    options.postgresql.database= options.postgresql.name;
+    options.postgresql.user= options.postgresql.username;
+
+    seneca.act({role: plugin, cmd: 'load'}, {id: profileId}, function(err, profile) {
+      if(err){
+        return done(err);
+      }
+
+      if(profile && profile.avatar) {
+        pg.connect(options.postgresql, function (err, client) {
+          if (err) {
+            seneca.log.error('Unable to connect to postgresql', err);
+            return done(err);
+          }
+
+          var man = new LargeObjectManager(client);
+
+          client.query('BEGIN', function (err) {
+            if (err) {
+              seneca.log.error('Unable to create transaction', err);
+              client.end();
+              return done(err);
+            }
+
+            // If you are on a high latency connection and working with
+            // large LargeObjects, you should increase the buffer size
+            var bufferSize = 16384;
+            man.openAndReadableStream(profile.avatar.oid, bufferSize, function (err, size, stream) {
+              if (err) {
+                seneca.log.error('Unable to open readable stream', err);
+                client.end();
+                return done(err);
+              }
+              var bufs = [];
+
+              stream.on('data', function(d) {
+                bufs.push(d);
+              })
+
+              stream.on('end', function () {
+                client.query('COMMIT', function () {
+                  client.end();
+                });
+
+                var buf = bufs.length > 1 ? Buffer.concat(bufs) : Buffer(bufs[0]);
+                done(null, {imageData: buf.toString('base64'), imageInfo: profile.avatar});
+              });
+            });
+          });
+        });
+      } else {
+        done();
+      }
+    });
+  }
+
+  function cmd_load(args, done){
+    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(args.id, done);
+  }
+
+function cmd_list_query(args, done) {
     var query = args.query;
 
     var profilesEntity = seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY);
     profilesEntity.list$(query, done);
   }
-
-
 
   return {
     name: plugin
