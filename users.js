@@ -23,8 +23,7 @@ module.exports = function(options){
     var seneca = this;
     var id = args.id;
     var userEntity = seneca.make(ENTITY_NS);
-    userEntity.load$(id, done);
-
+    
     async.waterfall([
       function(done) {
         seneca.make(ENTITY_NS).load$({id: args.id}, done);
