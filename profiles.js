@@ -914,10 +914,7 @@ module.exports = function(options) {
   }
 
   function cmd_load(args, done){
-    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(args.id, function(err, response) {
-      if(err) return done(err);
-      done(null, response);
-    });
+    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(args.id, done);
   }
 
 function cmd_list_query(args, done) {
