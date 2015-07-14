@@ -2,9 +2,6 @@
 
 var pg = require('pg');
 var LargeObjectManager = require('pg-large-object').LargeObjectManager;
-var streamifier = require('streamifier');
-var mime = require('mime');
-var fs = require('fs');
 
 module.exports = function(options) {
   var seneca = this;
