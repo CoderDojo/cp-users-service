@@ -43,8 +43,11 @@ module.exports = function() {
     'email-notifications': {
       sendemail:true,
       email: {
-        'invite-parent-guardian':{
-          subject:'test'
+        'invite-parent-guardian-en_US':{
+          subject:'Invitation to become a Parent/Guardian'
+        },
+        'invite-parent-guardian-de_DE':{
+          subject:'Invitation to become a Parent/Guardian in german'
         }
       }
     },
