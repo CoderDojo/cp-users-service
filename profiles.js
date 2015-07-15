@@ -621,7 +621,6 @@ module.exports = function(options) {
 
 
       } catch(err){
-        console.log(err);
         code = 'invite-parent-guardian-' + 'en_US';
       }
 
