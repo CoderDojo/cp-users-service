@@ -12,6 +12,9 @@ module.exports = function(options) {
   var async = require('async');
   var uuid = require('node-uuid');
   var hiddenFields = require('./data/hidden-fields.js');
+  var fs = require('fs');
+  var path = require('path');
+  var so = seneca.options(); 
 
   var mentorPublicFields = [
     'name',
@@ -605,14 +608,27 @@ module.exports = function(options) {
         return done(new Error('An error has occured while sending email'));
       }
 
+      //Externalize year
       var content = {
         link: 'http://localhost:8000/accept-parent-guardian-request/' + parentProfile.userId + '/' + childProfile.userId + '/' + inviteToken,
         childName: childProfile.name,
-        parentName: parentProfile.name 
+        parentName: parentProfile.name,
+        year: 2015 
       };
 
 
-      var code = 'invite-parent-guardian';
+      var code = 'invite-parent-guardian-' + args.locality;
+      var templates = {};
+
+      try {
+        templates.html = fs.statSync(path.join(so.mail.folder , code, 'html.ejs'));
+        templates.text = fs.statSync(path.join(so.mail.folder , code, 'text.ejs'));
+
+
+      } catch(err){
+        code = 'invite-parent-guardian-' + 'en_US';
+      }
+
       var to =  inviteRequest.invitedParentEmail;
 
       seneca.act({role:'email-notifications', cmd: 'send', to:to, content:content, code: code}, done);
