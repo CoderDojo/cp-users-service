@@ -3,6 +3,7 @@
 var _ = require('lodash');
 var async = require('async');
 var request = require('request');
+var moment = require('moment');
 
 module.exports = function(options){
   var seneca = this;
@@ -10,6 +11,7 @@ module.exports = function(options){
   var ENTITY_NS = 'sys/user';
   var so = seneca.options();
 
+  seneca.add({role: 'auth', cmd: 'create_reset'}, cmd_create_reset);
   seneca.add({role: plugin, cmd: 'load'}, cmd_load);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'register'}, cmd_register);
@@ -127,11 +129,11 @@ module.exports = function(options){
     }
 
     function registerUser(success, done){
-      args = _.omit(args, ['g-recaptcha-response']);
+      args = _.omit(args, ['g-recaptcha-response', 'zenHostname', 'locality']);
 
       args.roles = ['basic-user'];
       args.mailingList = (args.mailingList) ? 1 : 0;
-      
+
       seneca.act({role:'user', cmd:'register'}, args, function (err, registerResponse) {
         if(err) return done(err);
         if(!registerResponse.ok) return done(new Error(registerResponse.why));
@@ -143,6 +145,7 @@ module.exports = function(options){
 
         var profileData = {
           userId:user.id,
+          name: user.name,
           email:user.email,
           userType: userType
         };
@@ -285,9 +288,42 @@ module.exports = function(options){
 
   function cmd_reset_password(args, done) {
     var seneca = this;
-    seneca.act({role:'auth', cmd: 'create_reset'}, {data: {email: args.email}}, function (err, response) {
+    seneca.act({role: 'auth', cmd: 'create_reset'}, args, function (err, response) {
       if(err) return done(err);
       return done(null, response);
+    })
+  }
+
+  function cmd_create_reset(args, done) {
+    var seneca = this
+    var useract = seneca.pin({role:'user',cmd:'*'});
+
+    var nick  = args.nick || args.username;
+    var email = args.email;
+    var locality = args.locality || 'en_US';
+    var emailCode = 'auth-create-reset-' + locality;
+    var zenHostname = args.zenHostname || '127.0.0.1:8000';
+
+    var args = {}
+    if( void 0 != nick )  args.nick  = nick;
+    if( void 0 != email ) args.email = email;
+
+    useract.create_reset( args, function( err, out ) {
+      if(err || !out.ok) return done(err,out);
+      if(options['email-notifications'].sendemail) {
+        seneca.act({role:'email-notifications', cmd:'send'}, 
+          {code: emailCode,
+          to: out.user.email,
+          content:{name: out.user.name, resetlink: 'http://' + zenHostname + '/reset_password/' + out.reset.id, year: moment(new Date()).format('YYYY')}
+        }, function (err, response) {
+          if(err) return done(err);
+          return done(null,{
+            ok: out.ok,
+          })
+        });
+      } else {
+        return done(null, {ok: out.ok});
+      }
     })
   }
 

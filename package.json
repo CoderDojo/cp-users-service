@@ -34,7 +34,8 @@
     "seneca-postgresql-store": "git://github.com/iantocristian/seneca-postgresql-store.git",
     "seneca-user": "0.2.10",
     "seneca-auth": "0.2.10",
-    "shortid": "2.2.2"
+    "shortid": "2.2.2",
+    "moment": "2.10.3"
   },
   "devDependencies": {
     "mocha": "2.2.4",

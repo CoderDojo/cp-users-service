@@ -48,23 +48,12 @@ module.exports = function() {
         },
         'invite-parent-guardian-de_DE':{
           subject:'Invitation to become a Parent/Guardian in german'
-        }
-      }
-    },
-    auth: {
-      sendemail: true,
-      email: {
-        code: {
-          register: 'auth-register',
-          create_reset: 'auth-create-reset'
         },
-        subject: {
-          register: 'Welcome to CoderDojo!',
-          create_reset: 'CoderDojo Password Reset'
+        'auth-create-reset-en_US': {
+          subject:'CoderDojo Password Reset'
         },
-        content: {
-          resetlinkprefix: 'http://127.0.0.1:8000/reset_password',
-          confirmlinkprefix: 'http://127.0.0.1:8000/confirm'
+        'auth-create-reset-de_DE': {
+          subject:'CoderDojo Password Reset German'
         }
       }
     },
