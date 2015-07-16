@@ -144,7 +144,6 @@ module.exports = function(options) {
       if(youth) {
         delete user.email;
         delete user.password;
-        user.is_under_13 = true;
       }
 
       seneca.act({role: 'user', cmd: 'register'}, user, function(err, data){

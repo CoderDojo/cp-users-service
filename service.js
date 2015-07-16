@@ -22,6 +22,7 @@ seneca.use(require('./profiles.js'), {postgresql: config["postgresql-store"]});
 seneca.use(require('./oauth2.js'), config.oauth2);
 seneca.use(require('./users.js'));
 seneca.use('user');
+seneca.use('auth', config['auth']);
 
 seneca.listen()
   .client({type: 'web', host: process.env.TARGETIP || '127.0.0.1', port: 10304, pin: 'role:cd-salesforce,cmd:*'})

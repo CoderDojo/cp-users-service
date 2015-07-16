@@ -33,6 +33,7 @@
     "seneca-mail": "git://github.com/iantocristian/seneca-mail.git#0.1.6",
     "seneca-postgresql-store": "git://github.com/iantocristian/seneca-postgresql-store.git",
     "seneca-user": "0.2.10",
+    "seneca-auth": "0.2.10",
     "shortid": "2.2.2"
   },
   "devDependencies": {

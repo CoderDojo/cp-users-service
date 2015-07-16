@@ -18,6 +18,8 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'update'}, cmd_update);
   seneca.add({role: plugin, cmd: 'get_init_user_types'}, cmd_get_init_user_types);
   seneca.add({role: plugin, cmd: 'is_champion'}, cmd_is_champion);
+  seneca.add({role: plugin, cmd: 'reset_password'}, cmd_reset_password);
+  seneca.add({role: plugin, cmd: 'execute_reset'}, cmd_execute_reset);
 
   function cmd_load(args, done) {
     var seneca = this;
@@ -129,6 +131,7 @@ module.exports = function(options){
 
       args.roles = ['basic-user'];
       args.mailingList = (args.mailingList) ? 1 : 0;
+      
       seneca.act({role:'user', cmd:'register'}, args, function (err, registerResponse) {
         if(err) return done(err);
         if(!registerResponse.ok) return done(new Error(registerResponse.why));
@@ -276,6 +279,51 @@ module.exports = function(options){
         } else {
           return done(null, {isChampion: false});
         }
+      });
+    });
+  }
+
+  function cmd_reset_password(args, done) {
+    var seneca = this;
+    seneca.act({role:'auth', cmd: 'create_reset'}, {data: {email: args.email}}, function (err, response) {
+      if(err) return done(err);
+      return done(null, response);
+    })
+  }
+
+  function cmd_execute_reset(args, done) {
+    var resetEntity = seneca.make$('sys/reset');
+    resetEntity.load$({ id: args.token }, function (err, reset) {
+      if (err) { return done(err); }
+
+      if (!reset) {
+        return done(null, { ok: false, token: args.token, why: 'Reset not found.' });
+      }
+
+      if (!reset.active) {
+        return done(null, { ok: false, token: args.token, why: 'Reset not active.' });
+      }
+
+      if (new Date() < new Date(reset.when) + options.resetperiod) {
+        return done(null, { ok: false, token: args.token, why: 'Reset stale.' });
+      }
+
+      var userEntity = seneca.make$('sys/user');
+
+      userEntity.load$({ id: reset.user }, function (err, user) {
+        if (err) { return done(err); }
+        seneca.act({ role: 'user', cmd: 'change_password', user: user, password: args.password, repeat: args.repeat }, function (err, out) {
+          if (err) { return done(err); }
+
+          out.reset = reset;
+          if (!out.ok) { return done(null, out); }
+
+          reset.active = false;
+          reset.save$(function (err, reset) {
+            if (err) { return done(err); }
+            return done(null, { user: user, reset: reset, ok: true });
+          });
+        });
       });
     });
   }
