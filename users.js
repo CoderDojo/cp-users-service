@@ -218,10 +218,10 @@ module.exports = function(options){
     var seneca = this;
     //These types can be selected during registration on the platform.
     var initUserTypes = [
-      {title: 'Youth Under 13', name: 'attendee-u13'},
-      {title: 'Youth Over 13', name: 'attendee-o13'},
       {title: 'Parent/Guardian', name: 'parent-guardian'},
       {title: 'Mentor/Volunteer', name: 'mentor'},
+      {title: 'Ninja Over 13', name: 'attendee-o13'},
+      {title: 'Ninja Under 13', name: 'attendee-u13'},
       {title: 'Champion', name: 'champion'}
     ];
     done(null, initUserTypes);
