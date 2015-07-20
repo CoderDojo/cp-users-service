@@ -369,34 +369,24 @@ module.exports = function(options){
     var seneca = this;
     var userId = args.userId;
 
-    var champions = [];
     //Load user's dojos
     //Load champion for each dojo
     seneca.act({role:'cd-dojos', cmd:'dojos_for_user', id: userId}, function (err, response) {
       if(err) return done(err);
       var dojos = response;
-      async.each(dojos, function (dojo, cb) {
-        seneca.act({role:'cd-dojos', cmd:'load_dojo_champion', id: dojo.id}, function (err, response) {
-          if(err) return cb(err);
-          _.each(response, function (champion) {
-            champions.push(champion);
-          });
-          return cb();
-        });
-      }, function (err) {
+      async.map(dojos, function (dojo, cb) {
+        seneca.act({role:'cd-dojos', cmd:'load_dojo_champion', id: dojo.id}, cb);
+      }, function (err, champions) {
         if(err) return done(err);
+        champions = champions[0];
         champions = _.uniq(champions, function (champion) {
           return champion.id;
         });
-        var indexToDelete; 
-        _.each(champions, function (champion, index) {
-          if(champion.id === userId) {
-            indexToDelete = index;
-          }
-          return;
+        var currentUser = _.find(champions, function (champion) {
+          return champion.id === userId
         });
         //Delete current user from champions list.
-        if(indexToDelete) champions.splice(indexToDelete, 1); 
+        if(currentUser) champions = _.without(champions, currentUser); 
         return done(null, champions);
       });
     });

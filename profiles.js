@@ -944,19 +944,13 @@ module.exports = function(options) {
     var seneca = this;
     var userId = args.userId;
 
-    var parents = [];
-
     seneca.act({role: plugin, cmd: 'list_query', query:{userId: userId}}, function (err, response) {
       if(err) return done(err);
       var childProfile = response[0];
       if(!childProfile || !childProfile.parents) return done();
-      async.each(childProfile.parents, function (parentUserId, cb) {
-        seneca.act({role: 'cd-users', cmd: 'load', id: parentUserId}, function (err, response) {
-          if(err) return cb(err);
-          parents.push(response);
-          return cb();
-        });
-      }, function (err) { 
+      async.map(childProfile.parents, function (parentUserId, cb) {
+        seneca.act({role: 'cd-users', cmd: 'load', id: parentUserId}, cb);
+      }, function (err, parents) { 
         if(err) return done(err);
         return done(null, parents);
       }); 
