@@ -22,6 +22,7 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'is_champion'}, cmd_is_champion);
   seneca.add({role: plugin, cmd: 'reset_password'}, cmd_reset_password);
   seneca.add({role: plugin, cmd: 'execute_reset'}, cmd_execute_reset);
+  seneca.add({role: plugin, cmd: 'load_champions_for_user'}, cmd_load_champions_for_user);
 
   function cmd_load(args, done) {
     var seneca = this;
@@ -360,6 +361,43 @@ module.exports = function(options){
             return done(null, { user: user, reset: reset, ok: true });
           });
         });
+      });
+    });
+  }
+
+  function cmd_load_champions_for_user(args, done) {
+    var seneca = this;
+    var userId = args.userId;
+
+    var champions = [];
+    //Load user's dojos
+    //Load champion for each dojo
+    seneca.act({role:'cd-dojos', cmd:'dojos_for_user', id: userId}, function (err, response) {
+      if(err) return done(err);
+      var dojos = response;
+      async.each(dojos, function (dojo, cb) {
+        seneca.act({role:'cd-dojos', cmd:'load_dojo_champion', id: dojo.id}, function (err, response) {
+          if(err) return cb(err);
+          _.each(response, function (champion) {
+            champions.push(champion);
+          });
+          return cb();
+        });
+      }, function (err) {
+        if(err) return done(err);
+        champions = _.uniq(champions, function (champion) {
+          return champion.id;
+        });
+        var indexToDelete; 
+        _.each(champions, function (champion, index) {
+          if(champion.id === userId) {
+            indexToDelete = index;
+          }
+          return;
+        });
+        //Delete current user from champions list.
+        if(indexToDelete) champions.splice(indexToDelete, 1); 
+        return done(null, champions);
       });
     });
   }
