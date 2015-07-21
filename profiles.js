@@ -43,7 +43,8 @@ module.exports = function(options) {
     'linkedin',
     'twitter',
     'badges',
-    'userTypes'
+    'userTypes',
+    'optionalHiddenFields'
   ];
 
   var fieldWhiteList = {
@@ -102,7 +103,8 @@ module.exports = function(options) {
 
   function cmd_create(args, done){
     var profile = args.profile;
-    profile.userId = args.user;
+
+    if(args.user !== profile.userId) return done(null, new Error('Profiles can only be saved by the profile user.'));
 
     if(profile.id){
       profile = _.omit(profile, immutableFields);
@@ -275,7 +277,7 @@ module.exports = function(options) {
       getProfile,
       getUsersDojos,
       getDojosForUser,
-      assignUserTypes,
+      assignUserTypesAndUserPermissions,
       addFlags,
       optionalFieldsFilter,
       privateFilter,
@@ -337,8 +339,9 @@ module.exports = function(options) {
       });
     }
 
-    function assignUserTypes(profile, usersDojos, done){
+    function assignUserTypesAndUserPermissions(profile, usersDojos, done){
       profile.userTypes = [];
+      profile.userPermissions = [];
 
       if(_.isEmpty(usersDojos)){
         profile.userTypes.push(profile.userType);
@@ -347,14 +350,17 @@ module.exports = function(options) {
         profile.userTypes.push(profile.userType);
       }
 
+      profile.userPermissions = usersDojos.userPermissions;
+
       return done(null, profile);
     }
 
     function addFlags(profile, done){
       profile.ownProfileFlag = profile && profile.userId === args.user ? true : false;
       profile.myChild = _.contains(profile.parents, args.user) ? true : false;
-      //TODO: Add isTicketingAdmin flag
-      profile.isTicketingAdmin = true;
+      profile.isTicketingAdmin = _.find(profile.userPermissions, function (profileUserPermission) {
+        return profileUserPermission.name === 'ticketing-admin';
+      });
       return done(null, profile);
     }
 
@@ -412,7 +418,7 @@ module.exports = function(options) {
           });
         }
 
-        var publicProfileFlag = !profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian')); 
+        var publicProfileFlag = !profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian'));
         if(publicProfileFlag){
            _.each(profile.userTypes, function(userType) {
             publicFields = _.union(publicFields, fieldWhiteList[userType]);
@@ -425,9 +431,15 @@ module.exports = function(options) {
               return idx > -1 ? false : true;
             });
           }
-
+          
+          //Add optional hidden fields to publicFields if they are set to false.
+          _.forOwn(profile.optionalHiddenFields, function(value, key){
+            if(!value){
+              publicFields.push(key);
+            }
+          });
           profile = _.pick(profile, publicFields);
-
+          
           return done(null, profile);
 
         } else {
