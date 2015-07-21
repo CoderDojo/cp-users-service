@@ -95,6 +95,10 @@ module.exports = function(options){
     var isChampion = args.isChampion === true;
     delete args.isChampion;
 
+    if(args.initUserType.name === 'attendee-u13'){
+      return done(new Error('Unable to register as attendee-u13'));
+    }
+
     //Roles Available: basic-user, mentor, champion, cdf-admin
     var seneca = this;
 
