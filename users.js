@@ -379,6 +379,7 @@ module.exports = function(options){
       if(err) return done(err);
       var dojos = response;
       async.map(dojos, function (dojo, cb) {
+        if(!dojo) return cb();
         seneca.act({role:'cd-dojos', cmd:'load_dojo_champion', id: dojo.id}, cb);
       }, function (err, champions) {
         if(err) return done(err);

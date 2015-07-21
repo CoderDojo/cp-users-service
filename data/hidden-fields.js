@@ -39,7 +39,7 @@ module.exports = [
   },
   {
     label: 'Hide Languages Spoken',
-    allowedUserTypes: ['champion', 'mentor'],
+    allowedUserTypes: ['mentor'],
     name: 'hideLanguagesSpokenCheckbox',
     modelName: 'languagesSpoken'
   },
