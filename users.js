@@ -22,6 +22,7 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'is_champion'}, cmd_is_champion);
   seneca.add({role: plugin, cmd: 'reset_password'}, cmd_reset_password);
   seneca.add({role: plugin, cmd: 'execute_reset'}, cmd_execute_reset);
+  seneca.add({role: plugin, cmd: 'load_champions_for_user'}, cmd_load_champions_for_user);
 
   function cmd_load(args, done) {
     var seneca = this;
@@ -360,6 +361,33 @@ module.exports = function(options){
             return done(null, { user: user, reset: reset, ok: true });
           });
         });
+      });
+    });
+  }
+
+  function cmd_load_champions_for_user(args, done) {
+    var seneca = this;
+    var userId = args.userId;
+
+    //Load user's dojos
+    //Load champion for each dojo
+    seneca.act({role:'cd-dojos', cmd:'dojos_for_user', id: userId}, function (err, response) {
+      if(err) return done(err);
+      var dojos = response;
+      async.map(dojos, function (dojo, cb) {
+        seneca.act({role:'cd-dojos', cmd:'load_dojo_champion', id: dojo.id}, cb);
+      }, function (err, champions) {
+        if(err) return done(err);
+        champions = champions[0];
+        champions = _.uniq(champions, function (champion) {
+          return champion.id;
+        });
+        var currentUser = _.find(champions, function (champion) {
+          return champion.id === userId
+        });
+        //Delete current user from champions list.
+        if(currentUser) champions = _.without(champions, currentUser); 
+        return done(null, champions);
       });
     });
   }

@@ -67,7 +67,7 @@ module.exports = function(options) {
     'attendee-o13': allowedOptionalFieldsYouth
   };
 
-  var immutableFields = ['email', 'userType'];
+  var immutableFields = ['email', 'userType', 'avatar'];
 
   var youthBlackList = ['name'];
 
@@ -89,6 +89,7 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'list_query'}, cmd_list_query);
   seneca.add({role: plugin, cmd: 'change_avatar'}, cmd_change_avatar);
   seneca.add({role: plugin, cmd: 'get_avatar'}, cmd_get_avatar);
+  seneca.add({role: plugin, cmd: 'load_parents_for_user'}, cmd_load_parents_for_user);
 
 
   function cmd_search(args, done){
@@ -932,11 +933,28 @@ module.exports = function(options) {
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(args.id, done);
   }
 
-function cmd_list_query(args, done) {
+  function cmd_list_query(args, done) {
     var query = args.query;
 
     var profilesEntity = seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY);
     profilesEntity.list$(query, done);
+  }
+
+  function cmd_load_parents_for_user(args, done) {
+    var seneca = this;
+    var userId = args.userId;
+
+    seneca.act({role: plugin, cmd: 'list_query', query:{userId: userId}}, function (err, response) {
+      if(err) return done(err);
+      var childProfile = response[0];
+      if(!childProfile || !childProfile.parents) return done();
+      async.map(childProfile.parents, function (parentUserId, cb) {
+        seneca.act({role: 'cd-users', cmd: 'load', id: parentUserId}, cb);
+      }, function (err, parents) { 
+        if(err) return done(err);
+        return done(null, parents);
+      }); 
+    });
   }
 
   return {
