@@ -37,7 +37,8 @@ module.exports = function(options) {
     'userTypes',
     'projects',
     'notes',
-    'dojos'
+    'dojos',
+    'optionalHiddenFields'
   ];
 
   var attendeeO13PublicFields = [
@@ -57,17 +58,22 @@ module.exports = function(options) {
 
   ///var allowedOptionalFieldsYouth = ['dojos', 'linkedin', 'twitter', 'badges'];
   var allowedOptionalFieldsYouth = _.filter(hiddenFields, function(field){
-    return _.contains(field.allowedUserTypes, 'attendee-o13');
+    if(_.contains(field.allowedUserTypes, 'attendee-o13')) return field.modelName;
   });
 
   //var allowedOptionalFieldsChampion = ['notes', 'projects'];
-  var allowedOptionalFieldsChampion = _.filter(hiddenFields, function(field){
-    return _.contains(field.allowedUserTypes, 'champion');
+  var allowedOptionalFieldsChampion = _.map(hiddenFields, function(field){
+    if(_.contains(field.allowedUserTypes, 'champion')) return field.modelName;
+  });
+
+  var allowedOptionalFieldsMentor = _.map(hiddenFields, function (field) {
+    if(_.contains(field.allowedUserTypes, 'mentor')) return field.modelName;
   });
 
   var allowedOptionalFields = {
     'champion': allowedOptionalFieldsChampion,
-    'attendee-o13': allowedOptionalFieldsYouth
+    'attendee-o13': allowedOptionalFieldsYouth,
+    'mentor': allowedOptionalFieldsMentor
   };
 
   var immutableFields = ['email', 'userType', 'avatar'];
@@ -373,30 +379,42 @@ module.exports = function(options) {
           return champion.id === args.user;
         });
 
-        var allowedFields = [];
-        
-        if(_.contains(profile.userTypes, 'attendee-o13')){
-          allowedFields = _.union(allowedFields, allowedOptionalFields['attendee-o13']);
-        }
-
-        if(_.contains(profile.userTypes, 'champion')){
-          allowedFields = _.union(allowedFields, allowedOptionalFields['champion']);
-        }
-
-        if(!profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && !profile.requestingUserIsChampion){
-          _.forOwn(profile.optionalHiddenFields, function(value, key){
-            if(value && _.contains(allowedFields, key)){
-              profile = _.omit(profile, key);
-            }
+        seneca.act({role: 'cd-users', cmd: 'load_dojo_admins_for_user', userId: profile.userId}, function (err, dojoAdmins) {
+          if(err) return done(err);
+          profile.requestingUserIsDojoAdmin = _.find(dojoAdmins, function (dojoAdmin) {
+            return dojoAdmin.id === args.user;
           });
-        }
 
-        return done(null, profile);
+          var allowedFields = [];
+          
+          if(_.contains(profile.userTypes, 'attendee-o13')){
+            allowedFields = _.union(allowedFields, allowedOptionalFields['attendee-o13']);
+          }
+
+          if(_.contains(profile.userTypes, 'champion')){
+            allowedFields = _.union(allowedFields, allowedOptionalFields['champion']);
+          }
+
+          if(_.contains(profile.userTypes, 'mentor')) {
+            allowedFields = _.union(allowedFields, allowedOptionalFields['mentor']);
+          }
+
+          var keysToOmit = [];
+          if(!profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && !profile.requestingUserIsChampion && !profile.requestingUserIsDojoAdmin){
+            _.forOwn(profile.optionalHiddenFields, function(value, key){
+              if(value && _.contains(allowedFields, key)){
+                keysToOmit.push(key);
+              }
+            });
+          }
+          profile = _.omit(profile, keysToOmit);
+          return done(null, profile);
+        });
       });
     }
 
     function privateFilter(profile, done){
-      if(profile.ownProfileFlag || profile.myChild || profile.isTicketingAdmin || profile.requestingUserIsChampion) {
+      if(profile.ownProfileFlag || profile.myChild || profile.isTicketingAdmin || profile.requestingUserIsChampion || profile.requestingUserIsDojoAdmin) {
         return done(null, profile);
       }
       
@@ -409,7 +427,7 @@ module.exports = function(options) {
 
     //TODO cdf-admin role should be able to see all profiles
     function publicProfilesFilter(profile, done) {
-      var publicProfileFlag = !profile.requestingUserIsChampion && !profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian'));
+      var publicProfileFlag = !profile.requestingUserIsDojoAdmin && !profile.requestingUserIsChampion && !profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian'));
       if(publicProfileFlag){
          _.each(profile.userTypes, function(userType) {
           publicFields = _.union(publicFields, fieldWhiteList[userType]);
@@ -439,7 +457,7 @@ module.exports = function(options) {
 
     function under13Filter(profile, done){
       //Ensure that only parents of children can retrieve their full public profile 
-      if(_.contains(profile.userTypes, 'attendee-u13') && !_.contains(profile.parents, args.user) && !profile.requestingUserIsChampion) {
+      if(_.contains(profile.userTypes, 'attendee-u13') && !_.contains(profile.parents, args.user) && !profile.requestingUserIsChampion && !profile.requestingUserIsDojoAdmin) {
         profile = {};
         return done(null, profile);
       }
