@@ -23,7 +23,9 @@ module.exports = function(options) {
     'linkedin',
     'twitter',
     'userTypes',
-    'dojos'
+    'dojos',
+    'badges',
+    'optionalHiddenFields'
   ];
 
   var championPublicFields = [
@@ -365,29 +367,36 @@ module.exports = function(options) {
     }
 
     function optionalFieldsFilter(profile, done) {
-      var allowedFields = [];
-      
-      if(_.contains(profile.userTypes, 'attendee-o13')){
-        allowedFields = _.union(allowedFields, allowedOptionalFields['attendee-o13']);
-      }
-
-      if(_.contains(profile.userTypes, 'champion')){
-        allowedFields = _.union(allowedFields, allowedOptionalFields['champion']);
-      }
-
-      if(!profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin){
-        _.forOwn(profile.optionalHiddenFields, function(value, key){
-          if(value && _.contains(allowedFields, key)){
-            profile = _.omit(profile, key);
-          }
+      seneca.act({role: 'cd-users', cmd: 'load_champions_for_user', userId: profile.userId}, function (err, champions) {
+        if(err) return done(err);
+        profile.requestingUserIsChampion = _.find(champions, function (champion) {
+          return champion.id === args.user;
         });
-      }
 
-      return done(null, profile);
+        var allowedFields = [];
+        
+        if(_.contains(profile.userTypes, 'attendee-o13')){
+          allowedFields = _.union(allowedFields, allowedOptionalFields['attendee-o13']);
+        }
+
+        if(_.contains(profile.userTypes, 'champion')){
+          allowedFields = _.union(allowedFields, allowedOptionalFields['champion']);
+        }
+
+        if(!profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && !profile.requestingUserIsChampion){
+          _.forOwn(profile.optionalHiddenFields, function(value, key){
+            if(value && _.contains(allowedFields, key)){
+              profile = _.omit(profile, key);
+            }
+          });
+        }
+
+        return done(null, profile);
+      });
     }
 
     function privateFilter(profile, done){
-      if(profile.ownProfileFlag || profile.myChild || profile.isTicketingAdmin){
+      if(profile.ownProfileFlag || profile.myChild || profile.isTicketingAdmin || profile.requestingUserIsChampion) {
         return done(null, profile);
       }
       
@@ -400,39 +409,32 @@ module.exports = function(options) {
 
     //TODO cdf-admin role should be able to see all profiles
     function publicProfilesFilter(profile, done) {
-      seneca.act({role: 'cd-users', cmd: 'load_champions_for_user', userId: profile.userId}, function (err, champions) {
-        if(err) return done(err);
-        profile.requestingUserIsChampion = _.find(champions, function (champion) {
-          return champion.id === args.user;
+      var publicProfileFlag = !profile.requestingUserIsChampion && !profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian'));
+      if(publicProfileFlag){
+         _.each(profile.userTypes, function(userType) {
+          publicFields = _.union(publicFields, fieldWhiteList[userType]);
         });
 
-        var publicProfileFlag = !profile.requestingUserIsChampion && !profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian'));
-        if(publicProfileFlag){
-           _.each(profile.userTypes, function(userType) {
-            publicFields = _.union(publicFields, fieldWhiteList[userType]);
+        if(_.contains(profile.userTypes, 'attendee-o13')){
+          publicFields = _.remove(publicFields, function(publicField){
+            var idx =  youthBlackList.indexOf(publicField);
+
+            return idx > -1 ? false : true;
           });
-
-          if(_.contains(profile.userTypes, 'attendee-o13')){
-            publicFields = _.remove(publicFields, function(publicField){
-              var idx =  youthBlackList.indexOf(publicField);
-
-              return idx > -1 ? false : true;
-            });
-          }
-          
-          //Add optional hidden fields to publicFields if they are set to false.
-          _.forOwn(profile.optionalHiddenFields, function(value, key){
-            if(!value){
-              publicFields.push(key);
-            }
-          });
-
-          profile = _.pick(profile, publicFields);
-          return done(null, profile);
-        } else {
-          return done(null, profile);
         }
-      });      
+        
+        //Add optional hidden fields to publicFields if they are set to false.
+        _.forOwn(profile.optionalHiddenFields, function(value, key){
+          if(!value){
+            publicFields.push(key);
+          }
+        });
+
+        profile = _.pick(profile, publicFields);
+        return done(null, profile);
+      } else {
+        return done(null, profile);
+      }      
     }
 
     function under13Filter(profile, done){
