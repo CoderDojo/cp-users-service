@@ -58,17 +58,22 @@ module.exports = function(options) {
 
   ///var allowedOptionalFieldsYouth = ['dojos', 'linkedin', 'twitter', 'badges'];
   var allowedOptionalFieldsYouth = _.filter(hiddenFields, function(field){
-    return _.contains(field.allowedUserTypes, 'attendee-o13');
+    if(_.contains(field.allowedUserTypes, 'attendee-o13')) return field.modelName;
   });
 
   //var allowedOptionalFieldsChampion = ['notes', 'projects'];
-  var allowedOptionalFieldsChampion = _.filter(hiddenFields, function(field){
-    return _.contains(field.allowedUserTypes, 'champion');
+  var allowedOptionalFieldsChampion = _.map(hiddenFields, function(field){
+    if(_.contains(field.allowedUserTypes, 'champion')) return field.modelName;
+  });
+
+  var allowedOptionalFieldsMentor = _.map(hiddenFields, function (field) {
+    if(_.contains(field.allowedUserTypes, 'mentor')) return field.modelName;
   });
 
   var allowedOptionalFields = {
     'champion': allowedOptionalFieldsChampion,
-    'attendee-o13': allowedOptionalFieldsYouth
+    'attendee-o13': allowedOptionalFieldsYouth,
+    'mentor': allowedOptionalFieldsMentor
   };
 
   var immutableFields = ['email', 'userType', 'avatar'];
@@ -390,14 +395,19 @@ module.exports = function(options) {
             allowedFields = _.union(allowedFields, allowedOptionalFields['champion']);
           }
 
+          if(_.contains(profile.userTypes, 'mentor')) {
+            allowedFields = _.union(allowedFields, allowedOptionalFields['mentor']);
+          }
+
+          var keysToOmit = [];
           if(!profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && !profile.requestingUserIsChampion && !profile.requestingUserIsDojoAdmin){
             _.forOwn(profile.optionalHiddenFields, function(value, key){
               if(value && _.contains(allowedFields, key)){
-                profile = _.omit(profile, key);
+                keysToOmit.push(key);
               }
             });
           }
-
+          profile = _.omit(profile, keysToOmit);
           return done(null, profile);
         });
       });
