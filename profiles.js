@@ -37,7 +37,8 @@ module.exports = function(options) {
     'userTypes',
     'projects',
     'notes',
-    'dojos'
+    'dojos',
+    'optionalHiddenFields'
   ];
 
   var attendeeO13PublicFields = [
