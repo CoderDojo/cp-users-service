@@ -80,6 +80,7 @@ module.exports = function(options) {
 
   var youthBlackList = ['name'];
 
+  var requiredProfileFields = ['name', 'alias', 'dob', 'country', 'place', 'address'];
 
   //var userTypes = ['champion', 'mentor', 'parent-guardian', 'attendee-o13', 'attendee-u13'];
   //var userTypes = ['attendee-u13', 'attendee-o13', 'parent-guardian', 'mentor', 'champion'];
@@ -111,6 +112,10 @@ module.exports = function(options) {
 
   function cmd_create(args, done){
     var profile = args.profile;
+   
+    var profileKeys = _.keys(profile);
+    var missingKeys = _.difference(requiredProfileFields, profileKeys);
+    if(_.isEmpty) profile.requiredFieldsComplete = true;
 
     if(args.user !== profile.userId) return done(null, new Error('Profiles can only be saved by the profile user.'));
 
