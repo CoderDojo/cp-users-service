@@ -18,7 +18,12 @@ module.exports = function (options) {
     var registerusers = function (done) {
       async.eachSeries(users, function(user, cb){
         userpin.register(user, function(err, response){
-          if(err) { return done(err) }
+          if (err) return done(err);
+          if (response.ok === false) {
+            console.error('instert failed: ', response);
+            return cb(null, response);
+          }
+
           var profileData = {
             userId:   response.user.id,
             email:    response.user.email,
@@ -51,4 +56,3 @@ module.exports = function (options) {
     name: plugin
   };
 };
-
