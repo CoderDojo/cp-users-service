@@ -25,5 +25,5 @@ seneca.use('auth');
 seneca.use(require('./users.js'), {'email-notifications': config['email-notifications']});
 
 seneca.listen()
-  .client({type: 'web', host: process.env.TARGETIP || '127.0.0.1', port: 10304, pin: 'role:cd-salesforce,cmd:*'})
-  .client({type: 'web', host: process.env.TARGETIP || '127.0.0.1', port: 10301, pin: 'role:cd-dojos,cmd:*'});
+  .client({type: 'web', host: process.env.DOCKER_HOST_IP || process.env.process.env.TARGETIP || '127.0.0.1', port: 10304, pin: 'role:cd-salesforce,cmd:*'})
+  .client({type: 'web', host: process.env.DOCKER_HOST_IP || process.env.process.env.TARGETIP || '127.0.0.1', port: 10301, pin: 'role:cd-dojos,cmd:*'});
