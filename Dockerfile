@@ -1,14 +1,17 @@
-FROM node:0.10
+FROM mhart/alpine-node:0.10
 MAINTAINER nearForm <info@nearform.com>
 
-RUN apt-get update
-RUN apt-get install -y postgresql-client
+RUN apk-install git make gcc g++ python postgresql-client
 
-RUN mkdir -p /usr/src/app
+RUN mkdir -p /usr/src/app /usr/src/app/config /usr/src/app/email-templates /usr/src/app/data /usr/src/app/scripts
 WORKDIR /usr/src/app
 
 COPY package.json /usr/src/app/
-RUN npm install && rm -rf /root/.npm
-COPY . /usr/src/app
+RUN npm install --production && rm -rf /root/.npm
+COPY config /usr/src/app/config/
+COPY data /usr/src/app/data/
+COPY scripts /usr/src/app/scripts/
+COPY email-templates /usr/src/app/email-templates/
+COPY *.js /usr/src/app/  
 
 VOLUME ["/usr/src/app/public"]
