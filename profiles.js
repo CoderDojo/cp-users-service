@@ -832,8 +832,8 @@ module.exports = function(options) {
           var avatarInfo = {
             oid: oid.toString(),
             sizeBytes: 0,
-            name: file.name,
-            type: file.type
+            name: args.fileName,
+            type: args.fileType
           };
 
           if (err) {
@@ -844,7 +844,7 @@ module.exports = function(options) {
             return;
           }
 
-          var buf = new Buffer(file.base64, 'base64');
+          var buf = new Buffer(file, 'base64');
 
           stream.write(buf, 'base64', function() {
             stream.end();
