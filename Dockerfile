@@ -14,3 +14,4 @@ COPY scripts /usr/src/app/scripts/
 COPY email-templates /usr/src/app/email-templates/
 COPY *.js /usr/src/app/  
 
+RUN apk del make gcc g++ python && rm -rf /tmp/* /root/.npm /root/.node-gyp
