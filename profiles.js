@@ -115,7 +115,7 @@ module.exports = function(options) {
    
     var profileKeys = _.keys(profile);
     var missingKeys = _.difference(requiredProfileFields, profileKeys);
-    if(_.isEmpty) profile.requiredFieldsComplete = true;
+    if(_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
 
     if(args.user !== profile.userId) return done(null, new Error('Profiles can only be saved by the profile user.'));
 
@@ -529,6 +529,11 @@ module.exports = function(options) {
 
   function cmd_save(args, done) {
     var profile = args.profile;
+
+    var profileKeys = _.keys(profile);
+    var missingKeys = _.difference(requiredProfileFields, profileKeys);
+    if(_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
+
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, done);
   }
 
