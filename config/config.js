@@ -41,6 +41,12 @@ module.exports = function() {
         },
         'auth-create-reset-de_DE': {
           subject:'CoderDojo Password Reset German'
+        },
+        'invite-ninja-over-13-en_US': {
+          subject:'Approve Parent Request'
+        },
+        'invite-ninja-over-13-de_DE': {
+          subject:'Approve Parent Request'
         }
       }
     },

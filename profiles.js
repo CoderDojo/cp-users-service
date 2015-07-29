@@ -2,6 +2,8 @@
 
 var pg = require('pg');
 var LargeObjectManager = require('pg-large-object').LargeObjectManager;
+var shortid = require('shortid');
+var moment = require('moment');
 
 module.exports = function(options) {
   var seneca = this;
@@ -100,6 +102,8 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'change_avatar'}, cmd_change_avatar);
   seneca.add({role: plugin, cmd: 'get_avatar'}, cmd_get_avatar);
   seneca.add({role: plugin, cmd: 'load_parents_for_user'}, cmd_load_parents_for_user);
+  seneca.add({role: plugin, cmd: 'invite_ninja'}, cmd_invite_ninja);
+  seneca.add({role: plugin, cmd: 'approve_invite_ninja'}, cmd_approve_invite_ninja);
 
 
   function cmd_search(args, done){
@@ -979,6 +983,171 @@ module.exports = function(options) {
         return done(null, parents);
       }); 
     });
+  }
+
+  function cmd_invite_ninja(args, done) {
+    var seneca = this;
+    var ninjaEmail = args.ninjaEmail;
+    var ninjaProfile;
+    var inviteToken;
+
+    async.waterfall([
+      validateInviteRequest,
+      loadParentProfile,
+      addTokenToParentProfile,
+      emailNinja,
+    ], done);
+
+    function validateInviteRequest(done) {
+      //Requesting user should have parent-guardian user type.
+      //Ninja email should exist in cd_profiles.
+      //Ninja should have attendee-o13 user type.
+      async.series([
+        validateRequestingUserIsParent,
+        validateNinjaEmailExists,
+        validateNinjaHasAttendeeO13UserType
+      ], done);
+
+      function validateRequestingUserIsParent(done) {
+        seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: args.user}}, function (err, usersDojos) {
+          if(err) return done(err);
+          var parentUserDojo = usersDojos[0];
+          if(_.contains(parentUserDojo.userTypes, 'parent-guardian')) return done();
+          return done(new Error('You must be a parent to invite a Ninja'));
+        });
+      }
+
+      function validateNinjaEmailExists(done) {
+        seneca.act({role: plugin, cmd: 'list_query', query: {email: ninjaEmail}}, function (err, ninjaProfiles) {
+          if(err) return done(err);
+          if(_.isEmpty(ninjaProfiles)) return done(new Error('Invalid invite request. Ninja email does not exist.'));
+          ninjaProfile = ninjaProfiles[0];
+          return done();
+        });
+      }
+
+      function validateNinjaHasAttendeeO13UserType(done) {
+        seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: ninjaProfile.userId}}, function (err, ninjaUsersDojos) {
+          if(err) return done(err);
+          var attendeeO13TypeFound = _.find(ninjaUsersDojos, function (ninjaUserDojo) {
+            return _.contains(ninjaUserDojo.userTypes, 'attendee-o13');
+          });
+          if(attendeeO13TypeFound || ninjaProfile.userType === 'attendee-o13') return done();
+          return done(new Error('Ninja must be an over 13 attendee'));
+        });
+      }
+    }
+
+    function loadParentProfile(validationResponse, done) {
+      seneca.act({role: plugin, cmd: 'list_query', query: {userId: args.user}}, done);
+    }
+
+    function addTokenToParentProfile(profiles, done) {
+      var parentProfile = profiles[0];
+      inviteToken = {
+        id: shortid.generate(),
+        ninjaEmail: ninjaEmail,
+        parentProfileId: parentProfile.id,
+        timestamp: new Date()
+      };
+
+      if(!parentProfile.ninjaInvites) parentProfile.ninjaInvites = [];
+      parentProfile.ninjaInvites.push(inviteToken);
+      parentProfile.ninjaInvites = _.chain(parentProfile.ninjaInvites)
+        .sortBy(function (ninjaInvite) {
+          return ninjaInvite.timestamp;
+        })
+        .reverse()
+        .uniq(function (ninjaInvite) {
+          return ninjaInvite.ninjaEmail;
+        })
+        .value();
+      seneca.act({role: plugin, cmd: 'save', profile: parentProfile}, done);
+    }
+
+    function emailNinja(parentProfile, done) {
+      var zenHostname = args.zenHostname;
+      var content = {
+        ninjaName: ninjaProfile.name,
+        parentName: parentProfile.name,
+        parentEmail: parentProfile.email,
+        link: 'http://'+zenHostname+'/dashboard/approve_invite_ninja/'+inviteToken.parentProfileId+'/'+inviteToken.id,
+        year: moment(new Date()).format('YYYY')
+      };
+
+      var code = 'invite-ninja-over-13-' + args.locality;
+      seneca.act({role:'email-notifications', cmd: 'send', to:ninjaEmail, content:content, code: code}, done);
+    }
+
+  }
+
+  function cmd_approve_invite_ninja(args, done) {
+    var seneca = this;
+    var inviteData = args.data;
+    var ninjaProfile;
+    var parentProfile;
+
+    async.series([
+      validateRequest,
+      updateNinjaAndParentProfiles,
+      addNinjaToParentsDojos
+    ], done);
+
+    function validateRequest(done) {
+      seneca.act({role: plugin, cmd: 'load', id: inviteData.parentProfileId}, function (err, response) {
+        if(err) return done(err);
+        parentProfile = response;
+        if(!parentProfile.ninjaInvites) return done(new Error('No invite tokens exist for this profile'));
+        var inviteTokenFound = _.find(parentProfile.ninjaInvites, function (ninjaInvite) {
+          return ninjaInvite.id === inviteData.inviteTokenId;
+        });
+        if(!inviteTokenFound) return done(new Error('Invalid token'));
+
+        seneca.act({role: plugin, cmd: 'list_query', query: {userId: args.user}}, function (err, ninjaProfiles) {
+          if(err) return done(err);
+          ninjaProfile = ninjaProfiles[0];
+          if(ninjaProfile.email !== inviteTokenFound.ninjaEmail) return done(new Error('You cannot approve invite Ninja requests for other users.'));
+          return done();
+        });
+
+      });
+    }
+
+    function updateNinjaAndParentProfiles(done) {
+      //Add parent user id to Ninja parents array
+      //Add ninja user id to Parent children array
+      if(!parentProfile.children) parentProfile.children = [];
+      parentProfile.children.push(ninjaProfile.userId);
+      parentProfile.ninjaInvites = _.without(parentProfile.ninjaInvites, _.findWhere(parentProfile.ninjaInvites, {id:inviteData.inviteTokenId}));
+
+      if(!ninjaProfile.parents) ninjaProfile.parents = [];
+      ninjaProfile.parents.push(parentProfile.userId);
+
+      seneca.act({role: plugin, cmd: 'save', profile: parentProfile}, function (err, response) {
+        if(err) return done(err);
+        seneca.act({role: plugin, cmd: 'save', profile: ninjaProfile}, done);
+      });
+    }
+
+    function addNinjaToParentsDojos(done) {
+      seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId:parentProfile.userId}}, function (err, parentUsersDojos) {
+        if(err) return done(err);
+        async.each(parentUsersDojos, function (parentUserDojo, cb) {
+          seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: ninjaProfile.userId, dojoId: parentUserDojo.dojoId}}, function (err, ninjaUsersDojos) {
+            if(err) return cb(err);
+            if(!_.isEmpty(ninjaUsersDojos)) return cb(); // Ninja is already a member of this Dojo.
+            var userDojo = {
+              owner: 0,
+              userId: ninjaProfile.userId,
+              dojoId: parentUserDojo.dojoId,
+              userTypes:['attendee-o13']
+            };
+            seneca.act({role: 'cd-dojos', cmd: 'save_usersdojos', userDojo: userDojo}, cb);
+          });
+        }, done);
+      });
+    }
+    
   }
 
   return {
