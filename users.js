@@ -202,7 +202,7 @@ module.exports = function(options){
       }
 
       users = _.map(users, function(user){
-        return {email: user.email, id: user.id};
+        return {email: user.email, id: user.id, name: user.name};
       });
 
       users = _.uniq(users, 'email');
