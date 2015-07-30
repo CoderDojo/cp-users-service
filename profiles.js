@@ -132,8 +132,13 @@ module.exports = function(options) {
         return done(err);
       }
 
-      var query = {userId: profile.userId};
-      seneca.act({role: 'cd-profiles', cmd: 'list', query: query, user: args.user}, done);
+      var forum_profile = _.clone(profile);
+      forum_profile.username = forum_profile.name;
+      seneca.act({role:'cd-nodebb-api', cmd:'update', user: forum_profile}, function(err, res){
+        
+        var query = {userId: profile.userId};
+        seneca.act({role: 'cd-profiles', cmd: 'list', query: query, user: args.user}, done);
+      });
     });
   }
 
