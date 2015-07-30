@@ -36,7 +36,8 @@
     "seneca-mail": "0.2.1",
     "seneca-postgresql-store": "0.7.0",
     "seneca-user": "0.2.10",
-    "shortid": "2.2.2"
+    "shortid": "2.2.2",
+    "xoauth2": "1.1.0"
   },
   "devDependencies": {
     "mocha": "2.2.4",
