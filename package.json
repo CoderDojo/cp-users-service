@@ -20,7 +20,9 @@
     "cuid": "1.2.5",
     "ejs": "1.0.0",
     "js-yaml": "3.2.7",
+    "le_node": "1.0.11",
     "lodash": "3.7.0",
+    "moment": "2.10.3",
     "newrelic": "1.19.2",
     "node-uuid": "1.4.3",
     "optimist": "0.6.1",
@@ -29,13 +31,12 @@
     "postgrator": "2.2.0",
     "request": "2.58.0",
     "seneca": "0.6.1",
+    "seneca-auth": "0.2.10",
     "seneca-elasticsearch": "git://github.com/nearform/seneca-elasticsearch.git",
     "seneca-mail": "0.2.1",
     "seneca-postgresql-store": "0.7.0",
     "seneca-user": "0.2.10",
-    "seneca-auth": "0.2.10",
-    "shortid": "2.2.2",
-    "moment": "2.10.3"
+    "shortid": "2.2.2"
   },
   "devDependencies": {
     "mocha": "2.2.4",
