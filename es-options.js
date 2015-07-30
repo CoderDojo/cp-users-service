@@ -1,5 +1,6 @@
 module.exports = {
   refreshOnSave : true,
+  fetchEntitesFromDB : true,
   entities: [{
     base: 'sys',
     name: 'user',
