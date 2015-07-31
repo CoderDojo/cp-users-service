@@ -82,8 +82,8 @@ module.exports = function() {
         coderdojoadultforums: process.env.CODERDOJO_FORUMS_SECRET || 'ilikecode'
       }
     },
-    napi: {
-      master_token: 'dc729193-f80c-4c5f-b75c-7a70f16b6e7e'
+    nodebb: {
+      apiToken: process.env.NODEBB_TOKEN
     }
   };
 }

@@ -22,7 +22,7 @@ module.exports = function(options){
 
   var host = options.host || 'localhost';
   var port = options.port || 4567;
-  var master_token = options.master_token;
+  var master_token = options.apiToken;
   var base_path = '/api/v1/';
 
   function cmd_map_id(args, done) {
@@ -117,7 +117,7 @@ module.exports = function(options){
     // is missing from the header
     // also take note of difference between user token and master token
     // or possibly wrong combination of querying_user and target_user
-    // it also takes place sometimes simply because plugin source code is just crap:
+    // it also takes place sometimes simply because plugin source code is just bad:
     //    in there, validations in users.js often end up being false because 1 !== '1'
 
     var options = prepReq(options);
