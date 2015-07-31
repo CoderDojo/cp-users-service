@@ -138,7 +138,7 @@ module.exports = function(options){
     }
 
     function registerUser(success, done){
-      args = _.omit(args, ['g-recaptcha-response', 'zenHostname', 'locality']);
+      args = _.omit(args, ['g-recaptcha-response', 'zenHostname', 'locality', 'user']);
 
       args.roles = ['basic-user'];
       args.mailingList = (args.mailingList) ? 1 : 0;
