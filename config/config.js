@@ -97,8 +97,8 @@ module.exports = function() {
         'auth-register-en_US': {
           subject:'Welcome to CoderDojo!'
         },
-        'auth-register-de_DE': {
-          subject:'Welcome to CoderDojo!'
+        'auth-register-it_IT': {
+          subject:'Benvenuti a CoderDojo!'
         }
       }
     },
