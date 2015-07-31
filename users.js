@@ -130,7 +130,7 @@ module.exports = function(options){
         body = JSON.parse(body);
 
         if(!body.success){
-          return done(JSON.stringify(body['error-codes']));
+          return done('captcha-failed');
         }
 
         return done(null, body.success);
@@ -145,7 +145,9 @@ module.exports = function(options){
 
       seneca.act({role:'user', cmd:'register'}, args, function (err, registerResponse) {
         if(err) return done(err);
-        if(!registerResponse.ok) return done(new Error(registerResponse.why));
+        if(!registerResponse.ok){
+          return done(null, registerResponse);
+        }
 
         var user = registerResponse.user;
         //Create user profile based on initial user type.
@@ -167,21 +169,31 @@ module.exports = function(options){
     }
 
     function sendWelcomeEmail(registerResponse, done) {
-      seneca.act({role:'email-notifications', cmd:'send'}, 
-        {code: emailCode,
-        to: args.email,
-        content:{name: args.name, year: moment(new Date()).format('YYYY'), link: 'http://' + zenHostname}
-      }, function (err, response) {
-        if(err) return done(err);
-        return done(null, registerResponse);
-      });
+      if(registerResponse.ok){
+        seneca.act({role:'email-notifications', cmd:'send'}, 
+          {code: emailCode,
+          to: args.email,
+          content:{name: args.name, year: moment(new Date()).format('YYYY'), link: 'http://' + zenHostname}
+        }, function (err, response) {
+          if(err) return done(err);
+          return done(null, registerResponse);
+        });
+      } else {
+        done(null, registerResponse);
+      }
     }
 
     async.waterfall([
       verifyCaptcha,
       registerUser,
       sendWelcomeEmail
-    ], done);
+    ], function(err, results){
+      if(err){
+        return done(null, {error: err});
+      } 
+
+      return done(null, results);
+    });
   }
 
   function cmd_promote(args, done) {
