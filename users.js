@@ -94,13 +94,16 @@ module.exports = function(options){
 
   function cmd_register(args, done) {
     var isChampion = args.isChampion === true;
+    var locality = args.locality || 'en_US';
+    var emailCode = 'auth-register-' + locality;
+    var zenHostname = args.zenHostname;
     delete args.isChampion;
 
     if(args.initUserType.name === 'attendee-u13'){
       return done(new Error('Unable to register as attendee-u13'));
     }
 
-    //Roles Available: basic-user, mentor, champion, cdf-admin
+    //Roles Available: basic-user, cdf-admin
     var seneca = this;
 
     if(!args['g-recaptcha-response']){
@@ -163,9 +166,21 @@ module.exports = function(options){
       });
     }
 
+    function sendWelcomeEmail(registerResponse, done) {
+      seneca.act({role:'email-notifications', cmd:'send'}, 
+        {code: emailCode,
+        to: args.email,
+        content:{name: args.name, year: moment(new Date()).format('YYYY'), link: 'http://' + zenHostname}
+      }, function (err, response) {
+        if(err) return done(err);
+        return done(null, registerResponse);
+      });
+    }
+
     async.waterfall([
       verifyCaptcha,
-      registerUser
+      registerUser,
+      sendWelcomeEmail
     ], done);
   }
 
