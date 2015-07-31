@@ -126,6 +126,9 @@ module.exports = function() {
         coderdojoadultforums: process.env.CODERDOJO_FORUMS_SECRET || 'ilikecode'
       }
     },
+    nodebb: {
+      apiToken: process.env.NODEBB_TOKEN
+    },
     log: log()
   };
 }

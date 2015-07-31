@@ -23,6 +23,7 @@ seneca.use(require('./oauth2.js'), config.oauth2);
 seneca.use('user');
 seneca.use('auth');
 seneca.use(require('./users.js'), {'email-notifications': config['email-notifications']});
+seneca.use(require('./nodebb-api.js'), config.nodebb);
 
 seneca.listen()
   .client({type: 'web', host: process.env.DOCKER_HOST_IP || process.env.TARGETIP || '127.0.0.1', port: 10304, pin: 'role:cd-salesforce,cmd:*'})
