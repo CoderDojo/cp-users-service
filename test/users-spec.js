@@ -20,6 +20,8 @@ seneca
   .use(__dirname + '/../users.js')
   .use(__dirname + '/../agreements.js')
   .use(__dirname + '/../profiles.js')
+  .use(__dirname + '/../email-notifications.js')
+  .use('mail', config.mailtrap)
   .use('user');
 
 var userEnt = seneca.make$('sys/user'),

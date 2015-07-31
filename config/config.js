@@ -1,7 +1,53 @@
 'use strict';
 var path = require('path');
+var assert = require('assert');
+var LogEntries = require('le_node');
+var generator = require('xoauth2').createXOAuth2Generator({
+  user: process.env.GMAIL_USER,
+  clientId: process.env.GMAIL_CLIENT_ID,
+  clientSecret: process.env.GMAIL_CLIENT_SECRET,
+  refreshToken: process.env.GMAIL_REFRESH_TOKEN
+});
 
 module.exports = function() {
+  function log () {
+    // seneca custom log handlers
+    function debugHandler() {
+      if (process.env.LOGENTRIES_ENABLED === 'true') {
+        assert.ok(process.env.LOGENTRIES_DEBUG_TOKEN, 'No LOGENTRIES_DEBUG_TOKEN set');
+        var le = new LogEntries({
+          token: process.env.LOGENTRIES_DEBUG_TOKEN,
+          flatten: true,
+          flattenArrays: true
+        });
+
+        le.log('debug', arguments);
+      }
+    }
+
+    function errorHandler() {
+      console.error(JSON.stringify(arguments));
+
+      if (process.env.LOGENTRIES_ENABLED === 'true') {
+        assert.ok(process.env.LOGENTRIES_ERRORS_TOKEN, 'No LOGENTRIES_ERROR_TOKEN set');
+        var le = new LogEntries({
+          token: process.env.LOGENTRIES_ERRORS_TOKEN,
+          flatten: true,
+          flattenArrays: true
+        });
+
+        le.log('err', arguments);
+      }
+    }
+
+    return {
+      map:[{
+        level:'debug', handler: debugHandler
+      }, {
+        level:'error', handler: errorHandler
+      }]
+    };
+  };
 
   function pgConfig() {
     return {
@@ -12,21 +58,9 @@ module.exports = function() {
       password: process.env.POSTGRES_PASSWORD
     }
   }
-
-  function esConfig() {
-    return {
-      connection: {
-        host : (process.env.ES_HOST || '127.0.0.1') + ':9200',
-        index: process.env.ES_INDEX,
-        sniffOnStart: false,
-        sniffInterval: false
-      }
-    };
-  }
-
+  
   return {
     'postgresql-store': pgConfig(),
-    elasticsearch: esConfig(),
     'email-notifications': {
       sendemail:true,
       email: {
@@ -47,10 +81,16 @@ module.exports = function() {
         },
         'invite-ninja-over-13-de_DE': {
           subject:'Approve Parent Request'
+        },
+        'auth-register-en_US': {
+          subject:'Welcome to CoderDojo!'
+        },
+        'auth-register-it_IT': {
+          subject:'Benvenuti a CoderDojo!'
         }
       }
     },
-    mail: {
+    mailtrap: {
       folder: path.resolve(__dirname + '/../email-templates'),
       mail: {
         from:'no-reply@coderdojo.com'
@@ -62,11 +102,15 @@ module.exports = function() {
           user: process.env.MAIL_USER,
           pass: process.env.MAIL_PASS
         }
-        // service: 'Gmail',
-        // auth: {
-        //   user: 'youremail@example.com',
-        //   pass: 'yourpass'
-        // }
+      }
+    },
+    gmail: {
+      folder: path.resolve(__dirname + '/../email-templates'),
+      config: {
+        service: 'gmail',
+        auth: {
+          xoauth2: generator
+        }
       }
     },
     'recaptcha_secret_key': process.env.RECAPTCHA_SECRET_KEY,
@@ -84,6 +128,7 @@ module.exports = function() {
     },
     nodebb: {
       apiToken: process.env.NODEBB_TOKEN
-    }
+    },
+    log: log()
   };
 }
