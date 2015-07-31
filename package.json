@@ -32,7 +32,7 @@
     "request": "2.58.0",
     "seneca": "0.6.1",
     "seneca-auth": "0.2.10",
-    "seneca-elasticsearch": "git://github.com/sigismondm/seneca-elasticsearch#master",
+    "seneca-elasticsearch": "git://github.com/nearform/seneca-elasticsearch",
     "seneca-mail": "0.2.1",
     "seneca-postgresql-store": "0.7.0",
     "seneca-user": "0.2.10",
