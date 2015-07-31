@@ -38,7 +38,7 @@ module.exports = function(options){
     sendReq({
       path: base_path + 'users/' + target_user + '/external?' + qs,
     }, function(err, res){
-      if (res.error) return handleErr(res.error, done);
+      if (err) return handleErr(err, done);
       if (!res.payload.uid) return handleErr(new Error('user not found: ' + target_user), done)
       done(null, res.payload.uid);
     });
@@ -69,7 +69,7 @@ module.exports = function(options){
         },
         data: data
       }, function(err, res){
-        if (res.error) return handleErr(res.error, done);
+        if (err) return handleErr(err, done);
         if (res.message) return handleErr(res.message, done);
         done(null, args.user);
       });
@@ -86,7 +86,7 @@ module.exports = function(options){
       sendReq({
         path: base_path + 'users/' + target_user + '/tokens?_uid=' + querying_user,
       }, function(err, res){
-        if (res.error) return handleErr(res.error, done);
+        if (err) return handleErr(err, done);
         done(null, res.payload.tokens);
       });
     });
@@ -105,7 +105,7 @@ module.exports = function(options){
         path: base_path + 'users/' + target_user + '/tokens?_uid=' + querying_user,
         method: 'POST'
       }, function(err, res){
-        if (res.error) return handleErr(res.error, done);
+        if (err) return handleErr(err, done);
         done(null, res.payload.token);
       });
     });
@@ -133,14 +133,14 @@ module.exports = function(options){
         try {
           res = JSON.parse(str);
         } catch(e){
-          return handleErr(new Error('response parsing err: ' + e + ' in "' + res + '"'), done)
+          return done(new Error('response parsing err: ' + e + ' in "' + str + '"'))
         }
-        if (res.code === 'not-authorised') return handleErr(res.code + ', ' + res.message + ' Probably due to invalid master token', done)
+        if (res.code === 'not-authorised') return done(res.code + ', ' + res.message + ' Probably due to invalid master token')
         done(null, res);
       });
     });
     req.on('error', function(err) {
-      return handleErr(err + ' while accessing ' + util.inspect(options), done);
+      return done(err + ' while accessing ' + util.inspect(options));
     });
 
     if (options.data) req.write(options.data);
