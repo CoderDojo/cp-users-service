@@ -10,11 +10,6 @@ function postgres_test_data {
     psql --single-transaction -h $POSTGRES_HOST -U $POSTGRES_USERNAME -d $POSTGRES_NAME -f "$PROJECT_DIR/scripts/database/pg/populate-users.sql" --port $POSTGRES_PORT
 }
 
-function delete_elasticsearch_index {
-    echo "Deleting '$ES_INDEX' index"
-    curl -XDELETE "http://$ES_HOST:9200/'$ES_INDEX?pretty"
-}
-
 function test_data {
     #this inserts the two test users admin@example.com & manager@example.com
     #this is not done in zen-platform anymore
@@ -23,7 +18,6 @@ function test_data {
 
 # Don't import this test users for now.
 #postgres_test_data
-delete_elasticsearch_index
 test_data
 
 echo "-------------------------------------------------------"
