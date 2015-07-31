@@ -93,6 +93,12 @@ module.exports = function() {
         },
         'invite-ninja-over-13-de_DE': {
           subject:'Approve Parent Request'
+        },
+        'auth-register-en_US': {
+          subject:'Welcome to CoderDojo!'
+        },
+        'auth-register-de_DE': {
+          subject:'Welcome to CoderDojo!'
         }
       }
     },
