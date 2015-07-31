@@ -3,10 +3,7 @@
 if (process.env.NEW_RELIC_ENABLED === "true") require('newrelic');
 
 var _ =require('lodash');
-
 var config = require('./config/config.js')();
-var ESOptions = require('./es-options.js');
-
 var seneca = require('seneca')();
 
 seneca.log.info('using config', JSON.stringify(config, null, 4));
@@ -14,8 +11,6 @@ seneca.log.info('using config', JSON.stringify(config, null, 4));
 seneca.options(config);
 
 seneca.use('postgresql-store', config["postgresql-store"]);
-seneca.use('elasticsearch', _.defaults(config["elasticsearch"], ESOptions));
-seneca.use(require('./es.js'));
 if(process.env.MAILTRAP_ENABLED === 'true') {
   seneca.use('mail', config.mailtrap);
 } else {
