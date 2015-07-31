@@ -121,7 +121,6 @@ module.exports = function(options){
     //    in there, validations in users.js often end up being false because 1 !== '1'
 
     var options = prepReq(options);
-    if (_.isError(options)) return handleErr(options, done);
 
     var req = http.request(options, function(response) {
       var str = '';
@@ -148,7 +147,6 @@ module.exports = function(options){
   }
 
   function prepReq(args) {
-    if (!master_token) return new Error('master_token missing');
     var options = {
       host: host,
       port: port,

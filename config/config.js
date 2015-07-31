@@ -127,6 +127,8 @@ module.exports = function() {
       }
     },
     nodebb: {
+      host: process.env.NODEBB_HOST,
+      port: process.env.NODEBB_PORT,
       apiToken: process.env.NODEBB_TOKEN
     },
     log: log()
