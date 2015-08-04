@@ -273,35 +273,19 @@ module.exports = function(options){
 
       user = user.data$();
 
-      var query = {
-        query: {
-          filtered: {
-            query: {
-              match_all: {}
-            },
-            filter: {
-              bool: {
-                must: [{
-                  term: {userId: args.id}
-                }]
-              }
-            }
-          }
-        }
-      };
-
+      var query = {userId: args.id}
+            
       seneca.act({
         role: 'cd-dojos',
-        cmd: 'search',
-        search: query,
-        type: 'cd_dojoleads',
+        cmd: 'search_dojo_leads',
+        query: query,
         user: user
       }, function (err, dojoLeads) {
         if (err) {
           return done(err)
         }
 
-        if (dojoLeads.total > 0) {
+        if (dojoLeads.length > 0) {
           seneca.act({role: 'cd-dojos', cmd: 'my_dojos', user: user}, function (err, myDojos) {
             if (err) {
               return done(err)
