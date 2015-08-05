@@ -73,7 +73,7 @@ module.exports = function() {
         'auth-create-reset-en_US': {
           subject:'CoderDojo Password Reset'
         },
-        'auth-create-reset-de_DE': {
+        'auth-create-reset-it_IT': {
           subject:'CoderDojo Password Reset German'
         },
         'invite-ninja-over-13-en_US': {
