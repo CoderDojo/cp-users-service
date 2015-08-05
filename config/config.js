@@ -67,19 +67,19 @@ module.exports = function() {
         'invite-parent-guardian-en_US':{
           subject:'Invitation to become a Parent/Guardian'
         },
-        'invite-parent-guardian-de_DE':{
-          subject:'Invitation to become a Parent/Guardian in german'
+        'invite-parent-guardian-it_IT':{
+          subject:'Invitation to become a Parent/Guardian'
         },
         'auth-create-reset-en_US': {
           subject:'CoderDojo Password Reset'
         },
         'auth-create-reset-it_IT': {
-          subject:'CoderDojo Password Reset German'
+          subject:'CoderDojo Password Reset'
         },
         'invite-ninja-over-13-en_US': {
           subject:'Approve Parent Request'
         },
-        'invite-ninja-over-13-de_DE': {
+        'invite-ninja-over-13-it_IT': {
           subject:'Approve Parent Request'
         },
         'auth-register-en_US': {
