@@ -651,8 +651,8 @@ module.exports = function(options) {
         year: 2015 
       };
 
-
-      var code = 'invite-parent-guardian-' + args.locality;
+      var locality = args.locality || 'en_us';
+      var code = 'invite-parent-guardian-' + locality.toLowerCase();
       var templates = {};
 
       try {
@@ -661,7 +661,7 @@ module.exports = function(options) {
 
 
       } catch(err){
-        code = 'invite-parent-guardian-' + 'en_US';
+        code = 'invite-parent-guardian-' + 'en_us';
       }
 
       var to =  inviteRequest.invitedParentEmail;
@@ -1080,8 +1080,8 @@ module.exports = function(options) {
         link: 'http://'+zenHostname+'/dashboard/approve_invite_ninja/'+inviteToken.parentProfileId+'/'+inviteToken.id,
         year: moment(new Date()).format('YYYY')
       };
-
-      var code = 'invite-ninja-over-13-' + args.locality;
+      var locality = args.locality || 'en_us';
+      var code = 'invite-ninja-over-13-' + locality.toLowerCase();
       seneca.act({role:'email-notifications', cmd: 'send', to:ninjaEmail, content:content, code: code}, done);
     }
 
