@@ -64,28 +64,28 @@ module.exports = function() {
     'email-notifications': {
       sendemail:true,
       email: {
-        'invite-parent-guardian-en_US':{
+        'invite-parent-guardian-en_us':{
           subject:'Invitation to become a Parent/Guardian'
         },
-        'invite-parent-guardian-de_DE':{
-          subject:'Invitation to become a Parent/Guardian in german'
+        'invite-parent-guardian-it_it':{
+          subject:'Invitation to become a Parent/Guardian'
         },
-        'auth-create-reset-en_US': {
+        'auth-create-reset-en_us': {
           subject:'CoderDojo Password Reset'
         },
-        'auth-create-reset-de_DE': {
-          subject:'CoderDojo Password Reset German'
+        'auth-create-reset-it_it': {
+          subject:'CoderDojo Password Reset'
         },
-        'invite-ninja-over-13-en_US': {
+        'invite-ninja-over-13-en_us': {
           subject:'Approve Parent Request'
         },
-        'invite-ninja-over-13-de_DE': {
+        'invite-ninja-over-13-it_it': {
           subject:'Approve Parent Request'
         },
-        'auth-register-en_US': {
+        'auth-register-en_us': {
           subject:'Welcome to CoderDojo!'
         },
-        'auth-register-it_IT': {
+        'auth-register-it_it': {
           subject:'Benvenuti a CoderDojo!'
         }
       }

@@ -94,8 +94,8 @@ module.exports = function(options){
 
   function cmd_register(args, done) {
     var isChampion = args.isChampion === true;
-    var locality = args.locality || 'en_US';
-    var emailCode = 'auth-register-' + locality;
+    var locality = args.locality || 'en_us';
+    var emailCode = 'auth-register-' + locality.toLowerCase();
     var zenHostname = args.zenHostname;
     delete args.isChampion;
 
@@ -317,8 +317,8 @@ module.exports = function(options){
 
     var nick  = args.nick || args.username;
     var email = args.email;
-    var locality = args.locality || 'en_US';
-    var emailCode = 'auth-create-reset-' + locality;
+    var locality = args.locality || 'en_us';
+    var emailCode = 'auth-create-reset-' + locality.toLowerCase();
     var zenHostname = args.zenHostname || '127.0.0.1:8000';
 
     var args = {}
