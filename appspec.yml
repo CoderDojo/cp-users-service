@@ -3,8 +3,6 @@ os: linux
 files:
   - source: deploy/cp-users-service.conf
     destination: /etc/init/
-  - source: deploy/cp-users-service.env
-    destination: /etc/zen
   - source: /
     destination: /opt/zen/cp-users-service
 
