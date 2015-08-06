@@ -29,15 +29,8 @@ module.exports = function(options){
     var seneca = this;
     var id = args.id;
     var userEntity = seneca.make(ENTITY_NS);
-    
-    async.waterfall([
-      function(done) {
-        seneca.make(ENTITY_NS).load$({id: args.id}, done);
-      },
-      function(user, done) {
-        return done(null, user.data$());
-      }
-    ], done);
+
+    userEntity.load$(id, done);
   }
 
   function cmd_list(args, done){
