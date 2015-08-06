@@ -94,8 +94,9 @@ module.exports = function(options){
 
   function cmd_register(args, done) {
     var isChampion = args.isChampion === true;
-    var locality = args.locality || 'en_us';
-    var emailCode = 'auth-register-' + locality.toLowerCase();
+    var locality = args.locality || 'en_US';
+    var emailCode = 'auth-register-' + locality;
+    var emailSubject = args.emailSubject;
     var zenHostname = args.zenHostname;
     delete args.isChampion;
 
@@ -138,7 +139,7 @@ module.exports = function(options){
     }
 
     function registerUser(success, done){
-      args = _.omit(args, ['g-recaptcha-response', 'zenHostname', 'locality', 'user']);
+      args = _.omit(args, ['g-recaptcha-response', 'zenHostname', 'locality', 'user', 'emailSubject']);
 
       args.roles = ['basic-user'];
       args.mailingList = (args.mailingList) ? 1 : 0;
@@ -173,6 +174,7 @@ module.exports = function(options){
         seneca.act({role:'email-notifications', cmd:'send'}, 
           {code: emailCode,
           to: args.email,
+          subject: emailSubject,
           content:{name: args.name, year: moment(new Date()).format('YYYY'), link: 'http://' + zenHostname}
         }, function (err, response) {
           if(err) return done(err);
@@ -317,8 +319,9 @@ module.exports = function(options){
 
     var nick  = args.nick || args.username;
     var email = args.email;
-    var locality = args.locality || 'en_us';
-    var emailCode = 'auth-create-reset-' + locality.toLowerCase();
+    var locality = args.locality || 'en_US';
+    var emailCode = 'auth-create-reset-' + locality;
+    var emailSubject = args.emailSubject;
     var zenHostname = args.zenHostname || '127.0.0.1:8000';
 
     var args = {}
@@ -331,6 +334,7 @@ module.exports = function(options){
         seneca.act({role:'email-notifications', cmd:'send'}, 
           {code: emailCode,
           to: out.user.email,
+          subject: emailSubject,
           content:{name: out.user.name, resetlink: 'http://' + zenHostname + '/reset_password/' + out.reset.id, year: moment(new Date()).format('YYYY')}
         }, function (err, response) {
           if(err) return done(err);
