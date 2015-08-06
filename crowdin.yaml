@@ -1,0 +1,8 @@
+base_path: .
+   
+files:
+  -
+    source: '/email-templates/auth-create-reset-en_us/users-auth-create-reset.text.ejs'
+    dest: '/users-auth-create-reset.text.txt'
+    translation: '/email-templates/auth-create-reset-%locale_with_underscore%/%file_name%.ejs'
+    type: 'txt'
