@@ -651,8 +651,9 @@ module.exports = function(options) {
         year: 2015 
       };
 
-      var locality = args.locality || 'en_us';
-      var code = 'invite-parent-guardian-' + locality.toLowerCase();
+      var locality = args.locality || 'en_US';
+      var emailSubject = args.emailSubject;
+      var code = 'invite-parent-guardian-' + locality;
       var templates = {};
 
       try {
@@ -661,12 +662,12 @@ module.exports = function(options) {
 
 
       } catch(err){
-        code = 'invite-parent-guardian-' + 'en_us';
+        code = 'invite-parent-guardian-' + 'en_US';
       }
 
       var to =  inviteRequest.invitedParentEmail;
 
-      seneca.act({role:'email-notifications', cmd: 'send', to:to, content:content, code: code}, done);
+      seneca.act({role:'email-notifications', cmd: 'send', to:to, content:content, code: code, subject: emailSubject}, done);
     }
 
   }
@@ -993,7 +994,9 @@ module.exports = function(options) {
 
   function cmd_invite_ninja(args, done) {
     var seneca = this;
-    var ninjaEmail = args.ninjaEmail;
+    var ninjaData = args.ninjaData;
+    var ninjaEmail = ninjaData.ninjaEmail;
+    var emailSubject = ninjaData.emailSubject;
     var ninjaProfile;
     var inviteToken;
 
@@ -1080,9 +1083,9 @@ module.exports = function(options) {
         link: 'http://'+zenHostname+'/dashboard/approve_invite_ninja/'+inviteToken.parentProfileId+'/'+inviteToken.id,
         year: moment(new Date()).format('YYYY')
       };
-      var locality = args.locality || 'en_us';
-      var code = 'invite-ninja-over-13-' + locality.toLowerCase();
-      seneca.act({role:'email-notifications', cmd: 'send', to:ninjaEmail, content:content, code: code}, done);
+      var locality = args.locality || 'en_US';
+      var code = 'invite-ninja-over-13-' + locality;
+      seneca.act({role:'email-notifications', cmd: 'send', to:ninjaEmail, content:content, code: code, subject: emailSubject}, done);
     }
 
   }
