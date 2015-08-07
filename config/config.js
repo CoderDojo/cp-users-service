@@ -108,6 +108,9 @@ module.exports = function() {
       apiToken: process.env.NODEBB_TOKEN
     },
     timeout: 120000,
+    debug: {
+      undead: true
+    },
     log: log()
   };
 }
