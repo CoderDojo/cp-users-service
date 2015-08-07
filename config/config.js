@@ -107,6 +107,9 @@ module.exports = function() {
       port: process.env.NODEBB_PORT,
       apiToken: process.env.NODEBB_TOKEN
     },
+    main: {
+      timeout: 120000
+    },
     log: log()
   };
 }
