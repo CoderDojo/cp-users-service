@@ -1012,16 +1012,25 @@ module.exports = function(options) {
       //Ninja email should exist in cd_profiles.
       //Ninja should have attendee-o13 user type.
       async.series([
+        validateRequestingUserIsNotParentOfNinja,
         validateRequestingUserIsParent,
         validateNinjaEmailExists,
         validateNinjaHasAttendeeO13UserType
       ], done);
 
+      function validateRequestingUserIsNotParentOfNinja(done) {
+        seneca.act({role: plugin, cmd: 'list_query', query: {email: ninjaEmail}}, function (err, ninjaProfiles) {
+          if(err) return done(err);
+          var ninjaProfile = ninjaProfiles[0];
+          if(_.contains(ninjaProfile.parents, args.user)) return done(new Error('User is already a parent of this Ninja'));
+          return done();
+        }); 
+      }
+
       function validateRequestingUserIsParent(done) {
         seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: args.user}}, function (err, usersDojos) {
           if(err) return done(err);
-          var parentUserDojo = usersDojos[0];
-          if(!parentUserDojo) {
+          if(_.isEmpty(usersDojos)) {
             //Not yet a member of any Dojo, check the user type in their profile.
             seneca.act({role: plugin, cmd: 'list_query'}, {query:{userId: args.user}}, function (err, parentProfiles) {
               if(err) return done(err);
@@ -1030,7 +1039,10 @@ module.exports = function(options) {
               return done(new Error('You must be a parent to invite a Ninja'));  
             });
           } else {
-            if(_.contains(parentUserDojo.userTypes, 'parent-guardian')) return done();
+            var parentTypeFound = _.find(usersDojos, function (parentUserDojo) {
+              return _.contains(parentUserDojo.userTypes, 'parent-guardian');
+            });
+            if(parentTypeFound) return done();
             return done(new Error('You must be a parent to invite a Ninja'));
           }
         });
@@ -1121,7 +1133,6 @@ module.exports = function(options) {
           return ninjaInvite.id === inviteData.inviteTokenId;
         });
         if(!inviteTokenFound) return done(new Error('Invalid token'));
-
         seneca.act({role: plugin, cmd: 'list_query', query: {userId: args.user}}, function (err, ninjaProfiles) {
           if(err) return done(err);
           ninjaProfile = ninjaProfiles[0];
