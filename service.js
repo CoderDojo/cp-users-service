@@ -25,6 +25,14 @@ seneca.use('auth');
 seneca.use(require('./users.js'), {'email-notifications': config['email-notifications']});
 seneca.use(require('./nodebb-api.js'), config.nodebb);
 
-seneca.listen()
+require('./migrate-psql-db.js')(function (err) {
+  if (err) {
+    console.error(err);
+    process.exit(-1);
+  }
+  console.log("Migrations ok");
+
+  seneca.listen()
   .client({type: 'web', host: process.env.DOCKER_HOST_IP || process.env.TARGETIP || '127.0.0.1', port: 10304, pin: 'role:cd-salesforce,cmd:*'})
   .client({type: 'web', host: process.env.DOCKER_HOST_IP || process.env.TARGETIP || '127.0.0.1', port: 10301, pin: 'role:cd-dojos,cmd:*'});
+});
