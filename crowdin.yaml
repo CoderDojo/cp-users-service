@@ -1,0 +1,52 @@
+base_path: .
+   
+files:
+  -
+    source: '/email-templates/auth-create-reset-en_US/users-auth-create-reset.text.ejs'
+    dest: '/users-auth-create-reset.text.txt'
+    translation: '/email-templates/auth-create-reset-%locale_with_underscore%/%file_name%.ejs'
+    type: 'txt'
+
+  -
+    source: '/email-templates/auth-create-reset-en_US/users-auth-create-reset.html.ejs'
+    dest: '/users-auth-create-reset.html.html'
+    translation: '/email-templates/auth-create-reset-%locale_with_underscore%/%file_name%.ejs'
+    type: 'html'
+
+  -
+    source: '/email-templates/auth-register-en_US/users-auth-register.html.ejs'
+    dest: '/users-auth-register.html.html'
+    translation: '/email-templates/auth-register-%locale_with_underscore%/%file_name%.ejs'
+    type: 'html'
+
+  -
+    source: '/email-templates/auth-register-en_US/users-auth-register.text.ejs'
+    dest: '/users-auth-register.text.txt'
+    translation: '/email-templates/auth-register-%locale_with_underscore%/%file_name%.ejs'
+    type: 'txt'
+
+  -
+    source: '/email-templates/invite-ninja-over-13-en_US/users-invite-ninja-over-13.html.ejs'
+    dest: '/users-invite-ninja-over-13.html.html'
+    translation: '/email-templates/invite-ninja-over-13-%locale_with_underscore%/%file_name%.ejs'
+    type: 'html'
+
+  -
+    source: '/email-templates/invite-ninja-over-13-en_US/users-invite-ninja-over-13.text.ejs'
+    dest: '/users-invite-ninja-over-13.text.txt'
+    translation: '/email-templates/invite-ninja-over-13-%locale_with_underscore%/%file_name%.ejs'
+    type: 'txt'
+
+  -
+    source: '/email-templates/invite-parent-guardian-en_US/invite-parent-guardian.html.ejs'
+    dest: '/invite-parent-guardian.html.html'
+    translation: '/email-templates/invite-parent-guardian-%locale_with_underscore%/%file_name%.ejs'
+    type: 'html'
+
+  -
+    source: '/email-templates/invite-parent-guardian-en_US/invite-parent-guardian.text.ejs'
+    dest: '/invite-parent-guardian.text.txt'
+    translation: '/email-templates/invite-parent-guardian-%locale_with_underscore%/%file_name%.ejs'
+    type: 'txt'
+  
+  

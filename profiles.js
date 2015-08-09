@@ -651,8 +651,9 @@ module.exports = function(options) {
         year: 2015 
       };
 
-      var locality = args.locality || 'en_us';
-      var code = 'invite-parent-guardian-' + locality.toLowerCase();
+      var locality = args.locality || 'en_US';
+      var emailSubject = args.emailSubject;
+      var code = 'invite-parent-guardian-' + locality;
       var templates = {};
 
       try {
@@ -661,12 +662,12 @@ module.exports = function(options) {
 
 
       } catch(err){
-        code = 'invite-parent-guardian-' + 'en_us';
+        code = 'invite-parent-guardian-' + 'en_US';
       }
 
       var to =  inviteRequest.invitedParentEmail;
 
-      seneca.act({role:'email-notifications', cmd: 'send', to:to, content:content, code: code}, done);
+      seneca.act({role:'email-notifications', cmd: 'send', to:to, content:content, code: code, subject: emailSubject}, done);
     }
 
   }
@@ -993,7 +994,9 @@ module.exports = function(options) {
 
   function cmd_invite_ninja(args, done) {
     var seneca = this;
-    var ninjaEmail = args.ninjaEmail;
+    var ninjaData = args.ninjaData;
+    var ninjaEmail = ninjaData.ninjaEmail;
+    var emailSubject = ninjaData.emailSubject;
     var ninjaProfile;
     var inviteToken;
 
@@ -1009,17 +1012,39 @@ module.exports = function(options) {
       //Ninja email should exist in cd_profiles.
       //Ninja should have attendee-o13 user type.
       async.series([
+        validateRequestingUserIsNotParentOfNinja,
         validateRequestingUserIsParent,
         validateNinjaEmailExists,
         validateNinjaHasAttendeeO13UserType
       ], done);
 
+      function validateRequestingUserIsNotParentOfNinja(done) {
+        seneca.act({role: plugin, cmd: 'list_query', query: {email: ninjaEmail}}, function (err, ninjaProfiles) {
+          if(err) return done(err);
+          var ninjaProfile = ninjaProfiles[0];
+          if(_.contains(ninjaProfile.parents, args.user)) return done(new Error('User is already a parent of this Ninja'));
+          return done();
+        }); 
+      }
+
       function validateRequestingUserIsParent(done) {
         seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: args.user}}, function (err, usersDojos) {
           if(err) return done(err);
-          var parentUserDojo = usersDojos[0];
-          if(_.contains(parentUserDojo.userTypes, 'parent-guardian')) return done();
-          return done(new Error('You must be a parent to invite a Ninja'));
+          if(_.isEmpty(usersDojos)) {
+            //Not yet a member of any Dojo, check the user type in their profile.
+            seneca.act({role: plugin, cmd: 'list_query'}, {query:{userId: args.user}}, function (err, parentProfiles) {
+              if(err) return done(err);
+              var parentProfile = parentProfiles[0];
+              if(parentProfile.userType === 'parent-guardian') return done();
+              return done(new Error('You must be a parent to invite a Ninja'));  
+            });
+          } else {
+            var parentTypeFound = _.find(usersDojos, function (parentUserDojo) {
+              return _.contains(parentUserDojo.userTypes, 'parent-guardian');
+            });
+            if(parentTypeFound) return done();
+            return done(new Error('You must be a parent to invite a Ninja'));
+          }
         });
       }
 
@@ -1045,11 +1070,11 @@ module.exports = function(options) {
     }
 
     function loadParentProfile(validationResponse, done) {
-      seneca.act({role: plugin, cmd: 'list_query', query: {userId: args.user}}, done);
+      seneca.act({role: plugin, cmd: 'list_query'}, {query:{userId: args.user}}, done);
     }
 
-    function addTokenToParentProfile(profiles, done) {
-      var parentProfile = profiles[0];
+    function addTokenToParentProfile(parentProfiles, done) {
+      var parentProfile = parentProfiles[0];
       inviteToken = {
         id: shortid.generate(),
         ninjaEmail: ninjaEmail,
@@ -1080,9 +1105,9 @@ module.exports = function(options) {
         link: 'http://'+zenHostname+'/dashboard/approve_invite_ninja/'+inviteToken.parentProfileId+'/'+inviteToken.id,
         year: moment(new Date()).format('YYYY')
       };
-      var locality = args.locality || 'en_us';
-      var code = 'invite-ninja-over-13-' + locality.toLowerCase();
-      seneca.act({role:'email-notifications', cmd: 'send', to:ninjaEmail, content:content, code: code}, done);
+      var locality = args.locality || 'en_US';
+      var code = 'invite-ninja-over-13-' + locality;
+      seneca.act({role:'email-notifications', cmd: 'send', to:ninjaEmail, content:content, code: code, subject: emailSubject}, done);
     }
 
   }
@@ -1108,7 +1133,6 @@ module.exports = function(options) {
           return ninjaInvite.id === inviteData.inviteTokenId;
         });
         if(!inviteTokenFound) return done(new Error('Invalid token'));
-
         seneca.act({role: plugin, cmd: 'list_query', query: {userId: args.user}}, function (err, ninjaProfiles) {
           if(err) return done(err);
           ninjaProfile = ninjaProfiles[0];
