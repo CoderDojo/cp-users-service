@@ -164,7 +164,7 @@ module.exports = function(options){
 
     function sendWelcomeEmail(registerResponse, done) {
       if(registerResponse.ok){
-        seneca.act({role:'email-notifications', cmd:'send'}, 
+        seneca.act({role:'email-notifications', cmd:'send'},
           {code: emailCode,
           to: args.email,
           subject: emailSubject,
@@ -185,7 +185,7 @@ module.exports = function(options){
     ], function(err, results){
       if(err){
         return done(null, {error: err});
-      } 
+      }
 
       return done(null, results);
     });
@@ -269,7 +269,7 @@ module.exports = function(options){
       user = user.data$();
 
       var query = {userId: args.id}
-            
+
       seneca.act({
         role: 'cd-dojos',
         cmd: 'search_dojo_leads',
@@ -324,7 +324,7 @@ module.exports = function(options){
     useract.create_reset( args, function( err, out ) {
       if(err || !out.ok) return done(err,out);
       if(options['email-notifications'].sendemail) {
-        seneca.act({role:'email-notifications', cmd:'send'}, 
+        seneca.act({role:'email-notifications', cmd:'send'},
           {code: emailCode,
           to: out.user.email,
           subject: emailSubject,
@@ -400,7 +400,7 @@ module.exports = function(options){
           return champion.id === userId
         });
         //Delete current user from champions list.
-        if(currentUser) champions = _.without(champions, currentUser); 
+        if(currentUser) champions = _.without(champions, currentUser);
         return done(null, champions);
       });
     });
