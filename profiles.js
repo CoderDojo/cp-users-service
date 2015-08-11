@@ -96,7 +96,7 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'update-youth-profile'}, cmd_update_youth);
   seneca.add({role: plugin, cmd: 'invite-parent-guardian'}, cmd_invite_parent_guardian);
   seneca.add({role: plugin, cmd: 'search'}, cmd_search);
-  seneca.add({role: plugin, cmd: 'accept-invite'}, cmd_accept_invite);
+  seneca.add({role: plugin, cmd: 'accept_parent_invite'}, cmd_accept_parent_invite);
   seneca.add({role: plugin, cmd: 'load_hidden_fields'}, cmd_load_hidden_fields);
   seneca.add({role: plugin, cmd: 'list_query'}, cmd_list_query);
   seneca.add({role: plugin, cmd: 'change_avatar'}, cmd_change_avatar);
@@ -548,275 +548,156 @@ module.exports = function(options) {
   }
 
   function cmd_invite_parent_guardian(args, done){
-    var inviteToken = uuid.v4();
     var data = args.data;
     var invitedParentEmail = data.invitedParentEmail;
     var childId = data.childId;
-    var requestingParentId = args.user;
-    
+    var emailSubject = data.emailSubject;
+    var requestingUserId = args.user;
+    var zenHostname = args.zenHostname;
+
     var childQuery = {
       userId: childId
     };
 
-    var parentQuery = {
-      userId: requestingParentId
-    };
-
     async.waterfall([
+      resolveParent,
       resolveChild,
-      resolveRequestingParent,
-      updateParentProfile,
+      updateChildProfile,
       sendEmail,
     ], done);
 
+    function resolveParent(done) {
+      seneca.act({role: plugin, cmd: 'search', query: {email: invitedParentEmail}}, function (err, results) {
+        if(err) return done(err);
+        return done(null, results[0]);
+      });
+    }
 
-    function resolveChild(done){
+    function resolveChild(parentProfile, done){
       seneca.act({role: plugin, cmd: 'search'}, {query: childQuery}, function(err, results){
-        if(err){
-          return done(err);
-        }
-
-        if(_.isEmpty(results)){
-          return done(new Error('Unable to find child profile'));
-        }
-
-        if(!_.contains(results[0].parents, args.user)){
-          return done(new Error('Not an existing parent or guardian'));
-        }
-
-        done(null, results[0]);
+        if(err) return done(err);
+        if(_.isEmpty(results)) return done(new Error('Unable to find child profile'));
+        return done(null, parentProfile, results[0]);
       });
     }
 
-    function resolveRequestingParent(childProfile, done){
-      seneca.act({role: plugin, cmd: 'search'}, {query: parentQuery}, function(err, results){
-        if(err){
-          return done(err);
-        }
-
-       if(_.isEmpty(results)){
-          return done(new Error('Unable to find parent profile'));
-        }
-
-
-        var parentProfile = results[0];
-        return done(null, parentProfile, childProfile);
-      });
-    }
-
-    function updateParentProfile(parentProfile, childProfile, done){
-      var timestamp = new Date();
-      
-      var inviteRequest = {
-        token: inviteToken,
-        invitedParentEmail: invitedParentEmail,
-        childProfileId: childProfile.userId,
-        timestamp: timestamp,
-        valid: true
+    function updateChildProfile(parentProfile, childProfile, done) {
+      var inviteToken = {
+        id: shortid.generate(),
+        childId: childId,
+        parentId: parentProfile.userId,
+        parentEmail: invitedParentEmail,
+        timestamp: new Date()
       };
 
-      if(!parentProfile.inviteRequests){
-        parentProfile.inviteRequests = [];
-      }
-
-      parentProfile.inviteRequests.push(inviteRequest);
-      
-      parentProfile.inviteRequests = _.chain(parentProfile.inviteRequests)
-        .sortBy(function(inviteRequest){
-          return inviteRequest.timestamp;
+      if(!childProfile.parentInvites) childProfile.parentInvites = [];
+      childProfile.parentInvites.push(inviteToken);
+      childProfile.parentInvites = _.chain(childProfile.parentInvites)
+        .sortBy(function (parentInvite) {
+          return parentInvite.timestamp;
         })
         .reverse()
+        .uniq(function (parentInvite) {
+          return parentInvite.parentEmail;
+        })
         .value();
 
-
-      seneca.act({role: plugin, cmd: 'save'}, {profile: parentProfile},function(err, parentProfile){
-        if(err){
-          return done(err);
-        }
-
-        done(err, parentProfile, childProfile, inviteRequest);
+      seneca.act({role: plugin, cmd: 'save', profile: childProfile}, function (err, result) {
+        if(err) return done(err);
+        return done(null, parentProfile, result, inviteToken);
       });
     }
 
-    function sendEmail(parentProfile, childProfile, inviteRequest, done){
-      if(!childProfile || !parentProfile){
-        return done(new Error('An error has occured while sending email'));
-      }
+    function sendEmail(parentProfile, childProfile, inviteToken, done){
+      if(!childProfile || !parentProfile) return done(new Error('An error has occured while sending email'));
 
-      //Externalize year
       var content = {
-        link: 'http://localhost:8000/accept-parent-guardian-request/' + parentProfile.userId + '/' + childProfile.userId + '/' + inviteToken,
+        link: 'http://' + zenHostname + '/dashboard/accept_parent_guardian_request/' + childProfile.id + '/' + inviteToken.id,
         childName: childProfile.name,
         parentName: parentProfile.name,
-        year: 2015 
+        year: moment(new Date()).format('YYYY')
       };
 
       var locality = args.locality || 'en_US';
-      var emailSubject = args.emailSubject;
       var code = 'invite-parent-guardian-' + locality;
-      var templates = {};
-
-      try {
-        templates.html = fs.statSync(path.join(so.mail.folder , code, 'html.ejs'));
-        templates.text = fs.statSync(path.join(so.mail.folder , code, 'text.ejs'));
-
-
-      } catch(err){
-        code = 'invite-parent-guardian-' + 'en_US';
-      }
-
-      var to =  inviteRequest.invitedParentEmail;
-
+      var to =  invitedParentEmail;
       seneca.act({role:'email-notifications', cmd: 'send', to:to, content:content, code: code, subject: emailSubject}, done);
     }
 
   }
 
-  function cmd_accept_invite(args, done){
+  function cmd_accept_parent_invite(args, done) {
     var data = args.data;
-    var inviteToken = data.inviteToken;
+    var inviteTokenId = data.inviteToken;
     var childProfileId = data.childProfileId;
-    var parentProfileId = data.parentProfileId;
+    var requestingUserId = args.user;
 
     async.waterfall([
-      getParentProfile,
-      getChildProfile,
-      getInvitedParentProfile,
-      validateInvite,
-      updateInviteParentProfile,
-      updateChildProfile,
-      invalidateInvitation
-    ], function(err){
-      if(err){
-        return done(err);
-      }
+      validateRequestingUserIsParent,
+      loadInvite,
+      updateParentProfile,
+      updateNinjaProfile,
+      removeInviteToken
+    ], done);
 
-      return done();
-    });
-
-    function getParentProfile(done){
-      seneca.act({role: plugin, cmd: 'search'}, {query: {userId : parentProfileId}}, function(err, results){
-        if(err){
-          return done(err);
-        }
-
-        if(_.isEmpty(results)){
-          return done(new Error('Invalid invite'));
-        }
-
-        var parent =  results[0];
-
-        if(!_.contains(parent.children, childProfileId)){
-          return done(new Error('Cannot add child'));
-        }
-
-        return done(null, parent);
+    function validateRequestingUserIsParent(done) {
+      seneca.act({role: plugin, cmd: 'list_query', query: {userId: requestingUserId}}, function (err, requestingUserProfiles) {
+        if(err) return done(err);
+        var requestingUserProfile = requestingUserProfiles[0];
+        if(requestingUserProfile.userType === 'parent-guardian') return done();
+        seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: requestingUserId}}, function (err, usersDojos) {
+          if(err) return done(err);
+          var parentTypeFound = _.find(usersDojos, function (userDojo) {
+            return _.contains(userDojo.userTypes, 'parent-guardian');
+          });
+          if(parentTypeFound) return done();
+          return done(new Error('You must have the parent/guardian user type to accept this invite'));
+        });
       });
     }
 
-    function getChildProfile(parent, done){
-      seneca.act({role: plugin, cmd: 'search'}, {query: {userId: childProfileId}}, function(err, results){
-        if(err){
-          return done(err);
-        }
-
-        if(_.isEmpty(results)){
-          return done(new Error('Invalid invite'));
-        }
-
-        return done(null, parent, results[0]);
+    function loadInvite(done) {
+      seneca.act({role: plugin, cmd: 'load', id: childProfileId}, function (err, childProfile) {
+        if(err) return done(err);
+        var inviteTokenFound = _.find(childProfile.parentInvites, function (parentInvite) {
+          return parentInvite.id === inviteTokenId;
+        });
+        if(!inviteTokenFound) return done(new Error('Invite token not found'));
+        if(requestingUserId !== inviteTokenFound.parentId) return done(new Error('Only the invited parent can approve this request.'));
+        return done(null, inviteTokenFound);
       });
     }
 
-    function getInvitedParentProfile (parent, childProfile, done){
-      if(!args && args.user){
-        return done(new Error('An error occured while attempting to get profile'));
-      }
-      seneca.act({role: plugin, cmd: 'search'}, {query: {userId: args.user}}, function(err, results){
-        if(err){
-          return done(err);
-        }
-        
-        if(_.isEmpty(results)){
-          return done(new Error('An error occured while attempting to get profile'));
-        }
-
-        return done(null, parent, childProfile, results[0]);
+    function updateParentProfile(inviteToken, done) {
+      seneca.act({role: plugin, cmd: 'list_query', query:{userId: inviteToken.parentId}}, function (err, parentProfiles) {
+        if(err) return done(err);
+        var parentProfile = parentProfiles[0];
+        if(!parentProfile.children) parentProfile.children = [];
+        parentProfile.children.push(inviteToken.childId);
+        parentProfile.children = _.uniq(parentProfile.children);
+        seneca.act({role: plugin, cmd: 'save', profile: parentProfile}, function (err, parentProfile) {
+          if(err) return done(err);
+          return done(null, inviteToken);
+        });
       });
     }
 
-
-    
-    function validateInvite(parent, childProfile, invitedParent ,done){
-      var inviteRequests = parent.inviteRequests;
-      var foundInvite = _.find(inviteRequests, function(inviteRequest){
-        return  inviteToken === inviteRequest.token &&
-                childProfile.userId === inviteRequest.childProfileId &&
-                invitedParent.email === inviteRequest.invitedParentEmail && 
-                inviteRequest.valid;
-      });
-
-      //Check if user was registered as parent
-      if(parent.userType !== 'parent-guardian'){
-        return done(new Error('Invitee is not a parent/guardian'));
-      }
-
-      //Ensure that same parent cannot be added twice
-      if(_.contains(childProfile.parents, invitedParent.userId)){
-        return done(new Error('Invitee is already a parent of child'));
-      }
-      
-      if(!foundInvite){
-        return done(new Error('Invalid invite'));
-      } else { 
-        return done(null, parent, invitedParent, childProfile);
-      }
-    }
-
-    function updateInviteParentProfile(parent, invitedParent, childProfile, done){
-      if(!invitedParent.children) {
-        invitedParent.children = [];
-      }
-
-      invitedParent.children.push(childProfileId);
-
-      invitedParent.save$(function(err, invitedParent){
-        if(err){
-          return done(err);
-        }
-
-        return done(null, parent, invitedParent, childProfile);
+    function updateNinjaProfile(inviteToken, done) {
+      seneca.act({role: plugin, cmd: 'list_query', query:{userId: inviteToken.childId}}, function (err, ninjaProfiles) {
+        if(err) return done(err);
+        var ninjaProfile = ninjaProfiles[0];
+        if(!ninjaProfile.parents) ninjaProfile.parents = [];
+        ninjaProfile.parents.push(inviteToken.parentId);
+        ninjaProfile.parents = _.uniq(ninjaProfile.parents);
+        seneca.act({role: plugin, cmd: 'save', profile: ninjaProfile}, done);
       });
     }
 
-    function updateChildProfile(parent, invitedParent, childProfile, done){
-      if(!childProfile.parents){
-        childProfile.parents = [];
-      }
-
-      childProfile.parents.push(invitedParent.userId);
-
-      childProfile.save$(function(err, child){
-        if(err){
-          return done(err);
-        }
-
-        return done(null, parent, invitedParent, childProfile);
-      });
+    function removeInviteToken(ninjaProfile, done) {
+      ninjaProfile.parentInvites = _.without(ninjaProfile.parentInvites, _.findWhere(ninjaProfile.parentInvites, {id: inviteTokenId}));
+      seneca.act({role: plugin, cmd: 'save', profile: ninjaProfile}, done);
     }
 
-    function invalidateInvitation(parent, invitedParent, childProfile, done){
-      var inviteRequests = parent.inviteRequests;
-      var foundInvite = _.find(inviteRequests, function(inviteRequest){
-        return  inviteToken === inviteRequest.token &&
-                childProfile.userId === inviteRequest.childProfileId &&
-                invitedParent.email === inviteRequest.invitedParentEmail;
-      });
-
-      foundInvite.valid = false;
-
-      parent.save$(done);
-    }
   }
 
   function cmd_load_hidden_fields(args, done){
