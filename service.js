@@ -4,7 +4,7 @@ if (process.env.NEW_RELIC_ENABLED === "true") require('newrelic');
 
 var _ =require('lodash');
 var config = require('./config/config.js')();
-var seneca = require('seneca')();
+var seneca = require('seneca')(config);
 
 seneca.log.info('using config', JSON.stringify(config, null, 4));
 
@@ -16,14 +16,6 @@ if(process.env.MAILTRAP_ENABLED === 'true') {
 } else {
   seneca.use('mail', config.gmail);
 }
-seneca.use(require('./email-notifications.js'));
-seneca.use(require('./agreements.js'));
-seneca.use(require('./profiles.js'), {postgresql: config["postgresql-store"]});
-seneca.use(require('./oauth2.js'), config.oauth2);
-seneca.use('user');
-seneca.use('auth');
-seneca.use(require('./users.js'), {'email-notifications': config['email-notifications']});
-seneca.use(require('./nodebb-api.js'), config.nodebb);
 
 require('./migrate-psql-db.js')(function (err) {
   if (err) {
@@ -31,6 +23,15 @@ require('./migrate-psql-db.js')(function (err) {
     process.exit(-1);
   }
   console.log("Migrations ok");
+
+  seneca.use(require('./email-notifications.js'));
+  seneca.use(require('./agreements.js'));
+  seneca.use(require('./profiles.js'), {postgresql: config["postgresql-store"]});
+  seneca.use(require('./oauth2.js'), config.oauth2);
+  seneca.use('user');
+  seneca.use('auth');
+  seneca.use(require('./users.js'), {'email-notifications': config['email-notifications']});
+  seneca.use(require('./nodebb-api.js'), config.nodebb);
 
   seneca.listen()
   .client({type: 'web', host: process.env.DOCKER_HOST_IP || process.env.TARGETIP || '127.0.0.1', port: 10304, pin: 'role:cd-salesforce,cmd:*'})
