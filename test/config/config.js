@@ -32,6 +32,7 @@ module.exports = function() {
         host: '0.0.0.0',
         port: 10303
       }
-    }
+    },
+    strict: {add:false,  result:false}
   };
 }
