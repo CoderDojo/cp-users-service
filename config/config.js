@@ -58,7 +58,7 @@ module.exports = function() {
       password: process.env.POSTGRES_PASSWORD
     }
   }
-  
+
   return {
     'postgresql-store': pgConfig(),
     'email-notifications': {
@@ -108,9 +108,6 @@ module.exports = function() {
       apiToken: process.env.NODEBB_TOKEN
     },
     timeout: 120000,
-    debug: {
-      undead: true
-    },
     strict: {add:false,  result:false},
     log: log()
   };
