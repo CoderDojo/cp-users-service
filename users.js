@@ -4,6 +4,7 @@ var _ = require('lodash');
 var async = require('async');
 var request = require('request');
 var moment = require('moment');
+var debug = require('debug')('cd-users:users');
 
 module.exports = function(options){
   var seneca = this;
@@ -29,18 +30,20 @@ module.exports = function(options){
     var seneca = this;
     var id = args.id;
     var userEntity = seneca.make(ENTITY_NS);
+    debug('cmd_load id:', id);
 
     userEntity.load$(id, done);
   }
 
   function cmd_list(args, done){
     var seneca = this;
-
+    debug('cmd_list ids:', args.ids);
     async.waterfall([
       function(done) {
         seneca.make(ENTITY_NS).list$({ids: args.ids}, done);
       },
       function(users, done) {
+        debug('cmd_list users:', users);
         return done(null, _.map(users, function (user) {
           return user.data$();
         }));
@@ -137,6 +140,8 @@ module.exports = function(options){
       args.roles = ['basic-user'];
       args.mailingList = (args.mailingList) ? 1 : 0;
 
+      debug('cmd_register calling user:register - ', args);
+
       seneca.act({role:'user', cmd:'register'}, args, function (err, registerResponse) {
         if(err) return done(err);
         if(!registerResponse.ok){
@@ -154,6 +159,7 @@ module.exports = function(options){
           email:user.email,
           userType: userType
         };
+        debug('cmd_register calling cd-profiles:save - ', profileData);
         seneca.act({role:'cd-profiles', cmd:'save', profile: profileData}, function (err, profile) {
           if(err) return done(err);
           if (registerResponse.ok === true && isChampion === true) updateSalesForce(registerResponse.user);
@@ -197,6 +203,7 @@ module.exports = function(options){
     var userId = args.id;
     var userEntity = seneca.make$(ENTITY_NS);
 
+    debug('cmd_promote newRoles:', newRoles, 'userId:', userId);
     userEntity.load$(userId, function(err, response) {
       if(err) return done(err);
       var user = response;
@@ -218,6 +225,7 @@ module.exports = function(options){
     query.email = new RegExp(args.email, 'i');
     query.limit$ = query.limit$ ? query.limit$ : 10;
 
+    debug('cmd_get_users_by_emails query: ', query);
     seneca.make(ENTITY_NS).list$(query, function(err, users){
       if(err){
         return done(err);
@@ -236,7 +244,7 @@ module.exports = function(options){
   function cmd_update(args, done) {
     var seneca = this;
     var user = args.user;
-
+    debug('cmd_update user:', user);
     var userEntity = seneca.make(ENTITY_NS);
 
     userEntity.save$(user, done);
@@ -252,7 +260,9 @@ module.exports = function(options){
       {title: 'Ninja Under 13', name: 'attendee-u13'},
       {title: 'Champion', name: 'champion'}
     ];
-    done(null, initUserTypes);
+    setImmediate(function() {
+      return done(null, initUserTypes);
+    });
   }
 
   /**
@@ -260,13 +270,12 @@ module.exports = function(options){
    */
   function cmd_is_champion(args, done){
     var seneca = this;
-
+    debug('cmd_is_champion id:', args.id);
     seneca.make(ENTITY_NS).load$({id: args.id}, function(err, user) {
-      if (err) {
-        return done(err)
-      }
+      if (err) return done(err)
 
       user = user.data$();
+      debug('cmd_is_champion user:', user);
 
       var query = {userId: args.id}
 
@@ -276,16 +285,14 @@ module.exports = function(options){
         query: query,
         user: user
       }, function (err, dojoLeads) {
-        if (err) {
-          return done(err)
-        }
-
+        if (err) return done(err);
+        debug('cmd_is_champion dojoLeads:', dojoLeads);
         if (dojoLeads.length > 0) {
           seneca.act({role: 'cd-dojos', cmd: 'my_dojos', user: user}, function (err, myDojos) {
             if (err) {
               return done(err)
             }
-
+            debug('cmd_is_champion myDojos:', myDojos);
             return done(null, {
               isChampion: true,
               dojos: myDojos
@@ -300,15 +307,13 @@ module.exports = function(options){
 
   function cmd_reset_password(args, done) {
     var seneca = this;
-    seneca.act({role: 'auth', cmd: 'create_reset'}, args, function (err, response) {
-      if(err) return done(err);
-      return done(null, response);
-    })
+    debug('cmd_reset_password args:', args);
+    seneca.act({role: 'auth', cmd: 'create_reset'}, args, done);
   }
 
   function cmd_create_reset(args, done) {
     var seneca = this
-    var useract = seneca.pin({role:'user',cmd:'*'});
+    var useract = seneca.pin({role:'user', cmd:'*'});
 
     var nick  = args.nick || args.username;
     var email = args.email;
@@ -321,19 +326,23 @@ module.exports = function(options){
     if( void 0 != nick )  args.nick  = nick;
     if( void 0 != email ) args.email = email;
 
-    useract.create_reset( args, function( err, out ) {
-      if(err || !out.ok) return done(err,out);
+    debug('cmd_create_reset args:', args);
+    useract.create_reset(args, function(err, out) {
+      if(err || !out.ok) return done(err, out);
       if(options['email-notifications'].sendemail) {
-        seneca.act({role:'email-notifications', cmd:'send'},
-          {code: emailCode,
+        var msg = {
+          code: emailCode,
           to: out.user.email,
           subject: emailSubject,
-          content:{name: out.user.name, resetlink: 'http://' + zenHostname + '/reset_password/' + out.reset.id, year: moment(new Date()).format('YYYY')}
-        }, function (err, response) {
+          content:{
+            name: out.user.name,
+            resetlink: 'http://' + zenHostname + '/reset_password/' + out.reset.id,
+            year: moment(new Date()).format('YYYY')
+          }
+        };
+        seneca.act({role:'email-notifications', cmd:'send'}, msg, function (err, response) {
           if(err) return done(err);
-          return done(null,{
-            ok: out.ok,
-          })
+          return done(null,{ok: out.ok});
         });
       } else {
         return done(null, {ok: out.ok});
@@ -343,34 +352,30 @@ module.exports = function(options){
 
   function cmd_execute_reset(args, done) {
     var resetEntity = seneca.make$('sys/reset');
+    debug('cmd_execute_reset id:', args.token);
     resetEntity.load$({ id: args.token }, function (err, reset) {
-      if (err) { return done(err); }
-
-      if (!reset) {
-        return done(null, { ok: false, token: args.token, why: 'Reset not found.' });
-      }
-
-      if (!reset.active) {
-        return done(null, { ok: false, token: args.token, why: 'Reset not active.' });
-      }
+      if (err) return done(err);
+      if (!reset) return done(null, {ok: false, token: args.token, why: 'Reset not found.'});
+      if (!reset.active) return done(null, {ok: false, token: args.token, why: 'Reset not active.'});
 
       if (new Date() < new Date(reset.when) + options.resetperiod) {
-        return done(null, { ok: false, token: args.token, why: 'Reset stale.' });
+        return done(null, {ok: false, token: args.token, why: 'Reset stale.'});
       }
 
       var userEntity = seneca.make$('sys/user');
-
+      debug('cmd_execute_reset reset:', reset);
       userEntity.load$({ id: reset.user }, function (err, user) {
-        if (err) { return done(err); }
+        if (err) return done(err);
         seneca.act({ role: 'user', cmd: 'change_password', user: user, password: args.password, repeat: args.repeat }, function (err, out) {
-          if (err) { return done(err); }
+          if (err) return done(err);
 
           out.reset = reset;
-          if (!out.ok) { return done(null, out); }
+          if (!out.ok) return done(null, out);
 
           reset.active = false;
+          debug('cmd_execute_reset saving updated reset:', reset);
           reset.save$(function (err, reset) {
-            if (err) { return done(err); }
+            if (err)  return done(err);
             return done(null, { user: user, reset: reset, ok: true });
           });
         });
@@ -381,14 +386,14 @@ module.exports = function(options){
   function cmd_load_champions_for_user(args, done) {
     var seneca = this;
     var userId = args.userId;
-
+    debug('cmd_load_champions_for_user', userId);
     //Load user's dojos
     //Load champion for each dojo
     seneca.act({role:'cd-dojos', cmd:'dojos_for_user', id: userId}, function (err, response) {
       if(err) return done(err);
       var dojos = response;
       async.map(dojos, function (dojo, cb) {
-        if(!dojo) return cb();
+        if(!dojo) return setImmediate(function() { cb(); });
         seneca.act({role:'cd-dojos', cmd:'load_dojo_champion', id: dojo.id}, cb);
       }, function (err, champions) {
         if(err) return done(err);
@@ -410,6 +415,7 @@ module.exports = function(options){
     var seneca = this;
     var userId = args.userId;
 
+    debug('cmd_load_dojo_admins_for_user userId:', userId);
     seneca.act({role: 'cd-dojos', cmd: 'dojos_for_user', id: userId}, function (err, dojos) {
       if(err) return done(err);
       async.map(dojos, function (dojo, cb) {
@@ -418,6 +424,7 @@ module.exports = function(options){
       }, function (err, dojoAdmins) {
         if(err) return done(err);
         dojoAdmins = _.flatten(dojoAdmins);
+        debug('cmd_load_dojo_admins_for_user dojoAdmins:', dojoAdmins);
         return done(null, dojoAdmins);
       });
     });
