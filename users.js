@@ -340,6 +340,7 @@ module.exports = function(options){
             year: moment(new Date()).format('YYYY')
           }
         };
+        debug('cmd_create_reset sending email notification:', msg);
         seneca.act({role:'email-notifications', cmd:'send'}, msg, function (err, response) {
           if(err) return done(err);
           return done(null,{ok: out.ok});
