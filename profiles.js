@@ -909,7 +909,7 @@ module.exports = function(options) {
         seneca.act({role: plugin, cmd: 'list_query', query: {email: ninjaEmail}}, function (err, ninjaProfiles) {
           if(err) return done(err);
           var ninjaProfile = ninjaProfiles[0];
-          if(_.contains(ninjaProfile.parents, args.user)) return done(null, {ok:false, why:'User is already a parent of this Ninja'});
+          if(ninjaProfile && _.contains(ninjaProfile.parents, args.user)) return done(null, {ok:false, why:'User is already a parent of this Ninja'});
           return done();
         });
       }
