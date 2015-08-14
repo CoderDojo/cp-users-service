@@ -31,6 +31,7 @@ module.exports = function(options) {
   ];
 
   var championPublicFields = [
+    'id',
     'name',
     'languagesSpoken',
     'programmingLanguages',
