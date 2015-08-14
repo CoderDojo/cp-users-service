@@ -565,7 +565,10 @@ module.exports = function(options) {
       resolveChild,
       updateChildProfile,
       sendEmail,
-    ], done);
+    ], function (err, result) {
+      if(err) return done(null, {ok: false, why: err.message});
+      return done(null, result);
+    });
 
     function resolveParent(done) {
       seneca.act({role: plugin, cmd: 'search', query: {email: invitedParentEmail}}, function (err, results) {
@@ -575,6 +578,7 @@ module.exports = function(options) {
     }
 
     function resolveChild(parentProfile, done){
+      if(!parentProfile) return done(new Error('Parent profile does not exist.'));
       seneca.act({role: plugin, cmd: 'search'}, {query: childQuery}, function(err, results){
         if(err) return done(err);
         if(_.isEmpty(results)) return done(new Error('Unable to find child profile'));
