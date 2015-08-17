@@ -60,7 +60,7 @@ module.exports = function(options){
         PlatformUrl__c: 'https://zen.coderdojo.com/dashboard/profile/' + user.id,
         Email__c: user.email,
         Name: user.name,
-        RecordTypeId: "0121100000051tU"
+        RecordTypeId: process.env.SALESFORCE_ACC_RECORDTYPEID
       };
 
       seneca.act('role:cd-salesforce,cmd:save_account', {userId: user.id, account:account}, function (err, res){
@@ -72,8 +72,9 @@ module.exports = function(options){
           PlatformUrl__c: 'https://zen.coderdojo.com/dashboard/profile/' + user.id,
           Email__c: user.email,
           LastName: user.name,
-          //RecordTypeId: "0121100000051tU", // TODO - not working
+          RecordTypeId: process.env.SALESFORCE_LEAD_RECORDTYPEID,
           Company: '<n/a>',
+          Language__c: 'en_US',
           "ChampionAccount__c": res.id$
         };
 
