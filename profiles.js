@@ -31,6 +31,7 @@ module.exports = function(options) {
   ];
 
   var championPublicFields = [
+    'id',
     'name',
     'languagesSpoken',
     'programmingLanguages',
@@ -564,7 +565,10 @@ module.exports = function(options) {
       resolveChild,
       updateChildProfile,
       sendEmail,
-    ], done);
+    ], function (err, result) {
+      if(err) return done(null, {ok: false, why: err.message});
+      return done(null, result);
+    });
 
     function resolveParent(done) {
       seneca.act({role: plugin, cmd: 'search', query: {email: invitedParentEmail}}, function (err, results) {
@@ -574,6 +578,7 @@ module.exports = function(options) {
     }
 
     function resolveChild(parentProfile, done){
+      if(!parentProfile) return done(new Error('Parent profile does not exist.'));
       seneca.act({role: plugin, cmd: 'search'}, {query: childQuery}, function(err, results){
         if(err) return done(err);
         if(_.isEmpty(results)) return done(new Error('Unable to find child profile'));
@@ -904,7 +909,7 @@ module.exports = function(options) {
         seneca.act({role: plugin, cmd: 'list_query', query: {email: ninjaEmail}}, function (err, ninjaProfiles) {
           if(err) return done(err);
           var ninjaProfile = ninjaProfiles[0];
-          if(_.contains(ninjaProfile.parents, args.user)) return done(new Error('User is already a parent of this Ninja'));
+          if(ninjaProfile && _.contains(ninjaProfile.parents, args.user)) return done(null, {ok:false, why:'User is already a parent of this Ninja'});
           return done();
         });
       }
@@ -918,14 +923,14 @@ module.exports = function(options) {
               if(err) return done(err);
               var parentProfile = parentProfiles[0];
               if(parentProfile.userType === 'parent-guardian') return done();
-              return done(new Error('You must be a parent to invite a Ninja'));
+              return done(null, {ok:false, why:'You must be a parent to invite a Ninja'});
             });
           } else {
             var parentTypeFound = _.find(usersDojos, function (parentUserDojo) {
               return _.contains(parentUserDojo.userTypes, 'parent-guardian');
             });
             if(parentTypeFound) return done();
-            return done(new Error('You must be a parent to invite a Ninja'));
+            return done(null, {ok: false, why:'You must be a parent to invite a Ninja'});
           }
         });
       }
@@ -933,7 +938,7 @@ module.exports = function(options) {
       function validateNinjaEmailExists(done) {
         seneca.act({role: plugin, cmd: 'list_query', query: {email: ninjaEmail}}, function (err, ninjaProfiles) {
           if(err) return done(err);
-          if(_.isEmpty(ninjaProfiles)) return done(new Error('Invalid invite request. Ninja email does not exist.'));
+          if(_.isEmpty(ninjaProfiles)) return done(null, {ok: false, why: 'Invalid invite request. Ninja email does not exist.'});
           ninjaProfile = ninjaProfiles[0];
           return done();
         });
@@ -946,7 +951,7 @@ module.exports = function(options) {
             return _.contains(ninjaUserDojo.userTypes, 'attendee-o13');
           });
           if(attendeeO13TypeFound || ninjaProfile.userType === 'attendee-o13') return done();
-          return done(new Error('Ninja must be an over 13 attendee'));
+          return done(null, {ok: false, why: 'Ninja must be an over 13 attendee'});
         });
       }
     }
