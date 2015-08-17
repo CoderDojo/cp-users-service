@@ -148,8 +148,8 @@ module.exports = function(options) {
         var forumProfile = _.clone(profile);
         forumProfile.username = forumProfile.name;
         seneca.act({role:'cd-nodebb-api', cmd:'update', user: forumProfile}, function(err, res){
-          seneca.log.error('res is ', res)
-          if (res.error) seneca.log.error('NodeBB Profile Sync Error: ' + res.error + '\n' + new Error().stack);
+          if (err) seneca.log.error(err);
+          if (res.error) seneca.log.error('NodeBB Profile Sync Error: ' + res.error);
 
           var query = {userId: profile.userId};
           seneca.act({role: 'cd-profiles', cmd: 'list', query: query, user: args.user}, done);
