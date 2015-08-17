@@ -60,7 +60,7 @@ module.exports = function(options){
         PlatformUrl__c: 'https://zen.coderdojo.com/dashboard/profile/' + user.id,
         Email__c: user.email,
         Name: user.name,
-        //RecordTypeId: "0121100000051tU" // TODO - not working
+        RecordTypeId: "0121100000051tU"
       };
 
       seneca.act('role:cd-salesforce,cmd:save_account', {userId: user.id, account:account}, function (err, res){
