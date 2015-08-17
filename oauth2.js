@@ -48,11 +48,53 @@ module.exports = function(options){
   };
 
   function _getUserForAccessToken(token, cb) {
-    seneca.make$(OAUTH2_ENTITY).list$({token:token}, function(err, auths){
-      if (err) return cb(err);
-      if (auths.length === 0) return cb('No user found for token: ' + token);
-      seneca.act({role: 'cd-users', cmd:'load', id: auths[0].userid}, cb);
-    });
+
+    async.waterfall([
+      getToken,
+      getUser,
+      checkPermissions
+    ], cb);
+
+    function getToken(done) {
+      seneca.make$(OAUTH2_ENTITY).list$({token:token}, function(err, auths){
+        if (err) return done(err);
+        if (auths.length === 0) return done('No user found for token: ' + token);
+        return done(null, auths);
+      });
+    }
+
+    function getUser(auths, done) {
+      seneca.act({role: 'cd-users', cmd:'load', id: auths[0].userid}, done);
+    }
+
+    function checkPermissions(user, done) {
+      seneca.act({role: 'cd-profiles', cmd: 'list_query', query:{userId: user.id}}, function (err, profiles) {
+        if(err) return done(err);
+        var userProfile = profiles[0];
+        if(userProfile.userType === 'champion') user.isChampion = true;
+        if(userProfile.userType === 'attendee-o13') user.isYouthOver13 = true;
+        if(userProfile.userType === 'mentor') user.isMentor = true;
+
+        seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query:{userId: user.id}}, function (err, usersDojos) {
+          if(err) return done(err);
+          var championTypeFound = _.find(usersDojos, function (userDojo) {
+            return _.contains(userDojo.userTypes, 'champion');
+          });
+          var youthOver13TypeFound = _.find(usersDojos, function (userDojo) {
+            return _.contains(userDojo.userTypes, 'attendee-o13');
+          });
+          var mentorTypeFound = _.find(usersDojos, function (userDojo) {
+            return _.contains(userDojo.userTypes, 'mentor');
+          });
+          if(championTypeFound) user.isChampion = true;
+          if(youthOver13TypeFound) user.isYouthOver13 = true;
+          if(mentorTypeFound) user.isMentor = true;
+          return done(null, user);
+        });
+
+      });
+    }
+    
   };
 
   function cmd_authorize(args, done) {
@@ -101,7 +143,10 @@ module.exports = function(options){
         id: user.id,
         name: user.name,
         email: user.email,
-        isAdmin: _.contains(user.roles, 'cdf-admin')
+        isAdmin: _.contains(user.roles, 'cdf-admin'),
+        isChampion: user.isChampion,
+        isYouthOver13: user.isYouthOver13,
+        isMentor: user.isMentor
       };
       return done(null, profile);
     });
