@@ -135,6 +135,8 @@ module.exports = function(options) {
 
       var forum_profile = _.clone(profile);
       forum_profile.username = forum_profile.name;
+      forum_profile.uploadedpicture = 'http://'+args.zenHostname+'/api/1.0/profiles/'+profile.id+'/avatar_img'
+      forum_profile.picture = 'http://'+args.zenHostname+'/api/1.0/profiles/'+profile.id+'/avatar_img'
       seneca.act({role:'cd-nodebb-api', cmd:'update', user: forum_profile}, function(err, res){
         if (res.error) seneca.log.error('NodeBB Profile Sync Error: ', res.error);
 
