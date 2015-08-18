@@ -71,6 +71,7 @@ module.exports = function(options){
       seneca.act({role: 'cd-profiles', cmd: 'list_query', query:{userId: user.id}}, function (err, profiles) {
         if(err) return done(err);
         var userProfile = profiles[0];
+        user.profileId = userProfile.id;
         if(userProfile.userType === 'champion') user.isChampion = true;
         if(userProfile.userType === 'attendee-o13') user.isYouthOver13 = true;
         if(userProfile.userType === 'mentor') user.isMentor = true;
@@ -146,7 +147,8 @@ module.exports = function(options){
         isAdmin: _.contains(user.roles, 'cdf-admin'),
         isChampion: user.isChampion,
         isYouthOver13: user.isYouthOver13,
-        isMentor: user.isMentor
+        isMentor: user.isMentor,
+        profileId: user.profileId
       };
       return done(null, profile);
     });
