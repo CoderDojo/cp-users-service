@@ -136,18 +136,11 @@ module.exports = function(options) {
 
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
       if(err) return done(err);
-      var updatedFields = {};
-      updatedFields.id = profile.userId;
-      _.each(syncedFields, function(field){
-        updatedFields[field] = profile[field];
-      })
-      seneca.act({role:'cd-users', cmd:'update', user: updatedFields}, function(err, res){
+      
+      syncUserObj(profile, function(err, res){
         if (err) return done(err);
 
-        var forumProfile = _.clone(profile);
-        forumProfile.username = forumProfile.name; 
-        
-        seneca.act({role:'cd-nodebb-api', cmd:'update', user: forumProfile}, function(err, res){
+        syncForumProfile(profile, function(err, res){
           if (err) seneca.log.error(err);
           if (res.error) seneca.log.error('NodeBB Profile Sync Error: ' + res.error);
 
@@ -156,6 +149,21 @@ module.exports = function(options) {
         });
       });
     });
+  }
+
+  function syncUserObj(profile, done){
+    var updatedFields = {};
+    updatedFields.id = profile.userId;
+    _.each(syncedFields, function(field){
+      updatedFields[field] = profile[field];
+    })
+    seneca.act({role:'cd-users', cmd:'update', user: updatedFields}, done);
+  }
+
+  function syncForumProfile(profile, done){
+    var forumProfile = _.clone(profile);
+    forumProfile.username = forumProfile.name;
+    seneca.act({role:'cd-nodebb-api', cmd:'update', user: forumProfile}, done);
   }
 
   //TODO: clean up with async
@@ -274,7 +282,11 @@ module.exports = function(options) {
         return done(err);
       }
 
-      return done(null, profile);
+      syncUserObj(profile, function(err, res){
+        if (err) return done(err);
+
+        return done(null, profile);
+      });
     });
   }
 
