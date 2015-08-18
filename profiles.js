@@ -724,6 +724,7 @@ module.exports = function(options) {
   }
 
   function cmd_change_avatar(args, done){
+    var hostname = args.zenHostname;
     var file = args.file;
     if(!_.contains(args.fileType, 'image')) return done(new Error('Avatar upload: file must be an image.'));
     if(file.length > 5242880) return done(new Error('Avatar upload: max file size of 5242880 bytes exceeded.'));
@@ -783,15 +784,32 @@ module.exports = function(options) {
                 id: args.profileId,
                 avatar: avatarInfo
               }
+
               seneca.act({role: plugin, cmd: 'save'}, {profile: profile},function(err, profile){
                 if(err){
                   return done(err);
                 }
 
-                done(undefined, profile);
-                done = noop;
-              })
+                seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(profile.id, function(err, profile){
+                  if (err) seneca.log.error(err);
+                  
+                  var protocol = process.env.PROTOCOL || 'http';
 
+                  var forumProfile = _.clone(profile);
+                  forumProfile.username = forumProfile.name;
+  
+                  forumProfile.uploadedpicture = protocol + '://'+hostname+'/api/1.0/profiles/'+profile.id+'/avatar_img'
+                  forumProfile.picture = protocol + '://'+hostname+'/api/1.0/profiles/'+profile.id+'/avatar_img'
+                      
+                    seneca.act({role:'cd-nodebb-api', cmd:'update', user: forumProfile}, function(err, res){
+                      if (err) seneca.log.error(err);
+                      if (res.error) seneca.log.error('NodeBB Profile Sync Error: ' + res.error);
+  
+                    done(undefined, profile);
+                    done = noop;
+                  });
+                });
+              });
             });
           });
 
