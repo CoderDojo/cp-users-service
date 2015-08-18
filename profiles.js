@@ -18,6 +18,12 @@ module.exports = function(options) {
   var path = require('path');
   var so = seneca.options();
 
+  var syncedFields = [
+    'name',
+    'email',
+    'phone'
+  ]
+
   var mentorPublicFields = [
     'name',
     'languagesSpoken',
@@ -79,7 +85,7 @@ module.exports = function(options) {
     'mentor': allowedOptionalFieldsMentor
   };
 
-  var immutableFields = ['email', 'userType', 'avatar'];
+  var immutableFields = ['userType', 'avatar'];
 
   var youthBlackList = ['name'];
 
@@ -129,19 +135,25 @@ module.exports = function(options) {
     }
 
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
-      if(err){
-        return done(err);
-      }
+      if(err) return done(err);
+      var updatedFields = {};
+      updatedFields.id = profile.userId;
+      _.each(syncedFields, function(field){
+        updatedFields[field] = profile[field];
+      })
+      seneca.act({role:'cd-users', cmd:'update', user: updatedFields}, function(err, res){
+        if (err) return done(err);
 
-      var forum_profile = _.clone(profile);
-      forum_profile.username = forum_profile.name;
-      forum_profile.uploadedpicture = 'http://'+args.zenHostname+'/api/1.0/profiles/'+profile.id+'/avatar_img'
-      forum_profile.picture = 'http://'+args.zenHostname+'/api/1.0/profiles/'+profile.id+'/avatar_img'
-      seneca.act({role:'cd-nodebb-api', cmd:'update', user: forum_profile}, function(err, res){
-        if (res.error) seneca.log.error('NodeBB Profile Sync Error: ', res.error);
+        var forumProfile = _.clone(profile);
+        forumProfile.username = forumProfile.name; 
+        
+        seneca.act({role:'cd-nodebb-api', cmd:'update', user: forumProfile}, function(err, res){
+          if (err) seneca.log.error(err);
+          if (res.error) seneca.log.error('NodeBB Profile Sync Error: ' + res.error);
 
-        var query = {userId: profile.userId};
-        seneca.act({role: 'cd-profiles', cmd: 'list', query: query, user: args.user}, done);
+          var query = {userId: profile.userId};
+          seneca.act({role: 'cd-profiles', cmd: 'list', query: query, user: args.user}, done);
+        });
       });
     });
   }
