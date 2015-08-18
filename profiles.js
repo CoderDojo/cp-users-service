@@ -18,6 +18,12 @@ module.exports = function(options) {
   var path = require('path');
   var so = seneca.options();
 
+  var syncedFields = [
+    'name',
+    'email',
+    'phone'
+  ]
+
   var mentorPublicFields = [
     'name',
     'languagesSpoken',
@@ -79,7 +85,7 @@ module.exports = function(options) {
     'mentor': allowedOptionalFieldsMentor
   };
 
-  var immutableFields = ['email', 'userType', 'avatar'];
+  var immutableFields = ['userType', 'avatar'];
 
   var youthBlackList = ['name'];
 
@@ -129,19 +135,35 @@ module.exports = function(options) {
     }
 
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
-      if(err){
-        return done(err);
-      }
+      if(err) return done(err);
+      
+      syncUserObj(profile, function(err, res){
+        if (err) return done(err);
 
-      var forum_profile = _.clone(profile);
-      forum_profile.username = forum_profile.name;
-      seneca.act({role:'cd-nodebb-api', cmd:'update', user: forum_profile}, function(err, res){
-        if (res.error) seneca.log.error('NodeBB Profile Sync Error: ', res.error);
+        syncForumProfile(profile, function(err, res){
+          if (err) seneca.log.error(err);
+          if (res.error) seneca.log.error('NodeBB Profile Sync Error: ' + res.error);
 
-        var query = {userId: profile.userId};
-        seneca.act({role: 'cd-profiles', cmd: 'list', query: query, user: args.user}, done);
+          var query = {userId: profile.userId};
+          seneca.act({role: 'cd-profiles', cmd: 'list', query: query, user: args.user}, done);
+        });
       });
     });
+  }
+
+  function syncUserObj(profile, done){
+    var updatedFields = {};
+    updatedFields.id = profile.userId;
+    _.each(syncedFields, function(field){
+      updatedFields[field] = profile[field];
+    })
+    seneca.act({role:'cd-users', cmd:'update', user: updatedFields}, done);
+  }
+
+  function syncForumProfile(profile, done){
+    var forumProfile = _.clone(profile);
+    forumProfile.username = forumProfile.name;
+    seneca.act({role:'cd-nodebb-api', cmd:'update', user: forumProfile}, done);
   }
 
   //TODO: clean up with async
@@ -260,7 +282,11 @@ module.exports = function(options) {
         return done(err);
       }
 
-      return done(null, profile);
+      syncUserObj(profile, function(err, res){
+        if (err) return done(err);
+
+        return done(null, profile);
+      });
     });
   }
 
@@ -713,6 +739,7 @@ module.exports = function(options) {
   }
 
   function cmd_change_avatar(args, done){
+    var hostname = args.zenHostname;
     var file = args.file;
     if(!_.contains(args.fileType, 'image')) return done(new Error('Avatar upload: file must be an image.'));
     if(file.length > 5242880) return done(new Error('Avatar upload: max file size of 5242880 bytes exceeded.'));
@@ -772,15 +799,32 @@ module.exports = function(options) {
                 id: args.profileId,
                 avatar: avatarInfo
               }
+
               seneca.act({role: plugin, cmd: 'save'}, {profile: profile},function(err, profile){
                 if(err){
                   return done(err);
                 }
 
-                done(undefined, profile);
-                done = noop;
-              })
+                seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(profile.id, function(err, profile){
+                  if (err) seneca.log.error(err);
+                  
+                  var protocol = process.env.PROTOCOL || 'http';
 
+                  var forumProfile = _.clone(profile);
+                  forumProfile.username = forumProfile.name;
+  
+                  forumProfile.uploadedpicture = protocol + '://'+hostname+'/api/1.0/profiles/'+profile.id+'/avatar_img'
+                  forumProfile.picture = protocol + '://'+hostname+'/api/1.0/profiles/'+profile.id+'/avatar_img'
+                      
+                    seneca.act({role:'cd-nodebb-api', cmd:'update', user: forumProfile}, function(err, res){
+                      if (err) seneca.log.error(err);
+                      if (res.error) seneca.log.error('NodeBB Profile Sync Error: ' + res.error);
+  
+                    done(undefined, profile);
+                    done = noop;
+                  });
+                });
+              });
             });
           });
 
@@ -915,7 +959,7 @@ module.exports = function(options) {
         seneca.act({role: plugin, cmd: 'list_query', query: {email: ninjaEmail}}, function (err, ninjaProfiles) {
           if(err) return done(err);
           var ninjaProfile = ninjaProfiles[0];
-          if(_.contains(ninjaProfile.parents, args.user)) return done(new Error('User is already a parent of this Ninja'));
+          if(ninjaProfile && _.contains(ninjaProfile.parents, args.user)) return done(new Error('User is already a parent of this Ninja'));
           return done();
         });
       }
