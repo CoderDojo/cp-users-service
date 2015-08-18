@@ -229,7 +229,10 @@ module.exports = function(options) {
             userTypes:[userType]
           };
           seneca.act({role: 'cd-dojos', cmd: 'save_usersdojos', userDojo: userDojo}, cb);
-        }, done);
+        }, function (err, res) {
+          if(err) return done(err);
+          return done(null, profile);
+        });
       });
 
     }
