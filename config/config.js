@@ -101,7 +101,8 @@ module.exports = function() {
     },
     oauth2: {
       clients: {
-        coderdojoadultforums: process.env.CODERDOJO_FORUMS_SECRET || 'ilikecode'
+        coderdojoadultforums: process.env.CODERDOJO_ADULT_FORUMS_SECRET || 'ilikecode',
+        coderdojoyouthforums: process.env.CODERDOJO_YOUTH_FORUMS_SECRET || 'ilikecode'
       }
     },
     nodebb: {
