@@ -135,7 +135,10 @@ module.exports = function(options){
     function registerUser(success, done){
       args = _.omit(args, ['g-recaptcha-response', 'zenHostname', 'locality', 'user', 'emailSubject']);
 
-      args.roles = ['basic-user'];
+      //all users registering with the email address @coderdojo.org get promoted to admin
+      if(args.email.indexOf('@coderdojo.org') > 0) args.roles = ['cdf-admin'];
+      else args.roles = ['basic-user'];
+
       args.mailingList = (args.mailingList) ? 1 : 0;
 
       seneca.act({role:'user', cmd:'register'}, args, function (err, registerResponse) {
