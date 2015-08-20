@@ -6,7 +6,8 @@ var seneca = require('seneca')(),
     async  = require('async'),
     _      = require('lodash'),
     fs     = require('fs'),
-    expect = require('chai').expect;
+    expect = require('chai').expect,
+    lab = exports.lab = require('lab').script();
 
 var role = "cd-users";
 
@@ -44,10 +45,8 @@ function expect_contain_properties(actual, expected){
   return;
 }
 
-describe('Users Microservice test', function(){
-  this.timeout(5000);
-
-  before(function(done){
+lab.experiment('Users Microservice test', { timeout: 5000 }, function(){
+  lab.before(function(done){
     seneca.ready(function(){
       userEnt.remove$({all$: 1}, function(err){
         if(err) return done(err);
@@ -57,7 +56,7 @@ describe('Users Microservice test', function(){
     });
   });
 
-  before(function(done){
+  lab.before(function(done){
     function registerUser(user, cb){
       seneca.act(user, {role: role, cmd: 'register'}, function(err, res){
         if(err) return cb(err);
@@ -75,8 +74,8 @@ describe('Users Microservice test', function(){
     ], done);
   });
 
-  describe('List', function(){
-    it('list users from db', function(done){
+  lab.experiment('List', function(){
+    lab.test('list users from db', function(done){
       seneca.act({role: role, cmd: 'list'}, function(err, users){
         if(err) return done(err);
 
@@ -92,8 +91,8 @@ describe('Users Microservice test', function(){
     });
   });
 
-  describe('Register', function(){
-    it('save user to db', function(done){
+  lab.experiment('Register', function(){
+    lab.test('save user to db', function(done){
 
       var user = {
         "name": "test6",
@@ -131,8 +130,8 @@ describe('Users Microservice test', function(){
     });
   });
 
-  describe('Promote', function(){
-    it('append \'super-admin\' to user\'s role list', function(done){
+  lab.experiment('Promote', function(){
+    lab.test('append \'super-admin\' to user\'s role list', function(done){
       userEnt.load$({email:users[0].email}, function(err, loadedUser){
         if(err) return done(err);
 
@@ -154,8 +153,8 @@ describe('Users Microservice test', function(){
     });
   });
 
-  describe.skip('Get users by emails', function(){
-    it('load user from db based on email', function(done){
+  lab.experiment.skip('Get users by emails', function(){
+    lab.test('load user from db based on email', function(done){
       if (using_postgres) {
         userEnt.load$({email:users[0].email}, function(err, selectedUser){
           if(err) return done(err);
@@ -189,10 +188,10 @@ describe('Users Microservice test', function(){
 
 });
 
-describe('Agreements Microservice test', function(){
+lab.experiment('Agreements Microservice test', function(){
   var role = "cd-agreements";
 
-  before(function(done){
+  lab.before(function(done){
     seneca.ready(function(){
       agrmEnt.remove$({all$: 1}, function(err){
         if(err) return done(err);
@@ -210,15 +209,15 @@ describe('Agreements Microservice test', function(){
     });
   }
 
-  before(function(done){
+  lab.before(function(done){
     async.eachSeries(agrms, loadAgreements, function(err){
       if(err) return done(err);
       done();
     });
   });
 
-  describe('List', function(){
-    it('load agreements from db', function(done){
+  lab.experiment('List', function(){
+    lab.test('load agreements from db', function(done){
       seneca.act({role: role, cmd:'list', userIds:[agrms[0].userId, agrms[1].userId]}, function(err, listedAgrms){
 
         // console.log('listedAgrms:' + util.inspect(listedAgrms));
@@ -237,8 +236,8 @@ describe('Agreements Microservice test', function(){
     });
   });
 
-  describe('Count', function(){
-    it('Not Implemented', function(done){
+  lab.experiment('Count', function(){
+    lab.test('Not Implemented', function(done){
 
       var query = { userId:agrms[0].userId };
       if (!using_postgres) query.limit$ = 10;
