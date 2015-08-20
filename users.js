@@ -24,6 +24,7 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'execute_reset'}, cmd_execute_reset);
   seneca.add({role: plugin, cmd: 'load_champions_for_user'}, cmd_load_champions_for_user);
   seneca.add({role: plugin, cmd: 'load_dojo_admins_for_user'}, cmd_load_dojo_admins_for_user);
+  seneca.add({role: plugin, cmd: 'record_login'}, cmd_record_login);
 
   function cmd_load(args, done) {
     var seneca = this;
@@ -424,6 +425,18 @@ module.exports = function(options){
         dojoAdmins = _.flatten(dojoAdmins);
         return done(null, dojoAdmins);
       });
+    });
+  }
+
+  function cmd_record_login(args, done) {
+    var seneca = this;
+    var data = args.data;
+    var userEntity = seneca.make$(ENTITY_NS);
+
+    userEntity.load$(data.user.id, function (err, user) {
+      if(err) return done(err);
+      user.lastLogin = new Date();
+      userEntity.save$(user, done);
     });
   }
 
