@@ -21,6 +21,7 @@ module.exports = function( options ) {
       }
       seneca.act({
         role: 'mail', cmd: 'send',
+        from: options.sendFrom,
         code: args.code,
         to: args.to,
         subject: args.subject,
