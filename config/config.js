@@ -66,6 +66,7 @@ module.exports = function() {
     'postgresql-store': pgConfig(),
     'email-notifications': {
       sendemail:true,
+      sendFrom: 'The CoderDojo Team <info@coderdojo.org>',
       email: {
       }
     },
