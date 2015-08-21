@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "bash -c 'source ./config/development.env; NODE_ENV=test; istanbul cover node_modules/.bin/_mocha -- -u exports -R spec'",
+    "test": "bash -c 'source ./config/development.env; ./node_modules/.bin/lab --ignore __core-js_shared__ --flat --threshold 54 -r html -o ./coverage/coverage.html -r lcov -o ./coverage/lcov.info -r json -o ./coverage/coverage.json -r lab-quieter-reporter -o stdout'; # Use this to enable linting: # --linter jshint --lint --lint-errors-threshold 0 --lint-warnings-threshold 0",
     "covrep": "bash test/covrep.sh"
   },
   "pre-commit": [
@@ -39,9 +39,9 @@
     "xoauth2": "1.1.0"
   },
   "devDependencies": {
-    "mocha": "2.2.4",
     "chai": "2.2.0",
-    "istanbul": "0.3.14",
-    "pre-commit": "1.0.7"
+    "pre-commit": "1.0.7",
+    "lab": "5.15.1",
+    "lab-quieter-reporter": "1.0.1"
   }
 }
