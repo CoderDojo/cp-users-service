@@ -25,6 +25,7 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'load_champions_for_user'}, cmd_load_champions_for_user);
   seneca.add({role: plugin, cmd: 'load_dojo_admins_for_user'}, cmd_load_dojo_admins_for_user);
   seneca.add({role: plugin, cmd: 'record_login'}, cmd_record_login);
+  seneca.add({role: 'user', cmd: 'login'}, cmd_login);
 
   function cmd_load(args, done) {
     var seneca = this;
@@ -437,6 +438,16 @@ module.exports = function(options){
       if(err) return done(err);
       user.lastLogin = new Date();
       userEntity.save$(user, done);
+    });
+  }
+
+  function cmd_login(args, done) {
+    this.prior(args, function (err, loginResponse) {
+      if(err) return done(err)
+      seneca.act({role: plugin, cmd:'record_login'}, {data: loginResponse}, function (err, res) {
+        if(err) return done(err);
+        return done(null, loginResponse);
+      });
     });
   }
 
