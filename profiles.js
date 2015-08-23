@@ -903,8 +903,9 @@ module.exports = function(options) {
   }
 
   function cmd_list_query(args, done) {
-    var query = args.query;
-
+    var query = args.query || {};
+    if(!query.limit$) query.limit$ = 'NULL';
+    
     var profilesEntity = seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY);
     profilesEntity.list$(query, done);
   }
