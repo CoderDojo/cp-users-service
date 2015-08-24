@@ -3,6 +3,7 @@
 var _ = require('lodash');
 var async = require('async');
 var request = require('request');
+var querystring = require('querystring');
 var moment = require('moment');
 
 module.exports = function(options){
@@ -135,12 +136,33 @@ module.exports = function(options){
       });
     }
 
+    function checkPermissions(success, done){
+      var proto = process.env.PROTOCOL || 'http'; 
+      var data = querystring.stringify({key: 'forumModerators'})
+      var configPath = proto + '://' + args.zenHostname + '/api/1.0/config/get?'+data;
+      request({
+        method: 'GET',
+        url: configPath
+      }, function(err, res,body){
+        if(err || !body || !body.forumModerators){
+          //assume basic-user...
+          args.roles = ['basic-user'];
+          return done(null, success);
+        }
+
+        //if forumMods array contains the users email, make them an admin
+        if(body.forumModerators.indexOf(args.email) > -1){
+          args.roles = ['cdf-admin'];
+        } else {
+          args.roles = ['basic-user']
+        }
+        
+        return done(null, success);
+      });
+    }
+
     function registerUser(success, done){
       args = _.omit(args, ['g-recaptcha-response', 'zenHostname', 'locality', 'user', 'emailSubject']);
-
-      //all users registering with the email address @coderdojo.org get promoted to admin
-      if(args.email.indexOf('@coderdojo.org') > 0) args.roles = ['cdf-admin'];
-      else args.roles = ['basic-user'];
 
       args.mailingList = (args.mailingList) ? 1 : 0;
 
@@ -187,6 +209,7 @@ module.exports = function(options){
 
     async.waterfall([
       verifyCaptcha,
+      checkPermissions,
       registerUser,
       sendWelcomeEmail
     ], function(err, results){
