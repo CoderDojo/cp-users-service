@@ -11,6 +11,7 @@ module.exports = function(options){
   var plugin = 'cd-users';
   var ENTITY_NS = 'sys/user';
   var so = seneca.options();
+  var protocol = process.env.PROTOCOL || 'http';
 
   seneca.add({role: 'auth', cmd: 'create_reset'}, cmd_create_reset);
   seneca.add({role: plugin, cmd: 'load'}, cmd_load);
@@ -197,7 +198,7 @@ module.exports = function(options){
           {code: emailCode,
           to: args.email,
           subject: emailSubject,
-          content:{name: args.name, year: moment(new Date()).format('YYYY'), link: 'http://' + zenHostname}
+          content:{name: args.name, year: moment(new Date()).format('YYYY'), link: protocol+'://' + zenHostname}
         }, function (err, response) {
           if(err) return done(err);
           return done(null, registerResponse);
@@ -358,7 +359,7 @@ module.exports = function(options){
           {code: emailCode,
           to: out.user.email,
           subject: emailSubject,
-          content:{name: out.user.name, resetlink: 'http://' + zenHostname + '/reset_password/' + out.reset.id, year: moment(new Date()).format('YYYY')}
+          content:{name: out.user.name, resetlink: protocol + '://' + zenHostname + '/reset_password/' + out.reset.id, year: moment(new Date()).format('YYYY')}
         }, function (err, response) {
           if(err) return done(err);
           return done(null,{
