@@ -138,20 +138,20 @@ module.exports = function(options){
 
     function checkPermissions(success, done){
       var proto = process.env.PROTOCOL || 'http'; 
-      var data = querystring.stringify({key: 'forumModerators'})
+      var data = querystring.stringify({key: 'cdfAdmins'})
       var configPath = proto + '://' + args.zenHostname + '/api/1.0/config/get?'+data;
       request({
         method: 'GET',
         url: configPath
       }, function(err, res,body){
-        if(err || !body || !body.forumModerators){
+        if(err || !body || !body.cdfAdmins){
           //assume basic-user...
           args.roles = ['basic-user'];
           return done(null, success);
         }
 
         //if forumMods array contains the users email, make them an admin
-        if(body.forumModerators.indexOf(args.email) > -1){
+        if(body.cdfAdmins.indexOf(args.email) > -1){
           args.roles = ['cdf-admin'];
         } else {
           args.roles = ['basic-user']
