@@ -457,6 +457,8 @@ module.exports = function(options){
     var seneca = this;
     var data = args.data;
     var userEntity = seneca.make$(ENTITY_NS);
+    
+    if(!data.ok) return done();
 
     userEntity.load$(data.user.id, function (err, user) {
       if(err) return done(err);
