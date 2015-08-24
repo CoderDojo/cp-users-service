@@ -62,6 +62,7 @@ module.exports = function(options){
         PlatformUrl__c: 'https://zen.coderdojo.com/dashboard/profile/' + user.id,
         Email__c: user.email,
         Name: user.name,
+        UserType__c: "Champion",
         RecordTypeId: process.env.SALESFORCE_ACC_RECORDTYPEID
       };
 
