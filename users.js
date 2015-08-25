@@ -545,12 +545,7 @@ module.exports = function(options){
 
   function cmd_kpi_number_of_youth_females_registered(args, done) {
     var seneca = this;
-    var kpiData = {youthsRegistered: 0, youthFemalesRegistered: 0};
-
-    seneca.act({role: plugin, cmd: 'kpi_number_of_youths_registered', femaleSearch: true}, function (err, response) {
-      if(err) return done(err);
-      return done(null, response);
-    });
+    seneca.act({role: plugin, cmd: 'kpi_number_of_youths_registered', femaleSearch: true}, done);
   }
 
   return {
