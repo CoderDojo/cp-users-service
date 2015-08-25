@@ -5,6 +5,7 @@ var async = require('async');
 var request = require('request');
 var querystring = require('querystring');
 var moment = require('moment');
+var pg = require('pg');
 
 module.exports = function(options){
   var seneca = this;
@@ -28,6 +29,7 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'load_dojo_admins_for_user'}, cmd_load_dojo_admins_for_user);
   seneca.add({role: plugin, cmd: 'record_login'}, cmd_record_login);
   seneca.add({role: 'user', cmd: 'login'}, cmd_login);
+  seneca.add({role: plugin, cmd: 'kpi_number_of_youths_registered'}, cmd_kpi_number_of_youths_registered);
 
   function cmd_load(args, done) {
     var seneca = this;
@@ -474,6 +476,38 @@ module.exports = function(options){
       seneca.act({role: plugin, cmd:'record_login'}, {data: loginResponse}, function (err, res) {
         if(err) return done(err);
         return done(null, loginResponse);
+      });
+    });
+  }
+
+  function cmd_kpi_number_of_youths_registered(args, done) {
+    var seneca = this;
+    var date18YearsAgo = moment().subtract(18, 'years');
+    var date13YearsAgo = moment().subtract(13, 'years');
+    var kpiData = {numberOfAccountsUnder18: 0, youthsUnder13: 0, youthsOver13: 0, numberOfParentsRegistered: 0};
+
+    options.postgresql.database = options.postgresql.name;
+    options.postgresql.user = options.postgresql.username;
+
+    pg.connect(options.postgresql, function (err, client) {
+      if(err) return done(err);
+      client.query("SELECT * FROM cd_profiles WHERE dob >= $1", [date18YearsAgo], function (err, results) {
+        if(err) return done(err);
+        kpiData.numberOfAccountsUnder18 = results.rows.length;
+        client.query("SELECT * FROM cd_profiles WHERE dob <= $1 AND dob >= $2", [date13YearsAgo, date18YearsAgo], function (err, results) {
+          if(err) return done(err);
+          kpiData.youthsOver13 = results.rows.length;
+          client.query("SELECT * FROM cd_profiles WHERE dob >= $1", [date13YearsAgo], function (err, results) {
+            if(err) return done(err);
+            kpiData.youthsUnder13 = results.rows.length;
+            client.end();
+            seneca.act({role: 'cd-profiles', cmd: 'list_query', query: {userType: 'parent-guardian'}}, function (err, parentProfiles) {
+              if(err) return done(err);
+              kpiData.numberOfParentsRegistered = parentProfiles.length;
+              return done(null, kpiData);
+            });
+          });
+        });
       });
     });
   }
