@@ -483,7 +483,8 @@ module.exports = function(options){
   function cmd_kpi_number_of_youths_registered(args, done) {
     var seneca = this;
     var date18YearsAgo = moment().subtract(18, 'years');
-    var kpiData = {numberOfYouthsRegistered: 0, numberOfParentsRegistered: 0};
+    var date13YearsAgo = moment().subtract(13, 'years');
+    var kpiData = {numberOfAccountsUnder18: 0, youthsUnder13: 0, youthsOver13: 0, numberOfParentsRegistered: 0};
 
     options.postgresql.database = options.postgresql.name;
     options.postgresql.user = options.postgresql.username;
@@ -492,12 +493,20 @@ module.exports = function(options){
       if(err) return done(err);
       client.query("SELECT * FROM cd_profiles WHERE dob >= $1", [date18YearsAgo], function (err, results) {
         if(err) return done(err);
-        client.end();
-        kpiData.numberOfYouthsRegistered = results.rows.length;
-        seneca.act({role: 'cd-profiles', cmd: 'list_query', query: {userType: 'parent-guardian'}}, function (err, parentProfiles) {
+        kpiData.numberOfAccountsUnder18 = results.rows.length;
+        client.query("SELECT * FROM cd_profiles WHERE dob <= $1 AND dob >= $2", [date13YearsAgo, date18YearsAgo], function (err, results) {
           if(err) return done(err);
-          kpiData.numberOfParentsRegistered = parentProfiles.length;
-          return done(null, kpiData);
+          kpiData.youthsOver13 = results.rows.length;
+          client.query("SELECT * FROM cd_profiles WHERE dob >= $1", [date13YearsAgo], function (err, results) {
+            if(err) return done(err);
+            kpiData.youthsUnder13 = results.rows.length;
+            client.end();
+            seneca.act({role: 'cd-profiles', cmd: 'list_query', query: {userType: 'parent-guardian'}}, function (err, parentProfiles) {
+              if(err) return done(err);
+              kpiData.numberOfParentsRegistered = parentProfiles.length;
+              return done(null, kpiData);
+            });
+          });
         });
       });
     });
