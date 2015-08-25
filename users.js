@@ -31,6 +31,7 @@ module.exports = function(options){
   seneca.add({role: 'user', cmd: 'login'}, cmd_login);
   seneca.add({role: plugin, cmd: 'kpi_number_of_youths_registered'}, cmd_kpi_number_of_youths_registered);
   seneca.add({role: plugin, cmd: 'kpi_number_of_champions_and_mentors_registered'}, cmd_kpi_number_of_champions_and_mentors_registered);
+  seneca.add({role: plugin, cmd: 'kpi_number_of_youth_females_registered'}, cmd_kpi_number_of_youth_females_registered);
 
   function cmd_load(args, done) {
     var seneca = this;
@@ -485,20 +486,34 @@ module.exports = function(options){
     var seneca = this;
     var date18YearsAgo = moment().subtract(18, 'years');
     var date13YearsAgo = moment().subtract(13, 'years');
+    var femaleSearch = args.femaleSearch || false;
     var kpiData = {numberOfAccountsUnder18: 0, youthsUnder13: 0, youthsOver13: 0, numberOfParentsRegistered: 0};
 
     options.postgresql.database = options.postgresql.name;
     options.postgresql.user = options.postgresql.username;
 
+    var numberOfAccountsUnder18Query;
+    var youthsOver13Query;
+    var youthsUnder13Query;
+    if(femaleSearch) {
+      numberOfAccountsUnder18Query = "SELECT * FROM cd_profiles WHERE dob >= $1 AND gender = 'Female'";
+      youthsOver13Query = "SELECT * FROM cd_profiles WHERE dob <= $1 AND dob >= $2 AND gender = 'Female'";
+      youthsUnder13Query = "SELECT * FROM cd_profiles WHERE dob >= $1 AND gender = 'Female'";
+    } else {
+      numberOfAccountsUnder18Query = "SELECT * FROM cd_profiles WHERE dob >= $1";
+      youthsOver13Query = "SELECT * FROM cd_profiles WHERE dob <= $1 AND dob >= $2";
+      youthsUnder13Query = "SELECT * FROM cd_profiles WHERE dob >= $1";
+    }
+
     pg.connect(options.postgresql, function (err, client) {
       if(err) return done(err);
-      client.query("SELECT * FROM cd_profiles WHERE dob >= $1", [date18YearsAgo], function (err, results) {
+      client.query(numberOfAccountsUnder18Query, [date18YearsAgo], function (err, results) {
         if(err) return done(err);
         kpiData.numberOfAccountsUnder18 = results.rows.length;
-        client.query("SELECT * FROM cd_profiles WHERE dob <= $1 AND dob >= $2", [date13YearsAgo, date18YearsAgo], function (err, results) {
+        client.query(youthsOver13Query, [date13YearsAgo, date18YearsAgo], function (err, results) {
           if(err) return done(err);
           kpiData.youthsOver13 = results.rows.length;
-          client.query("SELECT * FROM cd_profiles WHERE dob >= $1", [date13YearsAgo], function (err, results) {
+          client.query(youthsUnder13Query, [date13YearsAgo], function (err, results) {
             if(err) return done(err);
             kpiData.youthsUnder13 = results.rows.length;
             client.end();
@@ -525,6 +540,16 @@ module.exports = function(options){
         kpiData.numberOfMentorsRegistered = mentorProfiles.length;
         return done(null, kpiData);
       });
+    });
+  }
+
+  function cmd_kpi_number_of_youth_females_registered(args, done) {
+    var seneca = this;
+    var kpiData = {youthsRegistered: 0, youthFemalesRegistered: 0};
+
+    seneca.act({role: plugin, cmd: 'kpi_number_of_youths_registered', femaleSearch: true}, function (err, response) {
+      if(err) return done(err);
+      return done(null, response);
     });
   }
 
