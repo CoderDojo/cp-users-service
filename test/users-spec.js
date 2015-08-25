@@ -18,7 +18,7 @@ var using_postgres = false; // can be set to true for debugging
 if (using_postgres) seneca.use('postgresql-store', config["postgresql-store"]);
 
 seneca
-  .use(__dirname + '/../users.js')
+  .use(__dirname + '/../users.js', { 'postgresql': config['postgresql-store']})
   .use(__dirname + '/../agreements.js')
   .use(__dirname + '/../profiles.js')
   .use(__dirname + '/../email-notifications.js')
@@ -149,6 +149,29 @@ lab.experiment('Users Microservice test', { timeout: 5000 }, function(){
 
           done();
         });
+      });
+    });
+  });
+
+  lab.experiment('KPIs', function () {
+
+    lab.test('count number of youths registered', function (done) {
+      seneca.act({role: role, cmd: 'kpi_number_of_youths_registered'}, function (err, kpiData) {
+        if(err) return done(err);
+        expect(kpiData).to.have.property('numberOfAccountsUnder18').that.is.a('number');
+        expect(kpiData).to.have.property('youthsUnder13').that.is.a('number');
+        expect(kpiData).to.have.property('youthsOver13').that.is.a('number');
+        expect(kpiData).to.have.property('numberOfParentsRegistered').that.is.a('number');
+        return done();
+      });
+    });
+
+    lab.test('count number of champions and mentors registered', function (done) {
+      seneca.act({role: role, cmd: 'kpi_number_of_champions_and_mentors_registered'}, function (err, kpiData) {
+        if(err) return done(err);
+        expect(kpiData).to.have.property('numberOfChampionsRegistered').that.is.a('number');
+        expect(kpiData).to.have.property('numberOfMentorsRegistered').that.is.a('number');
+        return done();
       });
     });
   });

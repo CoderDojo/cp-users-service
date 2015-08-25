@@ -10,21 +10,9 @@ module.exports = function() {
       password: process.env.POSTGRES_PASSWORD
     }
   }
-
-  function esConfig() {
-    return {
-      connection: {
-        host : (process.env.ES_HOST || '127.0.0.1') + ':9200',
-        index: process.env.ES_INDEX,
-        sniffOnStart: false,
-        sniffInterval: false
-      }
-    };
-  }
-
+  
   return {
     'postgresql-store': pgConfig(),
-    elasticsearch: esConfig(),
     'recaptcha_secret_key': '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe',
     transport: {
       type: 'web',

@@ -30,6 +30,7 @@ module.exports = function(options){
   seneca.add({role: plugin, cmd: 'record_login'}, cmd_record_login);
   seneca.add({role: 'user', cmd: 'login'}, cmd_login);
   seneca.add({role: plugin, cmd: 'kpi_number_of_youths_registered'}, cmd_kpi_number_of_youths_registered);
+  seneca.add({role: plugin, cmd: 'kpi_number_of_champions_and_mentors_registered'}, cmd_kpi_number_of_champions_and_mentors_registered);
 
   function cmd_load(args, done) {
     var seneca = this;
@@ -508,6 +509,21 @@ module.exports = function(options){
             });
           });
         });
+      });
+    });
+  }
+
+  function cmd_kpi_number_of_champions_and_mentors_registered(args, done) {
+    var seneca = this;
+    var kpiData = {numberOfChampionsRegistered: 0, numberOfMentorsRegistered: 0};
+
+    seneca.act({role: 'cd-profiles', cmd: 'list_query', query: {userType: 'champion'}}, function (err, championProfiles) {
+      if(err) return done(err);
+      kpiData.numberOfChampionsRegistered = championProfiles.length;
+      seneca.act({role: 'cd-profiles', cmd: 'list_query', query: {userType: 'mentor'}}, function (err, mentorProfiles) {
+        if(err) return done(err);
+        kpiData.numberOfMentorsRegistered = mentorProfiles.length;
+        return done(null, kpiData);
       });
     });
   }
