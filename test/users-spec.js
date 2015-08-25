@@ -174,6 +174,17 @@ lab.experiment('Users Microservice test', { timeout: 5000 }, function(){
         return done();
       });
     });
+
+    lab.test('count number of youth females registered', function (done) {
+      seneca.act({role: role, cmd: 'kpi_number_of_youth_females_registered'}, function (err, kpiData) {
+        if(err) return done(err);
+        expect(kpiData).to.have.property('numberOfAccountsUnder18').that.is.a('number');
+        expect(kpiData).to.have.property('youthsUnder13').that.is.a('number');
+        expect(kpiData).to.have.property('youthsOver13').that.is.a('number');
+        expect(kpiData).to.have.property('numberOfParentsRegistered').that.is.a('number');
+        return done();
+      });
+    });
   });
 
   lab.experiment.skip('Get users by emails', function(){
