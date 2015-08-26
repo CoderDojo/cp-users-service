@@ -140,28 +140,14 @@ module.exports = function(options){
     }
 
     function checkPermissions(success, done){
-      var proto = process.env.PROTOCOL || 'http'; 
-      var data = querystring.stringify({key: 'cdfAdmins'})
-      var configPath = proto + '://' + args.zenHostname + '/api/1.0/config/get?'+data;
-      request({
-        method: 'GET',
-        url: configPath
-      }, function(err, res,body){
-        if(err || !body || !body.cdfAdmins){
-          //assume basic-user...
-          args.roles = ['basic-user'];
-          return done(null, success);
-        }
-
-        //if forumMods array contains the users email, make them an admin
-        if(body.cdfAdmins.indexOf(args.email) > -1){
-          args.roles = ['cdf-admin'];
-        } else {
-          args.roles = ['basic-user']
-        }
-        
-        return done(null, success);
-      });
+      //if forumMods array contains the users email, make them an admin
+      if(options.users.cdfAdmins.indexOf(args.email) > -1){
+        args.roles = ['cdf-admin'];
+      } else {
+        args.roles = ['basic-user']
+      }
+      
+      return done(null, success);
     }
 
     function registerUser(success, done){
@@ -248,7 +234,7 @@ module.exports = function(options){
   function cmd_get_users_by_emails(args, done){
     var seneca = this, query = {};
 
-    query.email = new RegExp(args.email, 'i');
+    query.email = new RegExp(escapeRegExp(args.email), 'i');
     query.limit$ = query.limit$ ? query.limit$ : 10;
 
     seneca.make(ENTITY_NS).list$(query, function(err, users){
@@ -264,6 +250,13 @@ module.exports = function(options){
 
       done(null, users);
     });
+
+    // taken from https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions
+    // needed because if a userCreator email is abc+xyz@example.com, it breaks the input string for
+    // building the regExps
+    function escapeRegExp(string){
+      return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
   }
 
   function cmd_update(args, done) {
@@ -473,10 +466,44 @@ module.exports = function(options){
   function cmd_login(args, done) {
     this.prior(args, function (err, loginResponse) {
       if(err) return done(err)
-      seneca.act({role: plugin, cmd:'record_login'}, {data: loginResponse}, function (err, res) {
-        if(err) return done(err);
+
+      if(!loginResponse.user) return done(null, loginResponse);
+
+      async.waterfall([
+        verifyPermissions,
+        recordLogin
+      ], function(err){
+        if(err){
+          return done(err);
+        }
+           
         return done(null, loginResponse);
       });
+
+      function verifyPermissions(next){
+        var userRole;
+
+        //if CdfAdmins array contains the users email, they should be admin
+        if(options.users.cdfAdmins.indexOf(args.email) > -1){
+          userRole = 'cdf-admin';
+        } else {
+          userRole = 'basic-user';
+        }
+
+        //if the users roles doesn't have the correct role, update them in the db to right role
+        if(loginResponse.user.roles.indexOf(userRole) === -1) updateUserRole(); //update role
+        else next(); //skip update role
+    
+        function updateUserRole(){
+         var user = loginResponse.user;
+         user.roles = [userRole];
+         seneca.act({role:plugin, cmd:'update', user, user}, next);
+        }
+      }
+
+      function recordLogin(next){
+        seneca.act({role: plugin, cmd:'record_login'}, {data: loginResponse}, next);
+      }
     });
   }
 
