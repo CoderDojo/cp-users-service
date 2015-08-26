@@ -155,7 +155,7 @@ lab.experiment('Users Microservice test', { timeout: 5000 }, function(){
 
   lab.experiment('KPIs', function () {
 
-    lab.test('count number of youths registered', function (done) {
+    lab.test.skip('count number of youths registered', function (done) {
       seneca.act({role: role, cmd: 'kpi_number_of_youths_registered'}, function (err, kpiData) {
         if(err) return done(err);
         expect(kpiData).to.have.property('numberOfAccountsUnder18').that.is.a('number');
@@ -175,7 +175,7 @@ lab.experiment('Users Microservice test', { timeout: 5000 }, function(){
       });
     });
 
-    lab.test('count number of youth females registered', function (done) {
+    lab.test.skip('count number of youth females registered', function (done) {
       seneca.act({role: role, cmd: 'kpi_number_of_youth_females_registered'}, function (err, kpiData) {
         if(err) return done(err);
         expect(kpiData).to.have.property('numberOfAccountsUnder18').that.is.a('number');

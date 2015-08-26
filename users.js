@@ -506,7 +506,7 @@ module.exports = function(options){
     }
 
     pg.connect(options.postgresql, function (err, client) {
-      if(err) return done(null, kpiData);
+      if(err) return done(err);
       client.query(numberOfAccountsUnder18Query, [date18YearsAgo], function (err, results) {
         if(err) return done(err);
         kpiData.numberOfAccountsUnder18 = results.rows.length;
