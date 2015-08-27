@@ -18,7 +18,7 @@ var using_postgres = false; // can be set to true for debugging
 if (using_postgres) seneca.use('postgresql-store', config["postgresql-store"]);
 
 seneca
-  .use(__dirname + '/../users.js', { 'postgresql': config['postgresql-store']})
+  .use(__dirname + '/../users.js', { 'postgresql': config['postgresql-store'], 'users': config['users']})
   .use(__dirname + '/../agreements.js')
   .use(__dirname + '/../profiles.js')
   .use(__dirname + '/../email-notifications.js')

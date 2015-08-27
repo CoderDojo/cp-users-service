@@ -499,7 +499,7 @@ module.exports = function(options){
         function updateUserRole(){
          var user = loginResponse.user;
          user.roles = [userRole];
-         seneca.act({role:plugin, cmd:'update', user, user}, next);
+         seneca.act({role:plugin, cmd:'update', user: user}, next);
         }
       }
 

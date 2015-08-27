@@ -21,6 +21,10 @@ module.exports = function() {
         port: 10303
       }
     },
+    users: {
+      cdfAdmins: [
+      ]
+    },
     strict: {add:false,  result:false}
   };
 }
