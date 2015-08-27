@@ -1,7 +1,7 @@
 'use strict';
 
 var querystring = require('querystring');
-var http = require('http');
+var http = require('https');
 var _ = require('lodash');
 var util = require('util');
 
