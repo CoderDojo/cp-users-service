@@ -76,7 +76,7 @@ lab.experiment('Users Microservice test', { timeout: 5000 }, function(){
 
   lab.experiment('List', function(){
     lab.test('list users from db', function(done){
-      seneca.act({role: role, cmd: 'list'}, function(err, users){
+      seneca.act({role: role, cmd: 'list', query: {}}, function(err, users){
         if(err) return done(err);
 
         // console.log('users: ' + util.inspect(users))

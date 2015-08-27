@@ -41,12 +41,17 @@ module.exports = function(options){
     userEntity.load$(id, done);
   }
 
-  function cmd_list(args, done){
+  function cmd_list(args, done) {
     var seneca = this;
-
+    var query = {};
+    if(args.ids) {
+      query.ids = args.ids;
+    } else if(args.query) {
+      query = args.query;
+    }
     async.waterfall([
       function(done) {
-        seneca.make(ENTITY_NS).list$({ids: args.ids}, done);
+        seneca.make(ENTITY_NS).list$(query, done);
       },
       function(users, done) {
         return done(null, _.map(users, function (user) {
