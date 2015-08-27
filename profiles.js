@@ -4,6 +4,7 @@ var pg = require('pg');
 var LargeObjectManager = require('pg-large-object').LargeObjectManager;
 var shortid = require('shortid');
 var moment = require('moment');
+var util = require('util');
 
 module.exports = function(options) {
   var seneca = this;
@@ -346,7 +347,8 @@ module.exports = function(options) {
     function getProfile(done){
       var query = args.query;
 
-      if(!query.userId){
+      if(!query || !query.userId){
+        console.error('Unexpected null query/userId in args:', util.inspect(args));
         return done(new Error('Internal Error'));
       }
 
