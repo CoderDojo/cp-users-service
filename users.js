@@ -469,9 +469,9 @@ module.exports = function(options){
     this.prior(args, function (err, loginResponse) {
       if(err) return done(err)
 
-      if(!loginResponse.user) return done(null, loginResponse);
+      if(!loginResponse.ok || !loginResponse.user) return done(null, loginResponse);
 
-      async.waterfall([
+      async.series([
         verifyPermissions,
         recordLogin
       ], function(err){
