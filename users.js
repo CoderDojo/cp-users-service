@@ -471,7 +471,7 @@ module.exports = function(options){
 
       if(loginResponse.ok && !loginResponse.user) return done(null, loginResponse);
 
-      async.waterfall([
+      async.series([
         verifyPermissions,
         recordLogin
       ], function(err){
