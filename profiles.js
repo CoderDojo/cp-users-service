@@ -655,9 +655,9 @@ module.exports = function(options) {
       };
 
       var locality = args.locality || 'en_US';
-      var code = 'invite-parent-guardian-' + locality;
+      var code = 'invite-parent-guardian-';
       var to =  invitedParentEmail;
-      seneca.act({role:'email-notifications', cmd: 'send', to:to, content:content, code: code, subject: emailSubject}, done);
+      seneca.act({role:'email-notifications', cmd: 'send', to:to, content:content, code: code, locality: locality, subject: emailSubject}, done);
     }
 
   }
@@ -1046,8 +1046,8 @@ module.exports = function(options) {
         year: moment(new Date()).format('YYYY')
       };
       var locality = args.locality || 'en_US';
-      var code = 'invite-ninja-over-13-' + locality;
-      seneca.act({role:'email-notifications', cmd: 'send', to:ninjaEmail, content:content, code: code, subject: emailSubject}, done);
+      var code = 'invite-ninja-over-13-';
+      seneca.act({role:'email-notifications', cmd: 'send', to:ninjaEmail, content:content, code: code, locality: locality, subject: emailSubject}, done);
     }
 
   }

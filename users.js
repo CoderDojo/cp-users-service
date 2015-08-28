@@ -103,7 +103,7 @@ module.exports = function(options){
   function cmd_register(args, done) {
     var isChampion = args.isChampion === true;
     var locality = args.locality || 'en_US';
-    var emailCode = 'auth-register-' + locality;
+    var emailCode = 'auth-register-';
     var emailSubject = args.emailSubject;
     var zenHostname = args.zenHostname;
     delete args.isChampion;
@@ -191,6 +191,7 @@ module.exports = function(options){
       if(registerResponse.ok){
         seneca.act({role:'email-notifications', cmd:'send'},
           {code: emailCode,
+          locality: locality,
           to: args.email,
           subject: emailSubject,
           content:{name: args.name, year: moment(new Date()).format('YYYY'), link: protocol+'://' + zenHostname}
@@ -346,7 +347,7 @@ module.exports = function(options){
     var nick  = args.nick || args.username;
     var email = args.email;
     var locality = args.locality || 'en_US';
-    var emailCode = 'auth-create-reset-' + locality;
+    var emailCode = 'auth-create-reset-';
     var emailSubject = args.emailSubject;
     var zenHostname = args.zenHostname || '127.0.0.1:8000';
 
@@ -359,6 +360,7 @@ module.exports = function(options){
       if(options['email-notifications'].sendemail) {
         seneca.act({role:'email-notifications', cmd:'send'},
           {code: emailCode,
+          locality: locality,
           to: out.user.email,
           subject: emailSubject,
           content:{name: out.user.name, resetlink: protocol + '://' + zenHostname + '/reset_password/' + out.reset.id, year: moment(new Date()).format('YYYY')}
