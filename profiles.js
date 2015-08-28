@@ -675,7 +675,10 @@ module.exports = function(options) {
       updateParentProfile,
       updateNinjaProfile,
       removeInviteToken
-    ], done);
+    ], function (err, res) {
+      if(err) return done(null, {ok: false, why: err.message});
+      return done(null, res);
+    });
 
     function validateRequestingUserIsParent(done) {
       seneca.act({role: plugin, cmd: 'list', query: {userId: requestingUserId}}, function (err, requestingUserProfiles) {
