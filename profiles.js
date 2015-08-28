@@ -325,6 +325,11 @@ module.exports = function(options) {
 
   function cmd_user_profile_data(args, done){
     var query = args.query;
+
+    if(!query || !query.userId){
+      return done(null, {error: 'Invalid query.'});
+    }
+
     var publicFields = [];
 
     async.waterfall([
@@ -347,11 +352,7 @@ module.exports = function(options) {
     function getProfile(done){
       var query = args.query;
 
-      if(!query || !query.userId){
-        console.error('Unexpected null query/userId in args:', util.inspect(args));
-        return done(new Error('Internal Error'));
-      }
-
+      
       var publicFields = [];
       seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId:query.userId}, function(err, results){
         if(err){
