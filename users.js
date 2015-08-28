@@ -551,7 +551,7 @@ module.exports = function(options){
             if(err) return done(err);
             kpiData.youthsUnder13 = results.rows.length;
             client.end();
-            seneca.act({role: 'cd-profiles', cmd: 'list_query', query: {userType: 'parent-guardian'}}, function (err, parentProfiles) {
+            seneca.act({role: 'cd-profiles', cmd: 'list', query: {userType: 'parent-guardian'}}, function (err, parentProfiles) {
               if(err) return done(err);
               kpiData.numberOfParentsRegistered = parentProfiles.length;
               return done(null, kpiData);
@@ -566,10 +566,10 @@ module.exports = function(options){
     var seneca = this;
     var kpiData = {numberOfChampionsRegistered: 0, numberOfMentorsRegistered: 0};
 
-    seneca.act({role: 'cd-profiles', cmd: 'list_query', query: {userType: 'champion'}}, function (err, championProfiles) {
+    seneca.act({role: 'cd-profiles', cmd: 'list', query: {userType: 'champion'}}, function (err, championProfiles) {
       if(err) return done(err);
       kpiData.numberOfChampionsRegistered = championProfiles.length;
-      seneca.act({role: 'cd-profiles', cmd: 'list_query', query: {userType: 'mentor'}}, function (err, mentorProfiles) {
+      seneca.act({role: 'cd-profiles', cmd: 'list', query: {userType: 'mentor'}}, function (err, mentorProfiles) {
         if(err) return done(err);
         kpiData.numberOfMentorsRegistered = mentorProfiles.length;
         return done(null, kpiData);
