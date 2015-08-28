@@ -68,7 +68,7 @@ module.exports = function(options){
     }
 
     function checkPermissions(user, done) {
-      seneca.act({role: 'cd-profiles', cmd: 'list_query', query:{userId: user.id}}, function (err, profiles) {
+      seneca.act({role: 'cd-profiles', cmd: 'list', query:{userId: user.id}}, function (err, profiles) {
         if(err) return done(err);
         var userProfile = profiles[0];
         user.profileId = userProfile.id;
