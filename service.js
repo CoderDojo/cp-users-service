@@ -36,6 +36,6 @@ require('./migrate-psql-db.js')(function (err) {
   seneca.use(require('./nodebb-api.js'), config.nodebb);
 
   seneca.listen()
-  .client({type: 'tcp', port: 10304, pin: 'role:cd-salesforce,cmd:*'})
-  .client({type: 'tcp', port: 10301, pin: 'role:cd-dojos,cmd:*'});
+  .client({type: 'web', port: 10304, pin: 'role:cd-salesforce,cmd:*'})
+  .client({type: 'web', port: 10301, pin: 'role:cd-dojos,cmd:*'});
 });
