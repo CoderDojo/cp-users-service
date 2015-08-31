@@ -97,8 +97,9 @@ module.exports = function() {
     },
     'recaptcha_secret_key': process.env.RECAPTCHA_SECRET_KEY,
     transport: {
-      type: 'tcp',
-      tcp: {
+      type: 'web',
+      web: {
+        host: '0.0.0.0',
         port: 10303
       }
     },
