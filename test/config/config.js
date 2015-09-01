@@ -17,6 +17,7 @@ module.exports = function() {
     transport: {
       type: 'web',
       web: {
+        timeout: 120000,
         port: 10303
       }
     },
