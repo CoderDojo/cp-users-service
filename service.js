@@ -1,8 +1,6 @@
 'use strict';
 
 if (process.env.NEW_RELIC_ENABLED === "true") require('newrelic');
-/*process.setMaxListeners(0);
-require('events').EventEmitter.prototype._maxListeners = 100;*/
 
 var _ =require('lodash');
 var config = require('./config/config.js')();
