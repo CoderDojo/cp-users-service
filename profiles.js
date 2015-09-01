@@ -684,7 +684,7 @@ module.exports = function(options) {
       seneca.act({role: plugin, cmd: 'list', query: {userId: requestingUserId}}, function (err, requestingUserProfiles) {
         if(err) return done(err);
         var requestingUserProfile = requestingUserProfiles[0];
-        if(requestingUserProfile.userType === 'parent-guardian') return done();
+        if(requestingUserProfile && requestingUserProfile.userType === 'parent-guardian') return done();
         seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: requestingUserId}}, function (err, usersDojos) {
           if(err) return done(err);
           var parentTypeFound = _.find(usersDojos, function (userDojo) {
