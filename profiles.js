@@ -180,6 +180,7 @@ module.exports = function(options) {
     _.each(syncedFields, function(field){
       updatedFields[field] = profile[field];
     })
+    if(updatedFields.email) updatedFields.nick = profile.email;
     seneca.act({role:'cd-users', cmd:'update', user: updatedFields}, done);
   }
 
