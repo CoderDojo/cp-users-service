@@ -125,31 +125,53 @@ module.exports = function(options) {
   function cmd_create(args, done){
     var profile = args.profile;
 
-    var profileKeys = _.keys(profile);
-    var missingKeys = _.difference(requiredProfileFields, profileKeys);
-    if(_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
+    async.series([
+      validateRequest,
+      saveProfile
+    ], function (err, res) {
+      if(err) return done(null, {ok: false, why: err.message});
+      return done(null, res);
+    });
 
-    if(args.user !== profile.userId) return done(null, new Error('Profiles can only be saved by the profile user.'));
-
-    if(profile.id){
-      profile = _.omit(profile, immutableFields);
+    function validateRequest(done) {
+      var profileEntity = seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY);
+      profileEntity.load$(profile.id, function (err, originalProfile) {
+        if(err) return done(err);
+        if(!originalProfile) return done();
+        if(originalProfile.email !== profile.email) {
+          profileEntity.load$({email: profile.email}, function (err, profile) {
+            if(err) return done(err);
+            if(!_.isEmpty(profile)) return done(new Error('This email is already associated with an account.'));
+            return done();
+          });
+        } else {
+          return done();
+        }
+      });
     }
 
-    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
-      if(err) return done(err);
-      
-      syncUserObj(profile, function(err, res){
-        if (err) return done(err);
+    function saveProfile(done) {
+      var profileKeys = _.keys(profile);
+      var missingKeys = _.difference(requiredProfileFields, profileKeys);
+      if(_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
+      if(args.user !== profile.userId) return done(null, new Error('Profiles can only be saved by the profile user.'));
+      if(profile.id){
+        profile = _.omit(profile, immutableFields);
+      }
+      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
+        if(err) return done(err);
+        
+        syncUserObj(profile, function(err, res){
+          if (err) return done(err);
 
-        syncForumProfile(profile, function(err, res){
-          if (err) seneca.log.error(err);
-          if (res.error) seneca.log.error('NodeBB Profile Sync Error: ' + res.error);
-
-          var query = {userId: profile.userId};
-          seneca.act({role: plugin, cmd: 'list', query: query}, done);
+          syncForumProfile(profile, function(err, res){
+            if (err) seneca.log.error(err);
+            var query = {userId: profile.userId};
+            seneca.act({role: plugin, cmd: 'load'}, query, done);
+          });
         });
       });
-    });
+    }
   }
 
   function syncUserObj(profile, done){
@@ -158,6 +180,7 @@ module.exports = function(options) {
     _.each(syncedFields, function(field){
       updatedFields[field] = profile[field];
     })
+    if(updatedFields.email) updatedFields.nick = profile.email;
     seneca.act({role:'cd-users', cmd:'update', user: updatedFields}, done);
   }
 

@@ -22,6 +22,7 @@ seneca
   .use(__dirname + '/../agreements.js')
   .use(__dirname + '/../profiles.js')
   .use(__dirname + '/../email-notifications.js')
+  .use(__dirname + '/stubs/cd-nodebb-api.js')
   .use('mail', config.mailtrap)
   .use('user');
 
@@ -44,6 +45,17 @@ function expect_contain_properties(actual, expected){
   })
   return;
 }
+
+lab.experiment('Profiles Microservice test', { timeout: 5000}, function () {
+  lab.test('save', function (done) {
+    var profile = {
+      "name": "test-user",
+      "email": "test-user@example.com",
+      "alias": "test-user-alias"
+    };
+    seneca.act({role: 'cd-profiles', cmd: 'create', profile: profile}, done);
+  }); 
+});
 
 lab.experiment('Users Microservice test', { timeout: 5000 }, function(){
   lab.before(function(done){
