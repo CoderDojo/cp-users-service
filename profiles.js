@@ -112,6 +112,7 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'load_parents_for_user'}, cmd_load_parents_for_user);
   seneca.add({role: plugin, cmd: 'invite_ninja'}, cmd_invite_ninja);
   seneca.add({role: plugin, cmd: 'approve_invite_ninja'}, cmd_approve_invite_ninja);
+  seneca.add({role: plugin, cmd: 'ninjas_for_user'}, cmd_ninjas_for_user);
 
 
   function cmd_search(args, done){
@@ -1145,6 +1146,31 @@ module.exports = function(options) {
       });
     }
 
+  }
+
+  function cmd_ninjas_for_user(args, done) {
+    var seneca = this;
+    var userId = args.userId;
+    var ninjas = [];
+
+    if(args.user !== userId) return done(null, {ok: false, why: 'Invalid request'});
+
+    seneca.act({role: plugin, cmd: 'list', query: {userId: userId}}, function (err, profiles) {
+      if(err) return done(err);
+      if(_.isEmpty(profiles)) return done(null, ninjas);
+      var parentProfile = profiles[0];
+      if(_.isEmpty(parentProfile.children)) return done(null, ninjas);
+      async.each(parentProfile.children, function (ninjaUserId, cb) {
+        seneca.act({role: plugin, cmd: 'list', query: {userId: ninjaUserId}}, function (err, ninjaProfiles) {
+          if(err) return cb(err);
+          ninjas.push(ninjaProfiles[0]);
+          return cb();
+        });
+      }, function (err) {
+        if(err) return done(err);
+        return done(null, ninjas);
+      });
+    });
   }
 
   return {
