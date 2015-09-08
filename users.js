@@ -103,7 +103,7 @@ module.exports = function(options){
   function cmd_register(args, done) {
     var isChampion = args.isChampion === true;
     var locality = args.locality || 'en_US';
-    var emailCode = 'auth-register-' + locality;
+    var emailCode = 'auth-register-';
     var emailSubject = args.emailSubject;
     var zenHostname = args.zenHostname;
     delete args.isChampion;
@@ -191,6 +191,7 @@ module.exports = function(options){
       if(registerResponse.ok){
         seneca.act({role:'email-notifications', cmd:'send'},
           {code: emailCode,
+          locality: locality,
           to: args.email,
           subject: emailSubject,
           content:{name: args.name, year: moment(new Date()).format('YYYY'), link: protocol+'://' + zenHostname}
@@ -346,7 +347,7 @@ module.exports = function(options){
     var nick  = args.nick || args.username;
     var email = args.email;
     var locality = args.locality || 'en_US';
-    var emailCode = 'auth-create-reset-' + locality;
+    var emailCode = 'auth-create-reset-';
     var emailSubject = args.emailSubject;
     var zenHostname = args.zenHostname || '127.0.0.1:8000';
 
@@ -359,6 +360,7 @@ module.exports = function(options){
       if(options['email-notifications'].sendemail) {
         seneca.act({role:'email-notifications', cmd:'send'},
           {code: emailCode,
+          locality: locality,
           to: out.user.email,
           subject: emailSubject,
           content:{name: out.user.name, resetlink: protocol + '://' + zenHostname + '/reset_password/' + out.reset.id, year: moment(new Date()).format('YYYY')}
@@ -549,7 +551,7 @@ module.exports = function(options){
             if(err) return done(err);
             kpiData.youthsUnder13 = results.rows.length;
             client.end();
-            seneca.act({role: 'cd-profiles', cmd: 'list_query', query: {userType: 'parent-guardian'}}, function (err, parentProfiles) {
+            seneca.act({role: 'cd-profiles', cmd: 'list', query: {userType: 'parent-guardian'}}, function (err, parentProfiles) {
               if(err) return done(err);
               kpiData.numberOfParentsRegistered = parentProfiles.length;
               return done(null, kpiData);
@@ -564,10 +566,10 @@ module.exports = function(options){
     var seneca = this;
     var kpiData = {numberOfChampionsRegistered: 0, numberOfMentorsRegistered: 0};
 
-    seneca.act({role: 'cd-profiles', cmd: 'list_query', query: {userType: 'champion'}}, function (err, championProfiles) {
+    seneca.act({role: 'cd-profiles', cmd: 'list', query: {userType: 'champion'}}, function (err, championProfiles) {
       if(err) return done(err);
       kpiData.numberOfChampionsRegistered = championProfiles.length;
-      seneca.act({role: 'cd-profiles', cmd: 'list_query', query: {userType: 'mentor'}}, function (err, mentorProfiles) {
+      seneca.act({role: 'cd-profiles', cmd: 'list', query: {userType: 'mentor'}}, function (err, mentorProfiles) {
         if(err) return done(err);
         kpiData.numberOfMentorsRegistered = mentorProfiles.length;
         return done(null, kpiData);
