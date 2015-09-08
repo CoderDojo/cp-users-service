@@ -139,9 +139,9 @@ module.exports = function(options) {
         if(err) return done(err);
         if(!originalProfile) return done();
         if(originalProfile.email !== profile.email) {
-          profileEntity.load$({email: profile.email}, function (err, profile) {
+          seneca.act({role: 'cd-users', cmd: 'list', query: {nick: profile.email}}, function (err, users) {
             if(err) return done(err);
-            if(!_.isEmpty(profile)) return done(new Error('This email is already associated with an account.'));
+            if(!_.isEmpty(users)) return done(new Error('This email is already associated with an account.'));
             return done();
           });
         } else {
