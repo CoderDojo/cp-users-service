@@ -49,16 +49,7 @@ module.exports = function(options){
     } else if(args.query) {
       query = args.query;
     }
-    async.waterfall([
-      function(done) {
-        seneca.make(ENTITY_NS).list$(query, done);
-      },
-      function(users, done) {
-        return done(null, _.map(users, function (user) {
-          return user.data$();
-        }));
-      }
-    ], done);
+    seneca.make(ENTITY_NS).list$(query, done);
   }
 
   // We create an Account in Salesforce with the champion information and we also create a Lead.
