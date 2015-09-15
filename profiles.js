@@ -183,8 +183,6 @@ module.exports = function (options) {
     seneca.act({role: 'cd-nodebb-api', cmd: 'update', user: forumProfile}, done);
   }
 
-  // TODO: clean up with async
-
   function cmd_save_youth_profile (args, done) {
     var profile = args.profile;
     profile.parents = [];
@@ -216,8 +214,6 @@ module.exports = function (options) {
 
       seneca.act({role: 'user', cmd: 'register'}, user, function (err, data) {
         if (err) return done(err);
-
-        // TODO update errors on front-end
         if (!data.ok) return done(data.why);
 
         profile.userId = data && data.user && data.user.id;
@@ -482,7 +478,6 @@ module.exports = function (options) {
       return done(null, profile);
     }
 
-    // TODO cdf-admin role should be able to see all profiles
     function publicProfilesFilter (profile, done) {
       var publicProfileFlag = !profile.requestingUserIsDojoAdmin && !profile.requestingUserIsChampion && !profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && (!_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian'));
       if (publicProfileFlag) {
