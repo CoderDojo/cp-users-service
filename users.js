@@ -60,7 +60,7 @@ module.exports = function (options) {
 
       var account = {
         PlatformId__c: user.id,
-        PlatformUrl__c: 'https:// zen.coderdojo.com/dashboard/profile/' + user.id,
+        PlatformUrl__c: 'https://zen.coderdojo.com/dashboard/profile/' + user.id,
         Email__c: user.email,
         Name: user.name,
         UserType__c: 'Champion',
@@ -73,7 +73,7 @@ module.exports = function (options) {
 
         var lead = {
           PlatformId__c: user.id,
-          PlatformUrl__c: 'https:// zen.coderdojo.com/dashboard/profile/' + user.id,
+          PlatformUrl__c: 'https://zen.coderdojo.com/dashboard/profile/' + user.id,
           Email__c: user.email,
           LastName: user.name,
           RecordTypeId: process.env.SALESFORCE_LEAD_RECORDTYPEID,
@@ -113,7 +113,7 @@ module.exports = function (options) {
     var captchaResponse = args['g-recaptcha-response'];
 
     var postData = {
-      url: 'https:// www.google.com/recaptcha/api/siteverify',
+      url: 'https://www.google.com/recaptcha/api/siteverify',
       form: {
         response: captchaResponse,
         secret: secret
@@ -249,7 +249,7 @@ module.exports = function (options) {
       done(null, users);
     });
 
-    // taken from https:// developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions
+    // taken from https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions
     // needed because if a userCreator email is abc+xyz@example.com, it breaks the input string for
     // building the regExps
     function escapeRegExp (string) {
