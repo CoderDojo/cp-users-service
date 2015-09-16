@@ -64,6 +64,11 @@ module.exports = function() {
     }
   }
 
+  function cdfAdmins() {
+    var admins = process.env.CDF_ADMINS || '';
+    return admins.split(',');
+  }
+
   return {
     'postgresql-store': pgConfig(),
     'email-notifications': {
@@ -117,16 +122,7 @@ module.exports = function() {
     timeout: 120000,
     strict: {add:false,  result:false},
     users: {
-      cdfAdmins: [
-        'ursula@coderdojo.org',
-        'giustina@coderdojo.org',
-        'pete@coderdojo.org',
-        'rosa@coderdojo.org',
-        'laura@coderdojo.org',
-        'mary@coderdojo.org',
-        'annabel@coderdojo.org',
-        'david.cahill@nearform.com'
-      ]
+      cdfAdmins: cdfAdmins()
     },
     actcache: {active:false}
     //log: log()
