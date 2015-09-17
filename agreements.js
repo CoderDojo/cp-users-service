@@ -21,10 +21,7 @@ module.exports = function (options) {
     agreementEntity.load$({userId: agreement.userId}, function(err, response) {
       if (err) return done(err);
       if (!response || !response.id) {
-        agreementEntity.save$(agreement, function (err, response) {
-          if (err) return done(err);
-          done(null, response);
-        });
+        agreementEntity.save$(agreement, done);
       } else {
         return done(null, {msg: 'Charter already signed.'});
       }
