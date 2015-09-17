@@ -35,7 +35,6 @@
     "postgrator": "2.2.0",
     "precommit": "1.1.5",
     "request": "2.58.0",
-    "semistandard": "7.0.2",
     "seneca": "git://github.com/thekemkid/seneca.git",
     "seneca-auth": "0.2.10",
     "seneca-mail": "0.2.1",
@@ -45,6 +44,8 @@
     "xoauth2": "1.1.0"
   },
   "devDependencies": {
+    "semistandard": "7.0.2",
+    "es6-promise": "3.0.2",
     "chai": "2.2.0",
     "lab": "5.15.1",
     "lab-quieter-reporter": "1.0.1"
