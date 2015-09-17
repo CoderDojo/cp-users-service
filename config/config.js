@@ -1,7 +1,7 @@
 'use strict';
 var path = require('path');
 var assert = require('assert');
-var LogEntries = require('le_node');
+if (process.env.LOGENTRIES_ENABLED === 'true') var LogEntries = require('le_node');
 var generator = require('xoauth2').createXOAuth2Generator({
   user: process.env.GMAIL_USER,
   clientId: process.env.GMAIL_CLIENT_ID,
@@ -12,7 +12,7 @@ var generator = require('xoauth2').createXOAuth2Generator({
 module.exports = function() {
   function log () {
     // seneca custom log handlers
-  
+
     if (process.env.LOGENTRIES_ENABLED === 'true') {
       assert.ok(process.env.LOGENTRIES_DEBUG_TOKEN, 'No LOGENTRIES_DEBUG_TOKEN set');
       var led = new LogEntries({
@@ -20,7 +20,7 @@ module.exports = function() {
         flatten: true,
         flattenArrays: true
       });
-      
+
       assert.ok(process.env.LOGENTRIES_ERRORS_TOKEN, 'No LOGENTRIES_ERROR_TOKEN set');
       var lee = new LogEntries({
         token: process.env.LOGENTRIES_ERRORS_TOKEN,
@@ -28,23 +28,23 @@ module.exports = function() {
         flattenArrays: true
       });
     }
-  
+
     function debugHandler() {
       if (process.env.LOGENTRIES_ENABLED === 'true') {
         assert.ok(process.env.LOGENTRIES_DEBUG_TOKEN, 'No LOGENTRIES_DEBUG_TOKEN set');
         led.log('debug', arguments);
       }
     }
-  
+
     function errorHandler() {
       console.error(JSON.stringify(arguments));
-  
+
       if (process.env.LOGENTRIES_ENABLED === 'true') {
         assert.ok(process.env.LOGENTRIES_ERRORS_TOKEN, 'No LOGENTRIES_ERROR_TOKEN set');
         lee.log('err', arguments);
       }
     }
-  
+
     return {
       map:[{
         level:'debug', handler: debugHandler
@@ -62,6 +62,11 @@ module.exports = function() {
       username: process.env.POSTGRES_USERNAME,
       password: process.env.POSTGRES_PASSWORD
     }
+  }
+
+  function cdfAdmins() {
+    var admins = process.env.CDF_ADMINS || '';
+    return admins.split(',');
   }
 
   return {
@@ -117,17 +122,9 @@ module.exports = function() {
     timeout: 120000,
     strict: {add:false,  result:false},
     users: {
-      cdfAdmins: [
-        'ursula@coderdojo.org',
-        'giustina@coderdojo.org',
-        'pete@coderdojo.org',
-        'rosa@coderdojo.org',
-        'laura@coderdojo.org',
-        'mary@coderdojo.org',
-        'annabel@coderdojo.org',
-        'david.cahill@nearform.com'
-      ]
+      cdfAdmins: cdfAdmins()
     },
-    log: log()
+    actcache: {active:false}
+    //log: log()
   };
 }

@@ -4,26 +4,21 @@ var pg = require('pg');
 var LargeObjectManager = require('pg-large-object').LargeObjectManager;
 var shortid = require('shortid');
 var moment = require('moment');
-var util = require('util');
 
-module.exports = function(options) {
+module.exports = function (options) {
   var seneca = this;
 
   var PARENT_GUARDIAN_PROFILE_ENTITY = 'cd/profiles';
   var plugin = 'cd-profiles';
   var _ = require('lodash');
   var async = require('async');
-  var uuid = require('node-uuid');
   var hiddenFields = require('./data/hidden-fields.js');
-  var fs = require('fs');
-  var path = require('path');
-  var so = seneca.options();
 
   var syncedFields = [
     'name',
     'email',
     'phone'
-  ]
+  ];
 
   var mentorPublicFields = [
     'name',
@@ -66,18 +61,18 @@ module.exports = function(options) {
     'attendee-o13': attendeeO13PublicFields
   };
 
-  ///var allowedOptionalFieldsYouth = ['dojos', 'linkedin', 'twitter', 'badges'];
-  var allowedOptionalFieldsYouth = _.filter(hiddenFields, function(field){
-    if(_.contains(field.allowedUserTypes, 'attendee-o13')) return field.modelName;
+  // var allowedOptionalFieldsYouth = ['dojos', 'linkedin', 'twitter', 'badges'];
+  var allowedOptionalFieldsYouth = _.filter(hiddenFields, function (field) {
+    if (_.contains(field.allowedUserTypes, 'attendee-o13')) return field.modelName;
   });
 
-  //var allowedOptionalFieldsChampion = ['notes', 'projects'];
-  var allowedOptionalFieldsChampion = _.map(hiddenFields, function(field){
-    if(_.contains(field.allowedUserTypes, 'champion')) return field.modelName;
+  // var allowedOptionalFieldsChampion = ['notes', 'projects'];
+  var allowedOptionalFieldsChampion = _.map(hiddenFields, function (field) {
+    if (_.contains(field.allowedUserTypes, 'champion')) return field.modelName;
   });
 
   var allowedOptionalFieldsMentor = _.map(hiddenFields, function (field) {
-    if(_.contains(field.allowedUserTypes, 'mentor')) return field.modelName;
+    if (_.contains(field.allowedUserTypes, 'mentor')) return field.modelName;
   });
 
   var allowedOptionalFields = {
@@ -92,9 +87,8 @@ module.exports = function(options) {
 
   var requiredProfileFields = ['name', 'alias', 'dob', 'country', 'place', 'address'];
 
-  //var userTypes = ['champion', 'mentor', 'parent-guardian', 'attendee-o13', 'attendee-u13'];
-  //var userTypes = ['attendee-u13', 'attendee-o13', 'parent-guardian', 'mentor', 'champion'];
-
+  // var userTypes = ['champion', 'mentor', 'parent-guardian', 'attendee-o13', 'attendee-u13'];
+  // var userTypes = ['attendee-u13', 'attendee-o13', 'parent-guardian', 'mentor', 'champion'];
 
   seneca.add({role: plugin, cmd: 'create'}, cmd_create);
   seneca.add({role: plugin, cmd: 'user_profile_data'}, cmd_user_profile_data);
@@ -114,35 +108,34 @@ module.exports = function(options) {
   seneca.add({role: plugin, cmd: 'approve_invite_ninja'}, cmd_approve_invite_ninja);
   seneca.add({role: plugin, cmd: 'ninjas_for_user'}, cmd_ninjas_for_user);
 
-
-  function cmd_search(args, done){
-    if(!args.query){
+  function cmd_search (args, done) {
+    if (!args.query) {
       return done(new Error('Empty query'));
     }
 
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$(args.query, done);
   }
 
-  function cmd_create(args, done){
+  function cmd_create (args, done) {
     var profile = args.profile;
 
     async.series([
       validateRequest,
       saveProfile
     ], function (err, res) {
-      if(err) return done(null, {ok: false, why: err.message});
+      if (err) return done(null, {ok: false, why: err.message});
       return done(null, res);
     });
 
-    function validateRequest(done) {
+    function validateRequest (done) {
       var profileEntity = seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY);
       profileEntity.load$(profile.id, function (err, originalProfile) {
-        if(err) return done(err);
-        if(!originalProfile) return done();
-        if(originalProfile.email !== profile.email) {
+        if (err) return done(err);
+        if (!originalProfile) return done();
+        if (originalProfile.email !== profile.email) {
           seneca.act({role: 'cd-users', cmd: 'list', query: {nick: profile.email}}, function (err, users) {
-            if(err) return done(err);
-            if(!_.isEmpty(users)) return done(new Error('This email is already associated with an account.'));
+            if (err) return done(err);
+            if (!_.isEmpty(users)) return done(new Error('This email is already associated with an account.'));
             return done();
           });
         } else {
@@ -151,21 +144,21 @@ module.exports = function(options) {
       });
     }
 
-    function saveProfile(done) {
+    function saveProfile (done) {
       var profileKeys = _.keys(profile);
       var missingKeys = _.difference(requiredProfileFields, profileKeys);
-      if(_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
-      if(args.user !== profile.userId) return done(null, new Error('Profiles can only be saved by the profile user.'));
-      if(profile.id){
+      if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
+      if (args.user !== profile.userId) return done(null, new Error('Profiles can only be saved by the profile user.'));
+      if (profile.id) {
         profile = _.omit(profile, immutableFields);
       }
-      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
-        if(err) return done(err);
-        
-        syncUserObj(profile, function(err, res){
+      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function (err, profile) {
+        if (err) return done(err);
+
+        syncUserObj(profile, function (err, res) {
           if (err) return done(err);
 
-          syncForumProfile(profile, function(err, res){
+          syncForumProfile(profile, function (err, res) {
             if (err) seneca.log.error(err);
             var query = {userId: profile.userId};
             seneca.act({role: plugin, cmd: 'load'}, query, done);
@@ -175,34 +168,32 @@ module.exports = function(options) {
     }
   }
 
-  function syncUserObj(profile, done){
+  function syncUserObj (profile, done) {
     var updatedFields = {};
     updatedFields.id = profile.userId;
-    _.each(syncedFields, function(field){
+    _.each(syncedFields, function (field) {
       updatedFields[field] = profile[field];
-    })
-    if(updatedFields.email) updatedFields.nick = profile.email;
-    seneca.act({role:'cd-users', cmd:'update', user: updatedFields}, done);
+    });
+    if (updatedFields.email) updatedFields.nick = profile.email;
+    seneca.act({role: 'cd-users', cmd: 'update', user: updatedFields}, done);
   }
 
-  function syncForumProfile(profile, done){
+  function syncForumProfile (profile, done) {
     var forumProfile = _.clone(profile);
     forumProfile.username = forumProfile.name;
-    seneca.act({role:'cd-nodebb-api', cmd:'update', user: forumProfile}, done);
+    seneca.act({role: 'cd-nodebb-api', cmd: 'update', user: forumProfile}, done);
   }
 
-  //TODO: clean up with async
-
-  function cmd_save_youth_profile(args, done){
+  function cmd_save_youth_profile (args, done) {
     var profile = args.profile;
     profile.parents = [];
     profile.parents.push(args.user);
 
-    if(profile.id){
+    if (profile.id) {
       profile = _.omit(profile, immutableFields);
     }
 
-    var initUserType =  profile.userTypes[0];
+    var initUserType = profile.userTypes[0];
     var password = profile.password;
 
     var nick = profile.alias || profile.name;
@@ -211,103 +202,96 @@ module.exports = function(options) {
       name: profile.name,
       nick: nick,
       email: profile.email,
-      initUserType: {name : initUserType},
+      initUserType: {name: initUserType},
       password: password,
       roles: ['basic-user']
     };
 
-    function registerUser(youth, done) {
-
-      if(youth) {
+    function registerUser (youth, done) {
+      if (youth) {
         delete user.email;
         delete user.password;
       }
 
-      seneca.act({role: 'user', cmd: 'register'}, user, function(err, data){
-        if(err) return done(err);
-
-        //TODO update errors on front-end
-        if(!data.ok) return done(data.why);
+      seneca.act({role: 'user', cmd: 'register'}, user, function (err, data) {
+        if (err) return done(err);
+        if (!data.ok) return done(data.why);
 
         profile.userId = data && data.user && data.user.id;
         profile.userType = data && data.user && data.user.initUserType && data.user.initUserType.name;
 
-        profile = _.omit(profile,['userTypes', 'password']);
+        profile = _.omit(profile, ['userTypes', 'password']);
 
         saveChild(profile, args.user, done);
-
       });
     }
 
-    function addUserToParentsDojos(profile, done) {
+    function addUserToParentsDojos (profile, done) {
       var parentsDojos = [];
       var userType = profile.userType;
       async.each(profile.parents, function (parent, cb) {
-        //Load parents dojos
+        // Load parents dojos
         var query = {userId: parent};
 
-        seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: query}, function(err, usersDojos){
-          if(err) return done(err);
+        seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: query}, function (err, usersDojos) {
+          if (err) return done(err);
           _.each(usersDojos, function (userDojo) {
             parentsDojos.push(userDojo.dojoId);
           });
           cb();
         });
       }, function (err) {
+        if (err) return done(err);
         async.each(parentsDojos, function (parentDojo, cb) {
           var userDojo = {
-            userId:profile.userId,
-            owner:0,
-            dojoId:parentDojo,
-            userTypes:[userType]
+            userId: profile.userId,
+            owner: 0,
+            dojoId: parentDojo,
+            userTypes: [userType]
           };
           seneca.act({role: 'cd-dojos', cmd: 'save_usersdojos', userDojo: userDojo}, cb);
         }, function (err, res) {
-          if(err) return done(err);
+          if (err) return done(err);
           return done(null, profile);
         });
       });
-
     }
 
-    if(initUserType === 'attendee-o13'){
-
+    if (initUserType === 'attendee-o13') {
       async.waterfall([
         async.apply(registerUser, false),
         addUserToParentsDojos
       ], function (err, res) {
-        if(err) return done(null, {error: err})
+        if (err) return done(null, {error: err});
         return done(null, res);
       });
-
-    } else if(initUserType === 'attendee-u13') {
-
+    } else if (initUserType === 'attendee-u13') {
       async.waterfall([
         async.apply(registerUser, true),
         addUserToParentsDojos
       ], function (err, res) {
-        if(err) return done(null, {error: err});
+        if (err) return done(null, {error: err});
         return done(null, res);
       });
     }
   }
 
-  function cmd_update_youth(args, done){
-    if(!_.contains(args.profile.parents, args.user)){
+  function cmd_update_youth (args, done) {
+    if (!_.contains(args.profile.parents, args.user)) {
       return done(new Error('Not authorized to update profile'));
     }
     var profile = args.profile;
-    var derivedFields = ['password','userTypes', 'myChild', 'ownProfileFlag', 'dojos'];
+    var derivedFields = ['password', 'userTypes', 'myChild', 'ownProfileFlag', 'dojos'];
 
     var fieldsToBeRemoved = _.union(derivedFields, immutableFields);
 
     profile = _.omit(profile, fieldsToBeRemoved);
-    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
-      if(err){
+    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function (err, profile) {
+      if (err) {
         return done(err);
       }
 
-      syncUserObj(profile, function(err, res){
+      syncUserObj(profile, function (err, res) {
         if (err) return done(err);
 
         return done(null, profile);
@@ -315,42 +299,41 @@ module.exports = function(options) {
     });
   }
 
-  function saveChild(profile, parentId, done){
-    if(_.contains(profile.parents, parentId)){
-      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function(err, profile){
-        if(err){
+  function saveChild (profile, parentId, done) {
+    if (_.contains(profile.parents, parentId)) {
+      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function (err, profile) {
+        if (err) {
           return done(err);
         }
 
-        seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: parentId}, function(err, results){
+        seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: parentId}, function (err, results) {
           var parent = results[0];
 
-          if(err){
+          if (err) {
             return done(err);
           }
 
           parent.children = parent.children ? parent.children : [];
           parent.children.push(profile.userId);
 
-          parent.save$(function(err){
-            if(err){
+          parent.save$(function (err) {
+            if (err) {
               return done(err);
             }
 
             return done(null, profile);
           });
         });
-
       });
     } else {
       return done(new Error('Cannot save child'));
     }
   }
 
-  function cmd_user_profile_data(args, done){
+  function cmd_user_profile_data (args, done) {
     var query = args.query;
 
-    if(!query || !query.userId){
+    if (!query || !query.userId) {
       return done(null, {error: 'Invalid query.'});
     }
 
@@ -368,23 +351,23 @@ module.exports = function(options) {
       under13Filter,
       resolveChildren,
       resolveParents
-      ],function(err, profile){
-        if(err) return done(null, {error: err});
+    ],
+      function (err, profile) {
+        if (err) return done(null, {error: err});
         return done(null, profile);
-      });
+      }
+    );
 
-    function getProfile(done){
+    function getProfile (done) {
       var query = args.query;
 
-      
-      var publicFields = [];
-      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId:query.userId}, function(err, results){
-        if(err){
+      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: query.userId}, function (err, results) {
+        if (err) {
           return done(err);
         }
 
         var profile = results[0];
-        if(!profile || !profile.userId){
+        if (!profile || !profile.userId) {
           return done(new Error('Invalid Profile'));
         }
 
@@ -392,11 +375,11 @@ module.exports = function(options) {
       });
     }
 
-    function getUsersDojos(profile, done){
+    function getUsersDojos (profile, done) {
       var query = {userId: profile.userId};
 
-      seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: query.userId}}, function(err, usersDojos){
-        if(err){
+      seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: query.userId}}, function (err, usersDojos) {
+        if (err) {
           return done(err);
         }
 
@@ -404,14 +387,13 @@ module.exports = function(options) {
       });
     }
 
-    function getDojosForUser(profile, usersDojos, done){
-
-      seneca.act({role: 'cd-dojos', cmd: 'dojos_for_user', id: profile.userId}, function(err, dojos){
-        if(err){
+    function getDojosForUser (profile, usersDojos, done) {
+      seneca.act({role: 'cd-dojos', cmd: 'dojos_for_user', id: profile.userId}, function (err, dojos) {
+        if (err) {
           return done(err);
         }
 
-        profile.dojos = _.map(dojos, function(dojo){
+        profile.dojos = _.map(dojos, function (dojo) {
           return {id: dojo.id, name: dojo.name, urlSlug: dojo.urlSlug};
         });
 
@@ -419,11 +401,11 @@ module.exports = function(options) {
       });
     }
 
-    function assignUserTypesAndUserPermissions(profile, usersDojos, done){
+    function assignUserTypesAndUserPermissions (profile, usersDojos, done) {
       profile.userTypes = [];
       profile.userPermissions = [];
 
-      if(_.isEmpty(usersDojos)){
+      if (_.isEmpty(usersDojos)) {
         profile.userTypes.push(profile.userType);
       } else {
         profile.userTypes = _.flatten(_.pluck(usersDojos, 'userTypes'));
@@ -435,46 +417,46 @@ module.exports = function(options) {
       return done(null, profile);
     }
 
-    function addFlags(profile, done){
-      profile.ownProfileFlag = profile && profile.userId === args.user ? true : false;
-      profile.myChild = _.contains(profile.parents, args.user) ? true : false;
+    function addFlags (profile, done) {
+      profile.ownProfileFlag = profile && profile.userId === args.user;
+      profile.myChild = _.contains(profile.parents, args.user);
       profile.isTicketingAdmin = _.find(profile.userPermissions, function (profileUserPermission) {
         return profileUserPermission.name === 'ticketing-admin';
       });
       return done(null, profile);
     }
 
-    function optionalFieldsFilter(profile, done) {
+    function optionalFieldsFilter (profile, done) {
       seneca.act({role: 'cd-users', cmd: 'load_champions_for_user', userId: profile.userId}, function (err, champions) {
-        if(err) return done(err);
+        if (err) return done(err);
         profile.requestingUserIsChampion = _.find(champions, function (champion) {
           return champion.id === args.user;
         });
 
         seneca.act({role: 'cd-users', cmd: 'load_dojo_admins_for_user', userId: profile.userId}, function (err, dojoAdmins) {
-          if(err) return done(err);
+          if (err) return done(err);
           profile.requestingUserIsDojoAdmin = _.find(dojoAdmins, function (dojoAdmin) {
             return dojoAdmin.id === args.user;
           });
 
           var allowedFields = [];
 
-          if(_.contains(profile.userTypes, 'attendee-o13')){
+          if (_.contains(profile.userTypes, 'attendee-o13')) {
             allowedFields = _.union(allowedFields, allowedOptionalFields['attendee-o13']);
           }
 
-          if(_.contains(profile.userTypes, 'champion')){
+          if (_.contains(profile.userTypes, 'champion')) {
             allowedFields = _.union(allowedFields, allowedOptionalFields['champion']);
           }
 
-          if(_.contains(profile.userTypes, 'mentor')) {
+          if (_.contains(profile.userTypes, 'mentor')) {
             allowedFields = _.union(allowedFields, allowedOptionalFields['mentor']);
           }
 
           var keysToOmit = [];
-          if(!profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && !profile.requestingUserIsChampion && !profile.requestingUserIsDojoAdmin){
-            _.forOwn(profile.optionalHiddenFields, function(value, key){
-              if(value && _.contains(allowedFields, key)){
+          if (!profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && !profile.requestingUserIsChampion && !profile.requestingUserIsDojoAdmin) {
+            _.forOwn(profile.optionalHiddenFields, function (value, key) {
+              if (value && _.contains(allowedFields, key)) {
                 keysToOmit.push(key);
               }
             });
@@ -485,37 +467,36 @@ module.exports = function(options) {
       });
     }
 
-    function privateFilter(profile, done){
-      if(profile.ownProfileFlag || profile.myChild || profile.isTicketingAdmin || profile.requestingUserIsChampion || profile.requestingUserIsDojoAdmin) {
+    function privateFilter (profile, done) {
+      if (profile.ownProfileFlag || profile.myChild || profile.isTicketingAdmin || profile.requestingUserIsChampion || profile.requestingUserIsDojoAdmin) {
         return done(null, profile);
       }
 
-      if(profile.private){
+      if (profile.private) {
         profile = {};
       }
 
       return done(null, profile);
     }
 
-    //TODO cdf-admin role should be able to see all profiles
-    function publicProfilesFilter(profile, done) {
-      var publicProfileFlag = !profile.requestingUserIsDojoAdmin && !profile.requestingUserIsChampion && !profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && ( !_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian'));
-      if(publicProfileFlag){
-         _.each(profile.userTypes, function(userType) {
+    function publicProfilesFilter (profile, done) {
+      var publicProfileFlag = !profile.requestingUserIsDojoAdmin && !profile.requestingUserIsChampion && !profile.ownProfileFlag && !profile.myChild && !profile.isTicketingAdmin && (!_.contains(profile.userTypes, 'attendee-u13') || !_.contains(profile.userTypes, 'parent-guardian'));
+      if (publicProfileFlag) {
+        _.each(profile.userTypes, function (userType) {
           publicFields = _.union(publicFields, fieldWhiteList[userType]);
         });
 
-        if(_.contains(profile.userTypes, 'attendee-o13')){
-          publicFields = _.remove(publicFields, function(publicField){
-            var idx =  youthBlackList.indexOf(publicField);
+        if (_.contains(profile.userTypes, 'attendee-o13')) {
+          publicFields = _.remove(publicFields, function (publicField) {
+            var idx = youthBlackList.indexOf(publicField);
 
-            return idx > -1 ? false : true;
+            return !(idx > -1);
           });
         }
 
-        //Add optional hidden fields to publicFields if they are set to false.
-        _.forOwn(profile.optionalHiddenFields, function(value, key){
-          if(!value){
+        // Add optional hidden fields to publicFields if they are set to false.
+        _.forOwn(profile.optionalHiddenFields, function (value, key) {
+          if (!value) {
             publicFields.push(key);
           }
         });
@@ -527,30 +508,29 @@ module.exports = function(options) {
       }
     }
 
-    function under13Filter(profile, done){
-      //Ensure that only parents of children can retrieve their full public profile
-      if(_.contains(profile.userTypes, 'attendee-u13') && !_.contains(profile.parents, args.user) && !profile.requestingUserIsChampion && !profile.requestingUserIsDojoAdmin) {
+    function under13Filter (profile, done) {
+      // Ensure that only parents of children can retrieve their full public profile
+      if (_.contains(profile.userTypes, 'attendee-u13') && !_.contains(profile.parents, args.user) && !profile.requestingUserIsChampion && !profile.requestingUserIsDojoAdmin) {
         profile = {};
         return done(null, profile);
       }
       return done(null, profile);
     }
 
-
-    function resolveChildren(profile, done){
+    function resolveChildren (profile, done) {
       var resolvedChildren = [];
 
-      if(!_.isEmpty(profile.children) && _.contains(profile.userTypes, 'parent-guardian')){
-        async.each(profile.children, function(child, callback){
-          seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: child}, function(err, results){
-            if(err){
+      if (!_.isEmpty(profile.children) && _.contains(profile.userTypes, 'parent-guardian')) {
+        async.each(profile.children, function (child, callback) {
+          seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: child}, function (err, results) {
+            if (err) {
               return callback(err);
             }
             resolvedChildren.push(results[0]);
             return callback();
           });
-        }, function(err){
-          if(err){
+        }, function (err) {
+          if (err) {
             return done(err);
           }
 
@@ -565,20 +545,20 @@ module.exports = function(options) {
       }
     }
 
-    function resolveParents(profile, done){
+    function resolveParents (profile, done) {
       var resolvedParents = [];
 
-      if(!_.isEmpty(profile.parents)){
-        async.each(profile.parents, function(parent, callback){
-          seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: parent}, function(err, results){
-            if(err){
+      if (!_.isEmpty(profile.parents)) {
+        async.each(profile.parents, function (parent, callback) {
+          seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: parent}, function (err, results) {
+            if (err) {
               return callback(err);
             }
             resolvedParents.push(results[0]);
             return callback();
           });
-        }, function(err){
-          if(err){
+        }, function (err) {
+          if (err) {
             return done(err);
           }
 
@@ -594,22 +574,21 @@ module.exports = function(options) {
     }
   }
 
-  function cmd_save(args, done) {
+  function cmd_save (args, done) {
     var profile = args.profile;
 
     var profileKeys = _.keys(profile);
     var missingKeys = _.difference(requiredProfileFields, profileKeys);
-    if(_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
+    if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
 
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, done);
   }
 
-  function cmd_invite_parent_guardian(args, done){
+  function cmd_invite_parent_guardian (args, done) {
     var data = args.data;
     var invitedParentEmail = data.invitedParentEmail;
     var childId = data.childId;
     var emailSubject = data.emailSubject;
-    var requestingUserId = args.user;
     var zenHostname = args.zenHostname;
 
     var childQuery = {
@@ -620,29 +599,29 @@ module.exports = function(options) {
       resolveParent,
       resolveChild,
       updateChildProfile,
-      sendEmail,
+      sendEmail
     ], function (err, result) {
-      if(err) return done(null, {ok: false, why: err.message});
+      if (err) return done(null, {ok: false, why: err.message});
       return done(null, result);
     });
 
-    function resolveParent(done) {
+    function resolveParent (done) {
       seneca.act({role: plugin, cmd: 'search', query: {email: invitedParentEmail}}, function (err, results) {
-        if(err) return done(err);
+        if (err) return done(err);
         return done(null, results[0]);
       });
     }
 
-    function resolveChild(parentProfile, done){
-      if(!parentProfile) return done(new Error('Parent profile does not exist.'));
-      seneca.act({role: plugin, cmd: 'search'}, {query: childQuery}, function(err, results){
-        if(err) return done(err);
-        if(_.isEmpty(results)) return done(new Error('Unable to find child profile'));
+    function resolveChild (parentProfile, done) {
+      if (!parentProfile) return done(new Error('Parent profile does not exist.'));
+      seneca.act({role: plugin, cmd: 'search'}, {query: childQuery}, function (err, results) {
+        if (err) return done(err);
+        if (_.isEmpty(results)) return done(new Error('Unable to find child profile'));
         return done(null, parentProfile, results[0]);
       });
     }
 
-    function updateChildProfile(parentProfile, childProfile, done) {
+    function updateChildProfile (parentProfile, childProfile, done) {
       var inviteToken = {
         id: shortid.generate(),
         childId: childId,
@@ -651,7 +630,7 @@ module.exports = function(options) {
         timestamp: new Date()
       };
 
-      if(!childProfile.parentInvites) childProfile.parentInvites = [];
+      if (!childProfile.parentInvites) childProfile.parentInvites = [];
       childProfile.parentInvites.push(inviteToken);
       childProfile.parentInvites = _.chain(childProfile.parentInvites)
         .sortBy(function (parentInvite) {
@@ -664,13 +643,13 @@ module.exports = function(options) {
         .value();
 
       seneca.act({role: plugin, cmd: 'save', profile: childProfile}, function (err, result) {
-        if(err) return done(err);
+        if (err) return done(err);
         return done(null, parentProfile, result, inviteToken);
       });
     }
 
-    function sendEmail(parentProfile, childProfile, inviteToken, done){
-      if(!childProfile || !parentProfile) return done(new Error('An error has occured while sending email'));
+    function sendEmail (parentProfile, childProfile, inviteToken, done) {
+      if (!childProfile || !parentProfile) return done(new Error('An error has occured while sending email'));
 
       var content = {
         link: 'http://' + zenHostname + '/dashboard/accept_parent_guardian_request/' + childProfile.id + '/' + inviteToken.id,
@@ -681,13 +660,12 @@ module.exports = function(options) {
 
       var locality = args.locality || 'en_US';
       var code = 'invite-parent-guardian-';
-      var to =  invitedParentEmail;
-      seneca.act({role:'email-notifications', cmd: 'send', to:to, content:content, code: code, locality: locality, subject: emailSubject}, done);
+      var to = invitedParentEmail;
+      seneca.act({role: 'email-notifications', cmd: 'send', to: to, content: content, code: code, locality: locality, subject: emailSubject}, done);
     }
-
   }
 
-  function cmd_accept_parent_invite(args, done) {
+  function cmd_accept_parent_invite (args, done) {
     var data = args.data;
     var inviteTokenId = data.inviteToken;
     var childProfileId = data.childProfileId;
@@ -700,82 +678,81 @@ module.exports = function(options) {
       updateNinjaProfile,
       removeInviteToken
     ], function (err, res) {
-      if(err) return done(null, {ok: false, why: err.message});
+      if (err) return done(null, {ok: false, why: err.message});
       return done(null, res);
     });
 
-    function validateRequestingUserIsParent(done) {
+    function validateRequestingUserIsParent (done) {
       seneca.act({role: plugin, cmd: 'list', query: {userId: requestingUserId}}, function (err, requestingUserProfiles) {
-        if(err) return done(err);
+        if (err) return done(err);
         var requestingUserProfile = requestingUserProfiles[0];
-        if(requestingUserProfile && requestingUserProfile.userType === 'parent-guardian') return done();
+        if (requestingUserProfile && requestingUserProfile.userType === 'parent-guardian') return done();
         seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: requestingUserId}}, function (err, usersDojos) {
-          if(err) return done(err);
+          if (err) return done(err);
           var parentTypeFound = _.find(usersDojos, function (userDojo) {
             return _.contains(userDojo.userTypes, 'parent-guardian');
           });
-          if(parentTypeFound) return done();
+          if (parentTypeFound) return done();
           return done(new Error('You must have the parent/guardian user type to accept this invite'));
         });
       });
     }
 
-    function loadInvite(done) {
+    function loadInvite (done) {
       seneca.act({role: plugin, cmd: 'load', id: childProfileId}, function (err, childProfile) {
-        if(err) return done(err);
+        if (err) return done(err);
         var inviteTokenFound = _.find(childProfile.parentInvites, function (parentInvite) {
           return parentInvite.id === inviteTokenId;
         });
-        if(!inviteTokenFound) return done(new Error('Invite token not found'));
-        if(requestingUserId !== inviteTokenFound.parentId) return done(new Error('Only the invited parent can approve this request.'));
+        if (!inviteTokenFound) return done(new Error('Invite token not found'));
+        if (requestingUserId !== inviteTokenFound.parentId) return done(new Error('Only the invited parent can approve this request.'));
         return done(null, inviteTokenFound);
       });
     }
 
-    function updateParentProfile(inviteToken, done) {
-      seneca.act({role: plugin, cmd: 'list', query:{userId: inviteToken.parentId}}, function (err, parentProfiles) {
-        if(err) return done(err);
+    function updateParentProfile (inviteToken, done) {
+      seneca.act({role: plugin, cmd: 'list', query: {userId: inviteToken.parentId}}, function (err, parentProfiles) {
+        if (err) return done(err);
         var parentProfile = parentProfiles[0];
-        if(!parentProfile.children) parentProfile.children = [];
+        if (!parentProfile.children) parentProfile.children = [];
         parentProfile.children.push(inviteToken.childId);
         parentProfile.children = _.uniq(parentProfile.children);
         seneca.act({role: plugin, cmd: 'save', profile: parentProfile}, function (err, parentProfile) {
-          if(err) return done(err);
+          if (err) return done(err);
           return done(null, inviteToken);
         });
       });
     }
 
-    function updateNinjaProfile(inviteToken, done) {
-      seneca.act({role: plugin, cmd: 'list', query:{userId: inviteToken.childId}}, function (err, ninjaProfiles) {
-        if(err) return done(err);
+    function updateNinjaProfile (inviteToken, done) {
+      seneca.act({role: plugin, cmd: 'list', query: {userId: inviteToken.childId}}, function (err, ninjaProfiles) {
+        if (err) return done(err);
         var ninjaProfile = ninjaProfiles[0];
-        if(!ninjaProfile.parents) ninjaProfile.parents = [];
+        if (!ninjaProfile.parents) ninjaProfile.parents = [];
         ninjaProfile.parents.push(inviteToken.parentId);
         ninjaProfile.parents = _.uniq(ninjaProfile.parents);
         seneca.act({role: plugin, cmd: 'save', profile: ninjaProfile}, done);
       });
     }
 
-    function removeInviteToken(ninjaProfile, done) {
+    function removeInviteToken (ninjaProfile, done) {
       ninjaProfile.parentInvites = _.without(ninjaProfile.parentInvites, _.findWhere(ninjaProfile.parentInvites, {id: inviteTokenId}));
       seneca.act({role: plugin, cmd: 'save', profile: ninjaProfile}, done);
     }
-
   }
 
-  function cmd_load_hidden_fields(args, done){
+  function cmd_load_hidden_fields (args, done) {
     done(null, hiddenFields);
   }
 
-  function cmd_change_avatar(args, done){
+  function cmd_change_avatar (args, done) {
     var hostname = args.zenHostname;
     var file = args.file;
-    if(!_.contains(args.fileType, 'image')) return done(new Error('Avatar upload: file must be an image.'));
-    if(file.length > 5242880) return done(new Error('Avatar upload: max file size of 5242880 bytes exceeded.'));
-    //pg conf properties
-    options.postgresql.database= options.postgresql.name;
-    options.postgresql.user= options.postgresql.username;
+    if (!_.contains(args.fileType, 'image')) return done(new Error('Avatar upload: file must be an image.'));
+    if (file.length > 5242880) return done(new Error('Avatar upload: max file size of 5242880 bytes exceeded.'));
+    // pg conf properties
+    options.postgresql.database = options.postgresql.name;
+    options.postgresql.user = options.postgresql.username;
 
     pg.connect(options.postgresql, function (err, client) {
       if (err) { return seneca.log.error('Could not connect to postgres', err); }
@@ -809,7 +786,7 @@ module.exports = function(options) {
 
           var buf = new Buffer(file, 'base64');
 
-          stream.write(buf, 'base64', function() {
+          stream.write(buf, 'base64', function () {
             stream.end();
           });
 
@@ -824,32 +801,32 @@ module.exports = function(options) {
               client.end();
               seneca.log.info('Saved LargeObject', oid);
 
-              //update profile record with avatarInfo
+              // update profile record with avatarInfo
               var profile = {
                 id: args.profileId,
                 avatar: avatarInfo
-              }
+              };
 
-              seneca.act({role: plugin, cmd: 'save'}, {profile: profile},function(err, profile){
-                if(err){
+              seneca.act({role: plugin, cmd: 'save'}, {profile: profile}, function (err, profile) {
+                if (err) {
                   return done(err);
                 }
 
-                seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(profile.id, function(err, profile){
+                seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(profile.id, function (err, profile) {
                   if (err) seneca.log.error(err);
-                  
+
                   var protocol = process.env.PROTOCOL || 'http';
 
                   var forumProfile = _.clone(profile);
                   forumProfile.username = forumProfile.name;
-  
-                  forumProfile.uploadedpicture = protocol + '://'+hostname+'/api/1.0/profiles/'+profile.id+'/avatar_img'
-                  forumProfile.picture = protocol + '://'+hostname+'/api/1.0/profiles/'+profile.id+'/avatar_img'
-                      
-                    seneca.act({role:'cd-nodebb-api', cmd:'update', user: forumProfile}, function(err, res){
-                      if (err) seneca.log.error(err);
-                      if (res.error) seneca.log.error('NodeBB Profile Sync Error: ' + res.error);
-  
+
+                  forumProfile.uploadedpicture = protocol + '://' + hostname + '/api/1.0/profiles/' + profile.id + '/avatar_img';
+                  forumProfile.picture = protocol + '://' + hostname + '/api/1.0/profiles/' + profile.id + '/avatar_img';
+
+                  seneca.act({role: 'cd-nodebb-api', cmd: 'update', user: forumProfile}, function (err, res) {
+                    if (err) seneca.log.error(err);
+                    if (res.error) seneca.log.error('NodeBB Profile Sync Error: ' + res.error);
+
                     done(undefined, profile);
                     done = noop;
                   });
@@ -868,19 +845,19 @@ module.exports = function(options) {
     });
   }
 
-  function cmd_get_avatar(args, done){
+  function cmd_get_avatar (args, done) {
     var profileId = args.id;
 
-    //pg conf properties
-    options.postgresql.database= options.postgresql.name;
-    options.postgresql.user= options.postgresql.username;
+    // pg conf properties
+    options.postgresql.database = options.postgresql.name;
+    options.postgresql.user = options.postgresql.username;
 
-    seneca.act({role: plugin, cmd: 'load'}, {id: profileId}, function(err, profile) {
-      if(err){
+    seneca.act({role: plugin, cmd: 'load'}, {id: profileId}, function (err, profile) {
+      if (err) {
         return done(err);
       }
 
-      if(profile && profile.avatar) {
+      if (profile && profile.avatar) {
         pg.connect(options.postgresql, function (err, client) {
           if (err) {
             seneca.log.error('Unable to connect to postgresql', err);
@@ -907,9 +884,9 @@ module.exports = function(options) {
               }
               var bufs = [];
 
-              stream.on('data', function(d) {
+              stream.on('data', function (d) {
                 bufs.push(d);
-              })
+              });
 
               stream.on('end', function () {
                 client.query('COMMIT', function () {
@@ -928,36 +905,36 @@ module.exports = function(options) {
     });
   }
 
-  function cmd_load(args, done){
+  function cmd_load (args, done) {
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(args.id, done);
   }
 
-  function cmd_list(args, done) {
+  function cmd_list (args, done) {
     var query = args.query || {};
-    if(!query.limit$) query.limit$ = 'NULL';
-    
+    if (!query.limit$) query.limit$ = 'NULL';
+
     var profilesEntity = seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY);
     profilesEntity.list$(query, done);
   }
 
-  function cmd_load_parents_for_user(args, done) {
+  function cmd_load_parents_for_user (args, done) {
     var seneca = this;
     var userId = args.userId;
 
-    seneca.act({role: plugin, cmd: 'list', query:{userId: userId}}, function (err, response) {
-      if(err) return done(err);
+    seneca.act({role: plugin, cmd: 'list', query: {userId: userId}}, function (err, response) {
+      if (err) return done(err);
       var childProfile = response[0];
-      if(!childProfile || !childProfile.parents) return done();
+      if (!childProfile || !childProfile.parents) return done();
       async.map(childProfile.parents, function (parentUserId, cb) {
         seneca.act({role: 'cd-users', cmd: 'load', id: parentUserId}, cb);
       }, function (err, parents) {
-        if(err) return done(err);
+        if (err) return done(err);
         return done(null, parents);
       });
     });
   }
 
-  function cmd_invite_ninja(args, done) {
+  function cmd_invite_ninja (args, done) {
     var seneca = this;
     var ninjaData = args.ninjaData;
     var ninjaEmail = ninjaData.ninjaEmail;
@@ -969,16 +946,16 @@ module.exports = function(options) {
       validateInviteRequest,
       loadParentProfile,
       addTokenToParentProfile,
-      emailNinja,
+      emailNinja
     ], function (err, res) {
-      if(err) return done(null, {ok: false, why: err.message});
+      if (err) return done(null, {ok: false, why: err.message});
       return done(null, res);
     });
 
-    function validateInviteRequest(done) {
-      //Requesting user should have parent-guardian user type.
-      //Ninja email should exist in cd_profiles.
-      //Ninja should have attendee-o13 user type.
+    function validateInviteRequest (done) {
+      // Requesting user should have parent-guardian user type.
+      // Ninja email should exist in cd_profiles.
+      // Ninja should have attendee-o13 user type.
       async.series([
         validateRequestingUserIsNotParentOfNinja,
         validateRequestingUserIsParent,
@@ -986,62 +963,62 @@ module.exports = function(options) {
         validateNinjaHasAttendeeO13UserType
       ], done);
 
-      function validateRequestingUserIsNotParentOfNinja(done) {
+      function validateRequestingUserIsNotParentOfNinja (done) {
         seneca.act({role: plugin, cmd: 'list', query: {email: ninjaEmail}}, function (err, ninjaProfiles) {
-          if(err) return done(err);
+          if (err) return done(err);
           var ninjaProfile = ninjaProfiles[0];
-          if(ninjaProfile && _.contains(ninjaProfile.parents, args.user)) return done(new Error('User is already a parent of this Ninja'));
+          if (ninjaProfile && _.contains(ninjaProfile.parents, args.user)) return done(new Error('User is already a parent of this Ninja'));
           return done();
         });
       }
 
-      function validateRequestingUserIsParent(done) {
+      function validateRequestingUserIsParent (done) {
         seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: args.user}}, function (err, usersDojos) {
-          if(err) return done(err);
-          if(_.isEmpty(usersDojos)) {
-            //Not yet a member of any Dojo, check the user type in their profile.
-            seneca.act({role: plugin, cmd: 'list'}, {query:{userId: args.user}}, function (err, parentProfiles) {
-              if(err) return done(err);
+          if (err) return done(err);
+          if (_.isEmpty(usersDojos)) {
+            // Not yet a member of any Dojo, check the user type in their profile.
+            seneca.act({role: plugin, cmd: 'list'}, {query: {userId: args.user}}, function (err, parentProfiles) {
+              if (err) return done(err);
               var parentProfile = parentProfiles[0];
-              if(parentProfile.userType === 'parent-guardian') return done();
+              if (parentProfile.userType === 'parent-guardian') return done();
               return done(new Error('You must be a parent to invite a Ninja'));
             });
           } else {
             var parentTypeFound = _.find(usersDojos, function (parentUserDojo) {
               return _.contains(parentUserDojo.userTypes, 'parent-guardian');
             });
-            if(parentTypeFound) return done();
+            if (parentTypeFound) return done();
             return done(new Error('You must be a parent to invite a Ninja'));
           }
         });
       }
 
-      function validateNinjaEmailExists(done) {
+      function validateNinjaEmailExists (done) {
         seneca.act({role: plugin, cmd: 'list', query: {email: ninjaEmail}}, function (err, ninjaProfiles) {
-          if(err) return done(err);
-          if(_.isEmpty(ninjaProfiles)) return done(new Error('Invalid invite request. Ninja email does not exist.'));
+          if (err) return done(err);
+          if (_.isEmpty(ninjaProfiles)) return done(new Error('Invalid invite request. Ninja email does not exist.'));
           ninjaProfile = ninjaProfiles[0];
           return done();
         });
       }
 
-      function validateNinjaHasAttendeeO13UserType(done) {
+      function validateNinjaHasAttendeeO13UserType (done) {
         seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: ninjaProfile.userId}}, function (err, ninjaUsersDojos) {
-          if(err) return done(err);
+          if (err) return done(err);
           var attendeeO13TypeFound = _.find(ninjaUsersDojos, function (ninjaUserDojo) {
             return _.contains(ninjaUserDojo.userTypes, 'attendee-o13');
           });
-          if(attendeeO13TypeFound || ninjaProfile.userType === 'attendee-o13') return done();
+          if (attendeeO13TypeFound || ninjaProfile.userType === 'attendee-o13') return done();
           return done(new Error('Ninja must be an over 13 attendee'));
         });
       }
     }
 
-    function loadParentProfile(validationResponse, done) {
-      seneca.act({role: plugin, cmd: 'list'}, {query:{userId: args.user}}, done);
+    function loadParentProfile (validationResponse, done) {
+      seneca.act({role: plugin, cmd: 'list'}, {query: {userId: args.user}}, done);
     }
 
-    function addTokenToParentProfile(parentProfiles, done) {
+    function addTokenToParentProfile (parentProfiles, done) {
       var parentProfile = parentProfiles[0];
       inviteToken = {
         id: shortid.generate(),
@@ -1050,7 +1027,7 @@ module.exports = function(options) {
         timestamp: new Date()
       };
 
-      if(!parentProfile.ninjaInvites) parentProfile.ninjaInvites = [];
+      if (!parentProfile.ninjaInvites) parentProfile.ninjaInvites = [];
       parentProfile.ninjaInvites.push(inviteToken);
       parentProfile.ninjaInvites = _.chain(parentProfile.ninjaInvites)
         .sortBy(function (ninjaInvite) {
@@ -1064,23 +1041,22 @@ module.exports = function(options) {
       seneca.act({role: plugin, cmd: 'save', profile: parentProfile}, done);
     }
 
-    function emailNinja(parentProfile, done) {
+    function emailNinja (parentProfile, done) {
       var zenHostname = args.zenHostname;
       var content = {
         ninjaName: ninjaProfile.name,
         parentName: parentProfile.name,
         parentEmail: parentProfile.email,
-        link: 'http://'+zenHostname+'/dashboard/approve_invite_ninja/'+inviteToken.parentProfileId+'/'+inviteToken.id,
+        link: 'http://' + zenHostname + '/dashboard/approve_invite_ninja/' + inviteToken.parentProfileId + '/' + inviteToken.id,
         year: moment(new Date()).format('YYYY')
       };
       var locality = args.locality || 'en_US';
       var code = 'invite-ninja-over-13-';
-      seneca.act({role:'email-notifications', cmd: 'send', to:ninjaEmail, content:content, code: code, locality: locality, subject: emailSubject}, done);
+      seneca.act({role: 'email-notifications', cmd: 'send', to: ninjaEmail, content: content, code: code, locality: locality, subject: emailSubject}, done);
     }
-
   }
 
-  function cmd_approve_invite_ninja(args, done) {
+  function cmd_approve_invite_ninja (args, done) {
     var seneca = this;
     var inviteData = args.data;
     var ninjaProfile;
@@ -1092,60 +1068,58 @@ module.exports = function(options) {
       addNinjaToParentsDojos
     ], done);
 
-    function validateRequest(done) {
+    function validateRequest (done) {
       seneca.act({role: plugin, cmd: 'load', id: inviteData.parentProfileId}, function (err, response) {
-        if(err) return done(err);
+        if (err) return done(err);
         parentProfile = response;
-        if(!parentProfile.ninjaInvites) return done(new Error('No invite tokens exist for this profile'));
+        if (!parentProfile.ninjaInvites) return done(new Error('No invite tokens exist for this profile'));
         var inviteTokenFound = _.find(parentProfile.ninjaInvites, function (ninjaInvite) {
           return ninjaInvite.id === inviteData.inviteTokenId;
         });
-        if(!inviteTokenFound) return done(new Error('Invalid token'));
+        if (!inviteTokenFound) return done(new Error('Invalid token'));
         seneca.act({role: plugin, cmd: 'list', query: {userId: args.user}}, function (err, ninjaProfiles) {
-          if(err) return done(err);
+          if (err) return done(err);
           ninjaProfile = ninjaProfiles[0];
-          if(ninjaProfile.email !== inviteTokenFound.ninjaEmail) return done(new Error('You cannot approve invite Ninja requests for other users.'));
+          if (ninjaProfile.email !== inviteTokenFound.ninjaEmail) return done(new Error('You cannot approve invite Ninja requests for other users.'));
           return done();
         });
-
       });
     }
 
-    function updateNinjaAndParentProfiles(done) {
-      //Add parent user id to Ninja parents array
-      //Add ninja user id to Parent children array
-      if(!parentProfile.children) parentProfile.children = [];
+    function updateNinjaAndParentProfiles (done) {
+      // Add parent user id to Ninja parents array
+      // Add ninja user id to Parent children array
+      if (!parentProfile.children) parentProfile.children = [];
       parentProfile.children.push(ninjaProfile.userId);
-      parentProfile.ninjaInvites = _.without(parentProfile.ninjaInvites, _.findWhere(parentProfile.ninjaInvites, {id:inviteData.inviteTokenId}));
+      parentProfile.ninjaInvites = _.without(parentProfile.ninjaInvites, _.findWhere(parentProfile.ninjaInvites, {id: inviteData.inviteTokenId}));
 
-      if(!ninjaProfile.parents) ninjaProfile.parents = [];
+      if (!ninjaProfile.parents) ninjaProfile.parents = [];
       ninjaProfile.parents.push(parentProfile.userId);
 
       seneca.act({role: plugin, cmd: 'save', profile: parentProfile}, function (err, response) {
-        if(err) return done(err);
+        if (err) return done(err);
         seneca.act({role: plugin, cmd: 'save', profile: ninjaProfile}, done);
       });
     }
 
-    function addNinjaToParentsDojos(done) {
-      seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId:parentProfile.userId}}, function (err, parentUsersDojos) {
-        if(err) return done(err);
+    function addNinjaToParentsDojos (done) {
+      seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: parentProfile.userId}}, function (err, parentUsersDojos) {
+        if (err) return done(err);
         async.each(parentUsersDojos, function (parentUserDojo, cb) {
           seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: ninjaProfile.userId, dojoId: parentUserDojo.dojoId}}, function (err, ninjaUsersDojos) {
-            if(err) return cb(err);
-            if(!_.isEmpty(ninjaUsersDojos)) return cb(); // Ninja is already a member of this Dojo.
+            if (err) return cb(err);
+            if (!_.isEmpty(ninjaUsersDojos)) return cb(); // Ninja is already a member of this Dojo.
             var userDojo = {
               owner: 0,
               userId: ninjaProfile.userId,
               dojoId: parentUserDojo.dojoId,
-              userTypes:['attendee-o13']
+              userTypes: ['attendee-o13']
             };
             seneca.act({role: 'cd-dojos', cmd: 'save_usersdojos', userDojo: userDojo}, cb);
           });
         }, done);
       });
     }
-
   }
 
   function cmd_ninjas_for_user(args, done) {
@@ -1176,5 +1150,4 @@ module.exports = function(options) {
   return {
     name: plugin
   };
-
 };
