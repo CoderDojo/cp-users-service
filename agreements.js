@@ -18,9 +18,13 @@ module.exports = function (options) {
 
     agreement.timestamp = new Date();
 
-    agreementEntity.save$(agreement, function (err, response) {
+    agreementEntity.load$({userId: agreement.userId}, function(err, response) {
       if (err) return done(err);
-      done(null, response);
+      if (!response || !response.id) {
+        agreementEntity.save$(agreement, done);
+      } else {
+        return done(null, {msg: 'Charter already signed.'});
+      }
     });
   }
 

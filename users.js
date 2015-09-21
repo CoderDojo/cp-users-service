@@ -184,7 +184,7 @@ module.exports = function (options) {
           locality: locality,
           to: args.email,
           subject: emailSubject,
-          content: {name: args.name, year: moment(new Date()).format('YYYY'), link: protocol + ':// ' + zenHostname}
+          content: {name: args.name, year: moment(new Date()).format('YYYY'), link: protocol + '://' + zenHostname}
         }, function (err, response) {
           if (err) return done(err);
           return done(null, registerResponse);
@@ -352,7 +352,7 @@ module.exports = function (options) {
           locality: locality,
           to: out.user.email,
           subject: emailSubject,
-          content: {name: out.user.name, resetlink: protocol + ':// ' + zenHostname + '/reset_password/' + out.reset.id, year: moment(new Date()).format('YYYY')}
+          content: {name: out.user.name, resetlink: protocol + '://' + zenHostname + '/reset_password/' + out.reset.id, year: moment(new Date()).format('YYYY')}
         }, function (err, response) {
           if (err) return done(err);
           return done(null, { ok: out.ok });
