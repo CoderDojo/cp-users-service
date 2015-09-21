@@ -70,22 +70,6 @@ module.exports = function (options) {
       seneca.act('role:cd-salesforce,cmd:save_account', {userId: user.id, account: account}, function (err, res) {
         if (err) return seneca.log.error('Error creating Account in SalesForce!', err);
         seneca.log.info('Created Account in SalesForce', account, res);
-
-        var lead = {
-          PlatformId__c: user.id,
-          PlatformUrl__c: 'https://zen.coderdojo.com/dashboard/profile/' + user.id,
-          Email__c: user.email,
-          LastName: user.name,
-          RecordTypeId: process.env.SALESFORCE_LEAD_RECORDTYPEID,
-          Company: '<n/a>',
-          Language__c: 'en_US',
-          ChampionAccount__c: res.id$
-        };
-
-        seneca.act('role:cd-salesforce,cmd:save_lead', {userId: user.id, lead: lead}, function (err, res) {
-          if (err) return seneca.log.error('Error creating Lead in SalesForce!', err);
-          seneca.log.info('Created Lead in SalesForce', account, res);
-        });
       });
     });
   }
