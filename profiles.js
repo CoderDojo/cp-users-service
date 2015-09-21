@@ -212,7 +212,6 @@ module.exports = function (options) {
           return salesForceLogger("success", "[salesforce] updated champion account id: " + profile.userId);
         });
       }
-      return;
     });
   }
 
