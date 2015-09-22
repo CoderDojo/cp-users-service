@@ -155,6 +155,10 @@ module.exports = function (options) {
       seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function (err, profile) {
         if (err) return done(err);
 
+        if (process.env.SALESFORCE_ENABLED === 'true') {
+          process.nextTick(function() { updateSalesForce(profile) });
+        }
+
         syncUserObj(profile, function (err, res) {
           if (err) return done(err);
 
@@ -166,6 +170,50 @@ module.exports = function (options) {
         });
       });
     }
+  }
+
+  function salesForceLogger(level, message) {
+    if(level === "error") {
+      seneca.log.error(message);
+    } else if(level === "success") {
+      seneca.log.info(message);
+    } else if(level === "info") {
+      seneca.log.info(message);
+    }
+  }
+
+  function updateSalesForce (profile) {
+    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(profile.id, function (err, res) {
+      if(err) return salesForceLogger("error", "[error][salesforce] profile id: " + profile.id + " not present");
+
+      if(res.userType.toLowerCase() === "champion") {
+        var dobOffset = moment(profile.dob).utcOffset();
+        var account = {
+          PlatformId__c: profile.userId,
+        };
+        _.extend(account, {
+          Name: profile.name,
+          Email__c: profile.email,
+          DateofBirth__c: moment.utc(profile.dob).add(dobOffset, 'minutes'),
+          BillingCountry: profile.country.countryName || null,
+          BillingCity: profile.place.nameWithHierarchy || null,
+          BillingState: profile.place.admin2Name || null,
+          BillingStreet: profile.address || null,
+          Phone: profile.phone || null,
+          Linkedin__c: profile.linkedin || null,
+          Twitter__c: (profile.twitter) ? "https://twitter.com/" + profile.twitter : null,
+          Notes__c: profile.notes || null,
+          Projects__c: profile.projects || null,
+          ProgrammingLanguages__c: (profile.programmingLanguages) ?  profile.programmingLanguages.join(';') : null,
+          LanguagesSpoken__c: (profile.languagesSpoken) ? profile.languagesSpoken.join(';') : null
+        });
+
+        seneca.act('role:cd-salesforce,cmd:save_account', {userId: profile.userId, account: account}, function (err, res) {
+          if(err) return salesForceLogger("error", "[error][salesforce] error saving champion account id: " + profile.userId);
+          return salesForceLogger("success", "[salesforce] updated champion account id: " + profile.userId);
+        });
+      }
+    });
   }
 
   function syncUserObj (profile, done) {
