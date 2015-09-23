@@ -1173,7 +1173,6 @@ module.exports = function (options) {
   function cmd_ninjas_for_user(args, done) {
     var seneca = this;
     var userId = args.userId;
-    var ninjas = [];
 
     if(args.user !== userId) return done(null, {ok: false, why: 'Invalid request'});
 
@@ -1182,16 +1181,12 @@ module.exports = function (options) {
       if(_.isEmpty(profiles)) return done(null, ninjas);
       var parentProfile = profiles[0];
       if(_.isEmpty(parentProfile.children)) return done(null, ninjas);
-      async.each(parentProfile.children, function (ninjaUserId, cb) {
+      async.map(parentProfile.children, function (ninjaUserId, cb) {
         seneca.act({role: plugin, cmd: 'list', query: {userId: ninjaUserId}}, function (err, ninjaProfiles) {
           if(err) return cb(err);
-          ninjas.push(ninjaProfiles[0]);
-          return cb();
+          return cb(null, ninjaProfiles[0]);
         });
-      }, function (err) {
-        if(err) return done(err);
-        return done(null, ninjas);
-      });
+      }, done);
     });
   }
 
