@@ -1,7 +1,6 @@
 'use strict';
 var path = require('path');
-var assert = require('assert');
-if (process.env.LOGENTRIES_ENABLED === 'true') var LogEntries = require('le_node');
+
 var generator = require('xoauth2').createXOAuth2Generator({
   user: process.env.GMAIL_USER,
   clientId: process.env.GMAIL_CLIENT_ID,
@@ -9,18 +8,18 @@ var generator = require('xoauth2').createXOAuth2Generator({
   refreshToken: process.env.GMAIL_REFRESH_TOKEN
 });
 
-module.exports = function() {
-  function pgConfig() {
+module.exports = function () {
+  function pgConfig () {
     return {
       name: process.env.POSTGRES_NAME,
       host: process.env.POSTGRES_HOST || '127.0.0.1',
       port: process.env.POSTGRES_PORT || 5432,
       username: process.env.POSTGRES_USERNAME,
       password: process.env.POSTGRES_PASSWORD
-    }
+    };
   }
 
-  function cdfAdmins() {
+  function cdfAdmins () {
     var admins = process.env.CDF_ADMINS || '';
     return admins.split(',');
   }
@@ -28,7 +27,7 @@ module.exports = function() {
   return {
     'postgresql-store': pgConfig(),
     'email-notifications': {
-      sendemail:true,
+      sendemail: true,
       sendFrom: 'The CoderDojo Team <info@coderdojo.org>',
       email: {
       }
@@ -36,7 +35,7 @@ module.exports = function() {
     mailtrap: {
       folder: path.resolve(__dirname + '/../email-templates'),
       mail: {
-        from:'no-reply@coderdojo.com'
+        from: 'no-reply@coderdojo.com'
       },
       config: {
         host: process.env.MAIL_HOST,
@@ -76,10 +75,10 @@ module.exports = function() {
       apiToken: process.env.NODEBB_TOKEN
     },
     timeout: 120000,
-    strict: {add:false,  result:false},
+    strict: {add: false, result: false},
     users: {
       cdfAdmins: cdfAdmins()
     },
-    actcache: {active:false}
+    actcache: {active: false}
   };
-}
+};
