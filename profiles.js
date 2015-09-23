@@ -795,8 +795,10 @@ module.exports = function (options) {
   function cmd_change_avatar (args, done) {
     var hostname = args.zenHostname;
     var file = args.file;
-    if (!_.contains(args.fileType, 'image')) return done(new Error('Avatar upload: file must be an image.'));
-    if (file.length > 5242880) return done(new Error('Avatar upload: max file size of 5242880 bytes exceeded.'));
+
+    if (!_.contains(args.fileType, 'image')) return done(null, {ok: false, why: 'Avatar upload: file must be an image.'});
+    if (file.length > 5242880) return done(null, {ok: false, why: 'Avatar upload: max file size of 5MB exceeded.'});
+    
     // pg conf properties
     options.postgresql.database = options.postgresql.name;
     options.postgresql.user = options.postgresql.username;
