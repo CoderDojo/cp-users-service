@@ -388,6 +388,7 @@ module.exports = function (options) {
 
     async.waterfall([
       getProfile,
+      getUser,
       getUsersDojos,
       getDojosForUser,
       assignUserTypesAndUserPermissions,
@@ -418,6 +419,14 @@ module.exports = function (options) {
           return done(new Error('Invalid Profile'));
         }
 
+        return done(null, profile);
+      });
+    }
+
+    function getUser (profile, done) {
+      seneca.act({role: 'cd-users', cmd: 'load', id: query.userId}, function (err, user) {
+        if(err) return done(err);
+        profile.user = user;
         return done(null, profile);
       });
     }
@@ -567,7 +576,7 @@ module.exports = function (options) {
     function resolveChildren (profile, done) {
       var resolvedChildren = [];
 
-      if (!_.isEmpty(profile.children) && _.contains(profile.userTypes, 'parent-guardian')) {
+      if (!_.isEmpty(profile.children) && (_.contains(profile.userTypes, 'parent-guardian') || _.contains(profile.user.roles, 'cdf-admin'))) {
         async.each(profile.children, function (child, callback) {
           seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: child}, function (err, results) {
             if (err) {
