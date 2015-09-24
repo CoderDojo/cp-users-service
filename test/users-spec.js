@@ -29,7 +29,8 @@ seneca
 var userEnt = seneca.make$('sys/user'),
     agrmEnt = seneca.make$('cd/agreements'),
     users   = JSON.parse(fs.readFileSync(__dirname + '/fixtures/users.json', 'utf8')),
-    agrms   = JSON.parse(fs.readFileSync(__dirname + '/fixtures/agreements.json', 'utf8'));
+    agrms   = JSON.parse(fs.readFileSync(__dirname + '/fixtures/agreements.json', 'utf8')),
+    profiles = JSON.parse(fs.readFileSync(__dirname + '/fixtures/profiles.json', 'utf8'));
 
 // NOTE: all tests are basic
 //       they just follow the happy scenario for each exposed action
@@ -47,14 +48,33 @@ function expect_contain_properties(actual, expected){
 }
 
 lab.experiment('Profiles Microservice test', { timeout: 5000}, function () {
-  lab.test('save', function (done) {
+  lab.test('create', function (done) {
     var profile = {
       "name": "test-user",
       "email": "test-user@example.com",
       "alias": "test-user-alias"
     };
     seneca.act({role: 'cd-profiles', cmd: 'create', profile: profile}, done);
+  });
+
+  lab.test('save', function (done) {
+    var profile = {
+      "name": "test-user",
+      "email": "test-user@example.com",
+      "alias": "test-user-alias"
+    };
+    seneca.act({role: 'cd-profiles', cmd: 'save', profile: profile}, done);
+  });
+
+  lab.test('load', function (done) {
+    var id = 'f8bbf130-e7c3-4da6-ad0f-28475d4811c7';
+    seneca.act({role: 'cd-profiles', cmd: 'load', id: id}, done);
   }); 
+
+  lab.test('user_profile_data', function (done) {
+    var userId = '';
+    seneca.act({role: 'cd-profiles', cmd: 'user_profile_data', userId: 'aa5c42d9-ff6b-40bb-824b-0b787dafd35f'}, done);
+  });
 });
 
 lab.experiment('Users Microservice test', { timeout: 5000 }, function(){
