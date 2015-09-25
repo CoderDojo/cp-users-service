@@ -1180,9 +1180,9 @@ module.exports = function (options) {
 
     seneca.act({role: plugin, cmd: 'list', query: {userId: userId}}, function (err, profiles) {
       if(err) return done(err);
-      if(_.isEmpty(profiles)) return done(null, ninjas);
+      if(_.isEmpty(profiles)) return done(null, []);
       var parentProfile = profiles[0];
-      if(_.isEmpty(parentProfile.children)) return done(null, ninjas);
+      if(_.isEmpty(parentProfile.children)) return done(null, []);
       async.map(parentProfile.children, function (ninjaUserId, cb) {
         seneca.act({role: plugin, cmd: 'list', query: {userId: ninjaUserId}}, function (err, ninjaProfiles) {
           if(err) return cb(err);
