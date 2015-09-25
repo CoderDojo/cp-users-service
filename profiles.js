@@ -156,7 +156,7 @@ module.exports = function (options) {
         if (err) return done(err);
 
         if (process.env.SALESFORCE_ENABLED === 'true') {
-          process.nextTick(function() { updateSalesForce(profile) });
+          process.nextTick(function () { updateSalesForce(profile); });
         }
 
         syncUserObj(profile, function (err, res) {
@@ -172,24 +172,24 @@ module.exports = function (options) {
     }
   }
 
-  function salesForceLogger(level, message) {
-    if(level === "error") {
+  function salesForceLogger (level, message) {
+    if (level === 'error') {
       seneca.log.error(message);
-    } else if(level === "success") {
+    } else if (level === 'success') {
       seneca.log.info(message);
-    } else if(level === "info") {
+    } else if (level === 'info') {
       seneca.log.info(message);
     }
   }
 
   function updateSalesForce (profile) {
     seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(profile.id, function (err, res) {
-      if(err) return salesForceLogger("error", "[error][salesforce] profile id: " + profile.id + " not present");
+      if (err) return salesForceLogger('error', '[error][salesforce] profile id: ' + profile.id + ' not present');
 
-      if(res.userType.toLowerCase() === "champion") {
+      if (res.userType.toLowerCase() === 'champion') {
         var dobOffset = moment(profile.dob).utcOffset();
         var account = {
-          PlatformId__c: profile.userId,
+          PlatformId__c: profile.userId
         };
         _.extend(account, {
           Name: profile.name,
@@ -201,16 +201,16 @@ module.exports = function (options) {
           BillingStreet: profile.address || null,
           Phone: profile.phone || null,
           Linkedin__c: profile.linkedin || null,
-          Twitter__c: (profile.twitter) ? "https://twitter.com/" + profile.twitter : null,
+          Twitter__c: (profile.twitter) ? 'https://twitter.com/' + profile.twitter : null,
           Notes__c: profile.notes || null,
           Projects__c: profile.projects || null,
-          ProgrammingLanguages__c: (profile.programmingLanguages) ?  profile.programmingLanguages.join(';') : null,
+          ProgrammingLanguages__c: (profile.programmingLanguages) ? profile.programmingLanguages.join(';') : null,
           LanguagesSpoken__c: (profile.languagesSpoken) ? profile.languagesSpoken.join(';') : null
         });
 
         seneca.act('role:cd-salesforce,cmd:save_account', {userId: profile.userId, account: account}, function (err, res) {
-          if(err) return salesForceLogger("error", "[error][salesforce] error saving champion account id: " + profile.userId);
-          return salesForceLogger("success", "[salesforce] updated champion account id: " + profile.userId);
+          if (err) return salesForceLogger('error', '[error][salesforce] error saving champion account id: ' + profile.userId);
+          return salesForceLogger('success', '[salesforce] updated champion account id: ' + profile.userId);
         });
       }
     });
@@ -389,6 +389,7 @@ module.exports = function (options) {
 
     async.waterfall([
       getProfile,
+      getUser,
       getUsersDojos,
       getDojosForUser,
       assignUserTypesAndUserPermissions,
@@ -419,6 +420,14 @@ module.exports = function (options) {
           return done(new Error('Invalid Profile'));
         }
 
+        return done(null, profile);
+      });
+    }
+
+    function getUser (profile, done) {
+      seneca.act({role: 'cd-users', cmd: 'load', id: query.userId}, function (err, user) {
+        if (err) return done(err);
+        profile.user = user;
         return done(null, profile);
       });
     }
@@ -568,7 +577,7 @@ module.exports = function (options) {
     function resolveChildren (profile, done) {
       var resolvedChildren = [];
 
-      if (!_.isEmpty(profile.children) && _.contains(profile.userTypes, 'parent-guardian')) {
+      if (!_.isEmpty(profile.children) && (_.contains(profile.userTypes, 'parent-guardian') || _.contains(profile.user.roles, 'cdf-admin'))) {
         async.each(profile.children, function (child, callback) {
           seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: child}, function (err, results) {
             if (err) {
@@ -799,7 +808,7 @@ module.exports = function (options) {
 
     if (!_.contains(args.fileType, 'image')) return done(null, {ok: false, why: 'Avatar upload: file must be an image.'});
     if (file.length > 5242880) return done(null, {ok: false, why: 'Avatar upload: max file size of 5MB exceeded.'});
-    
+
     // pg conf properties
     options.postgresql.database = options.postgresql.name;
     options.postgresql.user = options.postgresql.username;
