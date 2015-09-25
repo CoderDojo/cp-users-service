@@ -18,7 +18,7 @@ module.exports = function (options) {
 
     agreement.timestamp = new Date();
 
-    agreementEntity.load$({userId: agreement.userId}, function(err, response) {
+    agreementEntity.load$({userId: agreement.userId}, function (err, response) {
       if (err) return done(err);
       if (!response || !response.id) {
         agreementEntity.save$(agreement, done);
