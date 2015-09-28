@@ -1181,20 +1181,20 @@ module.exports = function (options) {
     }
   }
 
-  function cmd_ninjas_for_user(args, done) {
+  function cmd_ninjas_for_user (args, done) {
     var seneca = this;
     var userId = args.userId;
 
-    if(args.user !== userId) return done(null, {ok: false, why: 'Invalid request'});
+    if (args.user !== userId) return done(null, {ok: false, why: 'Invalid request'});
 
     seneca.act({role: plugin, cmd: 'list', query: {userId: userId}}, function (err, profiles) {
-      if(err) return done(err);
-      if(_.isEmpty(profiles)) return done(null, []);
+      if (err) return done(err);
+      if (_.isEmpty(profiles)) return done(null, []);
       var parentProfile = profiles[0];
-      if(_.isEmpty(parentProfile.children)) return done(null, []);
+      if (_.isEmpty(parentProfile.children)) return done(null, []);
       async.map(parentProfile.children, function (ninjaUserId, cb) {
         seneca.act({role: plugin, cmd: 'list', query: {userId: ninjaUserId}}, function (err, ninjaProfiles) {
-          if(err) return cb(err);
+          if (err) return cb(err);
           return cb(null, ninjaProfiles[0]);
         });
       }, done);
