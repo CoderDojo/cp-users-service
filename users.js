@@ -34,6 +34,7 @@ module.exports = function (options) {
 
   function validateUserRequest (user, id, done) {
     //Only allow requests from cdf-admins, dojo champions, dojo admins & parents
+    if(!user) return done(new Error('user is undefined'));
     var isOwnAccount = (user.id === id);
     if (isOwnAccount) return done();
     var isCDFAdmin = _.contains(user.roles, 'cdf-admin');
