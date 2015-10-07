@@ -33,8 +33,7 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'kpi_number_of_youth_females_registered'}, cmd_kpi_number_of_youth_females_registered);
 
   function validateUserRequest (user, id, done) {
-    //Only allow requests from cdf-admins, dojo champions, dojo admins & parents
-    if(!user) return done(new Error('user is undefined'));
+    if (!user) return done(new Error('user is undefined'));
     var isOwnAccount = (user.id === id);
     if (isOwnAccount) return done();
     var isCDFAdmin = _.contains(user.roles, 'cdf-admin');
@@ -58,7 +57,7 @@ module.exports = function (options) {
               allowedUserIds.push(champion.id);
             });
             return done();
-          });  
+          });
         }
 
         function loadDojoAdmins (done) {
@@ -68,7 +67,7 @@ module.exports = function (options) {
               var dojoAdminFound = _.find(userDojo.userPermissions, function (userPermission) {
                 return userPermission.name === 'dojo-admin';
               });
-              if(dojoAdminFound) allowedUserIds.push(userDojo.userId);
+              if (dojoAdminFound) allowedUserIds.push(userDojo.userId);
             });
             return done();
           });
@@ -84,12 +83,11 @@ module.exports = function (options) {
             return done();
           });
         }
-        
       }, function (err) {
         if (err) return done(err);
         allowedUserIds = _.uniq(allowedUserIds);
-        if(_.contains(allowedUserIds, user.id)) return done();
-        return done(new Error('You do not have permission to load this data.'));  
+        if (_.contains(allowedUserIds, user.id)) return done();
+        return done(new Error('You do not have permission to load this data.'));
       });
     });
   }
@@ -99,7 +97,7 @@ module.exports = function (options) {
     var id = args.id;
     var user = args.user;
     var userEntity = seneca.make(ENTITY_NS);
-    
+
     async.series([
       async.apply(validateUserRequest, user, id),
       loadUser
@@ -111,7 +109,6 @@ module.exports = function (options) {
     function loadUser (done) {
       userEntity.load$(id, done);
     }
-
   }
 
   function cmd_list (args, done) {

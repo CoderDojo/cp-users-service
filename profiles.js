@@ -118,6 +118,7 @@ module.exports = function (options) {
 
   function cmd_create (args, done) {
     var profile = args.profile;
+    if (!args.user) return done(null, {ok: false, why: 'args.user is undefined'});
 
     async.series([
       validateRequest,
