@@ -63,7 +63,8 @@ module.exports = function (options) {
     }
 
     function getUser (auths, done) {
-      seneca.act({role: 'cd-users', cmd: 'load', id: auths[0].userid}, done);
+      var userEntity = seneca.make('sys/user');
+      userEntity.load$(auths[0].userid, done);
     }
 
     function checkPermissions (user, done) {
