@@ -1,8 +1,13 @@
 <% include ../common-en_US/header.ejs %>
 
-<h2>Hi <%=ninjaName%></h2>
+<h1>Hi <%=ninjaName%>,</h1>
 
-<p><%=parentName%> (<%=parentEmail%>) has requested to add you as a Ninja to their account.</p>
-<p>To approve this request, please click the following link: <a href="<%=link%>"><%=link%></a></p>
+<p>You have been invited to become a Ninja of <b><%=parentName%></b> (<%=parentEmail%>), please visit the link below to accept:</p>
+
+<p><a href="<%=link%>"><%=link%></a></p>
+
+<p>Best wishes,</br>
+The CoderDojo Foundation Team</p>
 
 <% include ../common-en_US/footer.ejs %>
+
