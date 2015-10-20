@@ -495,7 +495,7 @@ module.exports = function (options) {
 
   function cmd_load_dojo_admins_for_user (args, done) {
     var seneca = this;
-    var userId = args.userId;
+    var userId = args.userId || args.user ? args.user.id : null;
 
     seneca.act({role: 'cd-dojos', cmd: 'dojos_for_user', id: userId}, function (err, dojos) {
       if (err) return done(err);
