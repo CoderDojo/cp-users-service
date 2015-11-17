@@ -7,16 +7,13 @@
     "test": "test"
   },
   "scripts": {
-    "test": "npm run lint && bash -c 'source ./config/development.env; ./node_modules/.bin/lab --ignore __core-js_shared__ --flat --threshold 50 -r html -o ./coverage/coverage.html -r lcov -o ./coverage/lcov.info -r json -o ./coverage/coverage.json -r lab-quieter-reporter -o stdout'", 
+    "test": "npm run lint && bash -c 'source ./config/development.env; ./node_modules/.bin/lab --ignore __core-js_shared__ --flat --threshold 50 -r html -o ./coverage/coverage.html -r lcov -o ./coverage/lcov.info -r json -o ./coverage/coverage.json -r lab-quieter-reporter -o stdout'",
     "covrep": "bash test/covrep.sh",
     "lint": "./node_modules/.bin/semistandard *.js config/config.js"
   },
-  "precommit": {
-    "tasks": [
-      "npm run lint",
-      "test"
-    ]
-  },
+  "pre-commit": [
+    "test"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -33,9 +30,8 @@
     "pg": "4.4.0",
     "pg-large-object": "0.0.1",
     "postgrator": "2.2.0",
-    "precommit": "1.1.5",
     "request": "2.58.0",
-    "seneca": "git://github.com/thekemkid/seneca.git",
+    "seneca": "0.7.2",
     "seneca-auth": "0.2.10",
     "seneca-mail": "0.2.1",
     "seneca-postgresql-store": "0.7.0",
@@ -44,10 +40,10 @@
     "xoauth2": "1.1.0"
   },
   "devDependencies": {
-    "semistandard": "7.0.2",
-    "es6-promise": "3.0.2",
     "chai": "2.2.0",
     "lab": "5.15.1",
-    "lab-quieter-reporter": "1.0.1"
+    "lab-quieter-reporter": "1.0.1",
+    "pre-commit": "1.1.2",
+    "semistandard": "7.0.2"
   }
 }
