@@ -498,8 +498,8 @@ module.exports = function (options) {
         seneca.act({role: 'cd-users', cmd: 'load_dojo_admins_for_user', userId: profile.userId}, function (err, dojoAdmins) {
           if (err) return done(err);
           profile.requestingUserIsDojoAdmin = _.find(dojoAdmins, function (dojoAdmin) {
-            if(!dojoAdmin.ok){
-              return false
+            if (!dojoAdmin.ok) {
+              return false;
             }
             return dojoAdmin.id === args.user ? args.user.id : null;
           });
