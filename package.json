@@ -44,6 +44,6 @@
     "lab": "5.15.1",
     "lab-quieter-reporter": "1.0.1",
     "pre-commit": "1.1.2",
-    "semistandard": "7.0.2"
+    "semistandard": "7.0.3"
   }
 }
