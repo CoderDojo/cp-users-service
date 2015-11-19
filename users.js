@@ -15,6 +15,7 @@ module.exports = function (options) {
 
   seneca.add({role: 'auth', cmd: 'create_reset'}, cmd_create_reset);
   seneca.add({role: plugin, cmd: 'load'}, cmd_load);
+  seneca.add({role: plugin, cmd: 'load_unvalidated'}, cmd_load_unvalidated);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'register'}, cmd_register);
   seneca.add({role: plugin, cmd: 'promote'}, cmd_promote);
@@ -109,6 +110,10 @@ module.exports = function (options) {
     function loadUser (done) {
       userEntity.load$(id, done);
     }
+  }
+
+  function cmd_load_unvalidated (args, done) {
+    this.make(ENTITY_NS).load$(args.id, done);
   }
 
   function cmd_list (args, done) {
