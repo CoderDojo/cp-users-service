@@ -28,9 +28,19 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'load_dojo_admins_for_user'}, cmd_load_dojo_admins_for_user);
   seneca.add({role: plugin, cmd: 'record_login'}, cmd_record_login);
   seneca.add({role: 'user', cmd: 'login'}, cmd_login);
+  seneca.add({role: plugin, cmd: 'load_prev_founder'}, cmd_load_prev_founder);
   seneca.add({role: plugin, cmd: 'kpi_number_of_youths_registered'}, cmd_kpi_number_of_youths_registered);
   seneca.add({role: plugin, cmd: 'kpi_number_of_champions_and_mentors_registered'}, cmd_kpi_number_of_champions_and_mentors_registered);
   seneca.add({role: plugin, cmd: 'kpi_number_of_youth_females_registered'}, cmd_kpi_number_of_youth_females_registered);
+
+  function cmd_load_prev_founder (args, done) {
+    var seneca = this;
+    seneca.act({role: plugin, cmd: 'load', id: args.id}, function (err, user) {
+      if (err) return done(err);
+
+      return done(null, _.pick(user, ['id', 'email', 'name']));
+    });
+  }
 
   function cmd_load (args, done) {
     var seneca = this;
