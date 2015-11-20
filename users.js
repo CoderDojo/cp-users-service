@@ -32,83 +32,10 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'kpi_number_of_champions_and_mentors_registered'}, cmd_kpi_number_of_champions_and_mentors_registered);
   seneca.add({role: plugin, cmd: 'kpi_number_of_youth_females_registered'}, cmd_kpi_number_of_youth_females_registered);
 
-  function validateUserRequest (user, id, done) {
-    if (!user) return done(new Error('user is undefined'));
-    var isOwnAccount = (user.id === id);
-    if (isOwnAccount) return done();
-    var isCDFAdmin = _.contains(user.roles, 'cdf-admin');
-    if (isCDFAdmin) return done();
-    var allowedUserIds = [];
-
-    seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: id}}, function (err, usersDojos) {
-      if (err) return done(err);
-
-      async.each(usersDojos, function (userDojo, cb) {
-        async.parallel([
-          loadDojoChampions,
-          loadDojoAdmins,
-          loadUsersParents
-        ], cb);
-
-        function loadDojoChampions (done) {
-          seneca.act({role: 'cd-dojos', cmd: 'load_dojo_champion', id: userDojo.dojoId}, function (err, champions) {
-            if (err) return done(err);
-            _.each(champions, function (champion) {
-              allowedUserIds.push(champion.id);
-            });
-            return done();
-          });
-        }
-
-        function loadDojoAdmins (done) {
-          seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {dojoId: userDojo.dojoId}}, function (err, usersDojos) {
-            if (err) return done(err);
-            _.each(usersDojos, function (userDojo) {
-              var dojoAdminFound = _.find(userDojo.userPermissions, function (userPermission) {
-                return userPermission.name === 'dojo-admin';
-              });
-              if (dojoAdminFound) allowedUserIds.push(userDojo.userId);
-            });
-            return done();
-          });
-        }
-
-        function loadUsersParents (done) {
-          seneca.act({role: 'cd-profiles', cmd: 'list', query: {userId: id}}, function (err, profiles) {
-            if (err) return done(err);
-            var userProfile = profiles[0];
-            _.each(userProfile.parents, function (parentUserId) {
-              allowedUserIds.push(parentUserId);
-            });
-            return done();
-          });
-        }
-      }, function (err) {
-        if (err) return done(err);
-        allowedUserIds = _.uniq(allowedUserIds);
-        if (_.contains(allowedUserIds, user.id)) return done();
-        return done(new Error('You do not have permission to load this data.'));
-      });
-    });
-  }
-
   function cmd_load (args, done) {
     var seneca = this;
     var id = args.id;
-    var user = args.user;
-    var userEntity = seneca.make(ENTITY_NS);
-
-    async.series([
-      async.apply(validateUserRequest, user, id),
-      loadUser
-    ], function (err, res) {
-      if (err) return done(null, {ok: false, why: err.message});
-      return done(null, res[1]);
-    });
-
-    function loadUser (done) {
-      userEntity.load$(id, done);
-    }
+    seneca.make(ENTITY_NS).load$(id, done);
   }
 
   function cmd_list (args, done) {
@@ -315,20 +242,7 @@ module.exports = function (options) {
   function cmd_update (args, done) {
     var seneca = this;
     var user = args.user;
-    var id = args.id;
-
-    async.series([
-      async.apply(validateUserRequest, user, id),
-      updateUser
-    ], function (err, res) {
-      if (err) return done(null, {ok: false, why: err.message});
-      return done(null, res[1]);
-    });
-
-    function updateUser (done) {
-      var userEntity = seneca.make(ENTITY_NS);
-      userEntity.save$(user, done);
-    }
+    seneca.make(ENTITY_NS).save$(user, done);
   }
 
   function cmd_get_init_user_types (args, done) {
