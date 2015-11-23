@@ -8,7 +8,7 @@ var moment = require('moment');
 module.exports = function (options) {
   var seneca = this;
 
-  var PARENT_GUARDIAN_PROFILE_ENTITY = 'cd/profiles';
+  var ENTITY_NS = 'cd/profiles';
   var plugin = 'cd-profiles';
   var _ = require('lodash');
   var async = require('async');
@@ -93,6 +93,7 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'create'}, cmd_create);
   seneca.add({role: plugin, cmd: 'user_profile_data'}, cmd_user_profile_data);
   seneca.add({role: plugin, cmd: 'load'}, cmd_load);
+  seneca.add({role: plugin, cmd: 'load_user_profile'}, cmd_load_user_profile);
   seneca.add({role: plugin, cmd: 'save-youth-profile'}, cmd_save_youth_profile);
   seneca.add({role: plugin, cmd: 'save'}, cmd_save);
   seneca.add({role: plugin, cmd: 'update-youth-profile'}, cmd_update_youth);
@@ -113,7 +114,7 @@ module.exports = function (options) {
       return done(new Error('Empty query'));
     }
 
-    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$(args.query, done);
+    seneca.make$(ENTITY_NS).list$(args.query, done);
   }
 
   function cmd_create (args, done) {
@@ -129,7 +130,7 @@ module.exports = function (options) {
     });
 
     function validateRequest (done) {
-      var profileEntity = seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY);
+      var profileEntity = seneca.make$(ENTITY_NS);
       profileEntity.load$(profile.id, function (err, originalProfile) {
         if (err) return done(err);
         if (!originalProfile) return done();
@@ -154,7 +155,7 @@ module.exports = function (options) {
       if (profile.id) {
         profile = _.omit(profile, immutableFields);
       }
-      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function (err, profile) {
+      seneca.make$(ENTITY_NS).save$(profile, function (err, profile) {
         if (err) return done(err);
 
         if (process.env.SALESFORCE_ENABLED === 'true') {
@@ -185,7 +186,7 @@ module.exports = function (options) {
   }
 
   function updateSalesForce (profile) {
-    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(profile.id, function (err, res) {
+    seneca.make$(ENTITY_NS).load$(profile.id, function (err, res) {
       if (err) return salesForceLogger('error', '[error][salesforce] profile id: ' + profile.id + ' not present');
 
       if (res.userType.toLowerCase() === 'champion') {
@@ -338,7 +339,7 @@ module.exports = function (options) {
     var fieldsToBeRemoved = _.union(derivedFields, immutableFields);
 
     profile = _.omit(profile, fieldsToBeRemoved);
-    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function (err, profile) {
+    seneca.make$(ENTITY_NS).save$(profile, function (err, profile) {
       if (err) {
         return done(err);
       }
@@ -353,12 +354,12 @@ module.exports = function (options) {
 
   function saveChild (profile, parentId, done) {
     if (_.contains(profile.parents, parentId)) {
-      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, function (err, profile) {
+      seneca.make$(ENTITY_NS).save$(profile, function (err, profile) {
         if (err) {
           return done(err);
         }
 
-        seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: parentId}, function (err, results) {
+        seneca.make$(ENTITY_NS).list$({userId: parentId}, function (err, results) {
           var parent = results[0];
 
           if (err) {
@@ -400,6 +401,7 @@ module.exports = function (options) {
       addFlags,
       optionalFieldsFilter,
       privateFilter,
+      privateFilter,
       publicProfilesFilter,
       under13Filter,
       resolveChildren,
@@ -414,7 +416,7 @@ module.exports = function (options) {
     function getProfile (done) {
       var query = args.query;
 
-      seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: query.userId}, function (err, results) {
+      seneca.make$(ENTITY_NS).list$({userId: query.userId}, function (err, results) {
         if (err) {
           return done(err);
         }
@@ -590,7 +592,7 @@ module.exports = function (options) {
 
       if (!_.isEmpty(profile.children) && (_.contains(profile.userTypes, 'parent-guardian') || _.contains(profile.user.roles, 'cdf-admin'))) {
         async.each(profile.children, function (child, callback) {
-          seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: child}, function (err, results) {
+          seneca.make$(ENTITY_NS).list$({userId: child}, function (err, results) {
             if (err) {
               return callback(err);
             }
@@ -618,7 +620,7 @@ module.exports = function (options) {
 
       if (!_.isEmpty(profile.parents)) {
         async.each(profile.parents, function (parent, callback) {
-          seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).list$({userId: parent}, function (err, results) {
+          seneca.make$(ENTITY_NS).list$({userId: parent}, function (err, results) {
             if (err) {
               return callback(err);
             }
@@ -649,7 +651,7 @@ module.exports = function (options) {
     var missingKeys = _.difference(requiredProfileFields, profileKeys);
     if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
 
-    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).save$(profile, done);
+    seneca.make$(ENTITY_NS).save$(profile, done);
   }
 
   function cmd_invite_parent_guardian (args, done) {
@@ -882,7 +884,7 @@ module.exports = function (options) {
                   return done(err);
                 }
 
-                seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(profile.id, function (err, profile) {
+                seneca.make$(ENTITY_NS).load$(profile.id, function (err, profile) {
                   if (err) seneca.log.error(err);
 
                   var protocol = process.env.PROTOCOL || 'http';
@@ -975,15 +977,19 @@ module.exports = function (options) {
     });
   }
 
+  function cmd_load_user_profile (args, done) {
+    seneca.make$(ENTITY_NS).load$({userId: args.userId}, done);
+  }
+
   function cmd_load (args, done) {
-    seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY).load$(args.id, done);
+    seneca.make$(ENTITY_NS).load$(args.id, done);
   }
 
   function cmd_list (args, done) {
     var query = args.query || {};
     if (!query.limit$) query.limit$ = 'NULL';
 
-    var profilesEntity = seneca.make$(PARENT_GUARDIAN_PROFILE_ENTITY);
+    var profilesEntity = seneca.make$(ENTITY_NS);
     profilesEntity.list$(query, done);
   }
 
