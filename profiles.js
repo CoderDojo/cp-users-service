@@ -495,6 +495,8 @@ module.exports = function (options) {
           return champion.id === args.user ? args.user.id : null;
         });
 
+        profile.requestingOwnProfile = args.user.id === profile.userId;
+
         seneca.act({role: 'cd-users', cmd: 'load_dojo_admins_for_user', userId: profile.userId}, function (err, dojoAdmins) {
           if (err) return done(err);
           profile.requestingUserIsDojoAdmin = _.find(dojoAdmins, function (dojoAdmin) {
@@ -576,7 +578,7 @@ module.exports = function (options) {
     function under13Filter (profile, done) {
       // Ensure that only parents of children can retrieve their full public profile
       var userId = args.user ? args.user.id : null;
-      if (_.contains(profile.userTypes, 'attendee-u13') && !_.contains(profile.parents, userId) && !profile.requestingUserIsChampion && !profile.requestingUserIsDojoAdmin) {
+      if (_.contains(profile.userTypes, 'attendee-u13') && !_.contains(profile.parents, userId) && !profile.requestingUserIsChampion && !profile.requestingUserIsDojoAdmin && !profile.requestingOwnProfile) {
         profile = {};
         return done(null, profile);
       }
