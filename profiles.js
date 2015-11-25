@@ -55,10 +55,24 @@ module.exports = function (options) {
     'optionalHiddenFields'
   ];
 
+  var parentGuardianPublicFields = [
+    'name',
+    'languagesSpoken',
+    'programmingLanguages',
+    'linkedin',
+    'twitter',
+    'userTypes',
+    'dojos',
+    'badges',
+    'optionalHiddenFields',
+    'children' // this will be removed at a later stage
+  ];
+
   var fieldWhiteList = {
     'mentor': mentorPublicFields,
     'champion': championPublicFields,
-    'attendee-o13': attendeeO13PublicFields
+    'attendee-o13': attendeeO13PublicFields,
+    'parent-guardian': parentGuardianPublicFields
   };
 
   // var allowedOptionalFieldsYouth = ['dojos', 'linkedin', 'twitter', 'badges'];
@@ -604,6 +618,7 @@ module.exports = function (options) {
             return done(err);
           }
 
+          _.omit(profile, 'children');
           profile.resolvedChildren = resolvedChildren;
 
           return done(null, profile);
