@@ -8,7 +8,7 @@ module.exports = function (options) {
   var plugin = 'test-user-data';
   var users = [
     { nick: 'admin@example.com', name: 'Admin', email: 'admin@example.com', password: 'test', roles: ['cdf-admin'], initUserType: { name: 'champion'}},
-    { nick: 'manager@example.com', name: 'Manager', email: 'manager@example.com', password: 'test', roles: ['cdf-admin'], initUserType: {name:  'champion'}}
+    { nick: 'manager@example.com', name: 'Manager', email: 'manager@example.com', password: 'test', roles: ['cdf-admin'], initUserType: {name:  'champion'}},
     { nick: 'mentor1@example.com', name: 'Mentor1', email: 'mentor1@example.com', password: 'testmentor1', roles: ['basic-user'], initUserType: {name: 'mentor'}},
     { nick: 'mentor2@example.com', name: 'Mentor2', email: 'mentor2@example.com', password: 'testmentor2', roles: ['basic-user'], initUserType: {name: 'mentor'}},
     { nick: 'champion1@example.com', name: 'Champion1', email: 'champion1@example.com', password: 'testchampion1', roles: ['basic-user'], initUserType: {name: 'champion'}}
