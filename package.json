@@ -34,7 +34,7 @@
     "seneca": "0.7.2",
     "seneca-auth": "0.2.10",
     "seneca-mail": "0.2.1",
-    "seneca-postgresql-store": "0.7.0",
+    "seneca-postgresql-store": "1.1.2",
     "seneca-user": "0.2.10",
     "shortid": "2.2.2",
     "xoauth2": "1.1.0"
