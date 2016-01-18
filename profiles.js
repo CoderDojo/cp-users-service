@@ -113,7 +113,7 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'update-youth-profile'}, cmd_update_youth);
   seneca.add({role: plugin, cmd: 'invite-parent-guardian'}, cmd_invite_parent_guardian);
   seneca.add({role: plugin, cmd: 'search'}, cmd_search);
-  seneca.add({role: plugin, cmd: 'accept_parent_invite'}, cmd_accept_parent_invite);
+  seneca.add({role: plugin, cmd: 'accept-parent-invite'}, cmd_accept_parent_invite);
   seneca.add({role: plugin, cmd: 'load_hidden_fields'}, cmd_load_hidden_fields);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'change_avatar'}, cmd_change_avatar);
