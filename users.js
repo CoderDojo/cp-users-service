@@ -37,7 +37,6 @@ module.exports = function (options) {
     var seneca = this;
     seneca.act({role: plugin, cmd: 'load', id: args.id}, function (err, user) {
       if (err) return done(err);
-
       return done(null, _.pick(user, ['id', 'email', 'name']));
     });
   }
@@ -57,29 +56,6 @@ module.exports = function (options) {
       query = args.query;
     }
     seneca.make(ENTITY_NS).list$(query, done);
-  }
-
-  // We create an Account in Salesforce with the champion information and we also create a Lead.
-  // The user.id is used for both Account and Leads.
-  function updateSalesForce (user) {
-    // ideally would be done in a workqueue
-    process.nextTick(function () {
-      if (process.env.SALESFORCE_ENABLED !== 'true') return;
-
-      var account = {
-        PlatformId__c: user.id,
-        PlatformUrl__c: 'https://zen.coderdojo.com/dashboard/profile/' + user.id,
-        Email__c: user.email,
-        Name: user.name,
-        UserType__c: 'Champion',
-        RecordTypeId: process.env.SALESFORCE_ACC_RECORDTYPEID
-      };
-
-      seneca.act('role:cd-salesforce,cmd:save_account', {userId: user.id, account: account}, function (err, res) {
-        if (err) return seneca.log.error('Error creating Account in SalesForce!', err);
-        seneca.log.info('Created Account in SalesForce', account, res);
-      });
-    });
   }
 
   function cmd_register (args, done) {
@@ -163,7 +139,9 @@ module.exports = function (options) {
         };
         seneca.act({role: 'cd-profiles', cmd: 'save', profile: profileData}, function (err, profile) {
           if (err) return done(err);
-          if (registerResponse.ok === true && isChampion === true) updateSalesForce(registerResponse.user);
+          if (registerResponse.ok === true && isChampion === true) {
+            seneca.act({role: 'cd-salesforce', cmd: 'queud_update_users', param: {user: registerResponse.user}, fatal$: false});
+          }
           done(null, registerResponse);
         });
       });
