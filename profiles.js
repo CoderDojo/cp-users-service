@@ -171,9 +171,13 @@ module.exports = function (options) {
       }
       seneca.make$(ENTITY_NS).save$(profile, function (err, profile) {
         if (err) return done(err);
-
         if (process.env.SALESFORCE_ENABLED === 'true') {
-          seneca.act({role: 'cd-salesforce', cmd: 'queud_update_profiles', param: profile, fatal$: false});
+          seneca.act({ role: 'cd-profiles', cmd: 'load', id: profile.id }, function (err, fullProfile) {
+            if (err) return done(err);
+            if (fullProfile.userType.toLowerCase() === 'champion') {
+              seneca.act({role: 'cd-salesforce', cmd: 'queud_update_profiles', param: {profile: fullProfile}, fatal$: false});
+            }
+          });
         }
 
         syncUserObj(profile, function (err, res) {
