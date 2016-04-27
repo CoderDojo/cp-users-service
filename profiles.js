@@ -467,11 +467,15 @@ module.exports = function (options) {
     function optionalFieldsFilter (profile, done) {
       seneca.act({role: 'cd-users', cmd: 'load_champions_for_user', userId: profile.userId}, function (err, champions) {
         if (err) return done(err);
+        var requestingUser = args.user;
         profile.requestingUserIsChampion = _.find(champions, function (champion) {
-          return champion.id === args.user ? args.user.id : null;
+          return champion.id === requestingUser ? requestingUser.id : null;
         });
 
-        profile.requestingOwnProfile = args.user.id === profile.userId;
+        profile.requestingOwnProfile = false;
+        if (requestingUser) {
+          profile.requestingOwnProfile = requestingUser.id === profile.userId;
+        }
 
         seneca.act({role: 'cd-users', cmd: 'load_dojo_admins_for_user', userId: profile.userId}, function (err, dojoAdmins) {
           if (err) return done(err);
