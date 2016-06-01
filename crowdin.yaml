@@ -1,5 +1,7 @@
+api_key: <%= ENV['CROWDIN_API_KEY'] %>
+project_identifier: zen-community-platform
 base_path: .
-   
+
 files:
   -
     source: '/email-templates/auth-create-reset-en_US/users-auth-create-reset.text.ejs'
@@ -48,5 +50,3 @@ files:
     dest: '/invite-parent-guardian.text.txt'
     translation: '/email-templates/invite-parent-guardian-%locale_with_underscore%/%file_name%.ejs'
     type: 'txt'
-  
-  
