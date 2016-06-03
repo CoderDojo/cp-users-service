@@ -32,6 +32,8 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'kpi_number_of_youths_registered'}, cmd_kpi_number_of_youths_registered);
   seneca.add({role: plugin, cmd: 'kpi_number_of_champions_and_mentors_registered'}, cmd_kpi_number_of_champions_and_mentors_registered);
   seneca.add({role: plugin, cmd: 'kpi_number_of_youth_females_registered'}, cmd_kpi_number_of_youth_females_registered);
+  seneca.add({role: 'cd-users', cmd: 'is_self'}, require('./lib/users/is-self'));
+  seneca.add({role: 'cd-users', cmd: 'is_parent_of'}, require('./lib/users/is-parent-of'));
 
   function cmd_load_prev_founder (args, done) {
     var seneca = this;
