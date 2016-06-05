@@ -5,6 +5,8 @@ if (process.env.NEW_RELIC_ENABLED === 'true') require('newrelic');
 var config = require('./config/config.js')();
 var seneca = require('seneca')(config);
 var store = require('seneca-postgresql-store');
+var log = require('cp-logs')({name: 'cp-users-service', level: 'warn'});
+config.log = log.log;
 
 seneca.log.info('using config', JSON.stringify(config, null, 4));
 
@@ -26,14 +28,18 @@ require('./migrate-psql-db.js')(function (err) {
 
   seneca.use(require('./email-notifications.js'));
   seneca.use(require('./agreements.js'));
-  seneca.use(require('./profiles.js'), { postgresql: config['postgresql-store'] });
+  seneca.use(require('./profiles.js'),
+            { postgresql: config['postgresql-store'],
+              logger: log.logger
+            });
   seneca.use(require('./oauth2.js'), config.oauth2);
   seneca.use('user');
   seneca.use('auth');
   seneca.use(require('./users.js'),
             { 'email-notifications': config['email-notifications'],
               'postgresql': config['postgresql-store'],
-              'users': config['users']
+              'users': config['users'],
+              'logger': log.logger
             });
   seneca.use(require('./nodebb-api.js'), config.nodebb);
   seneca.use(require('cp-permissions-plugin'), {
