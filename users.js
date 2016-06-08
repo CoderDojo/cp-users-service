@@ -58,6 +58,23 @@ module.exports = function (options) {
     seneca.make(ENTITY_NS).list$(query, done);
   }
 
+  function checkPassword (args, done) {
+    var containsNumber = /[0-9]/.test(args.password);
+    var containsCharacter = /[!|@|#|$|%|^|&|*|(|)|-|_]/.test(args.password);
+    var containsCapital = /[A-Z]/.test(args.password);
+    var containsLowerCase = /[a-z]/.test(args.password);
+    var minPasswordLength = 8;
+
+    if (args.password === args.email) {
+      return done(null, {ok: false, token: args.token, why: 'Password must not be the same as your email address'});
+    } if ((args.password.length < minPasswordLength) || !(containsNumber || containsCharacter)) {
+      return done(null, {ok: false, token: args.token, why: 'Password must be a minimum of 8 characters in length and contain at least one number or punctuation character'});
+    } if (_.includes(args.roles, 'cdf-admin') && (!containsNumber || !containsCharacter || !containsCapital || !containsLowerCase)) {
+      return done(null, {ok: false, token: args.token, why: 'An admin account must contain at least one number, one special character and one capital.'});
+    }
+    return done(null, args);
+  }
+
   function cmd_register (args, done) {
     var isChampion = args.isChampion === true;
     var locality = args.locality || 'en_US';
@@ -120,29 +137,35 @@ module.exports = function (options) {
 
       args.mailingList = (args.mailingList) ? 1 : 0;
 
-      seneca.act({role: 'user', cmd: 'register'}, args, function (err, registerResponse) {
+      checkPassword(args, function (err, args) {
         if (err) return done(err);
-        if (!registerResponse.ok) {
-          return done(null, registerResponse);
+        if (typeof args.ok !== 'undefined' && !args.ok) {
+          return done(null, args);
         }
-
-        var user = registerResponse.user;
-        // Create user profile based on initial user type.
-        var userType = 'attendee-o13';
-        if (user.initUserType) userType = user.initUserType.name;
-
-        var profileData = {
-          userId: user.id,
-          name: user.name,
-          email: user.email,
-          userType: userType
-        };
-        seneca.act({role: 'cd-profiles', cmd: 'save', profile: profileData}, function (err, profile) {
+        seneca.act({role: 'user', cmd: 'register'}, args, function (err, registerResponse) {
           if (err) return done(err);
-          if (registerResponse.ok === true && isChampion === true) {
-            seneca.act({role: 'cd-salesforce', cmd: 'queud_update_users', param: {user: registerResponse.user}, fatal$: false});
+          if (!registerResponse.ok) {
+            return done(null, registerResponse);
           }
-          done(null, registerResponse);
+
+          var user = registerResponse.user;
+          // Create user profile based on initial user type.
+          var userType = 'attendee-o13';
+          if (user.initUserType) userType = user.initUserType.name;
+
+          var profileData = {
+            userId: user.id,
+            name: user.name,
+            email: user.email,
+            userType: userType
+          };
+          seneca.act({role: 'cd-profiles', cmd: 'save', profile: profileData}, function (err, profile) {
+            if (err) return done(err);
+            if (registerResponse.ok === true && isChampion === true) {
+              seneca.act({role: 'cd-salesforce', cmd: 'queud_update_users', param: {user: registerResponse.user}, fatal$: false});
+            }
+            done(null, registerResponse);
+          });
         });
       });
     }
@@ -347,20 +370,27 @@ module.exports = function (options) {
         return done(null, { ok: false, token: args.token, why: 'Reset stale.' });
       }
 
-      var userEntity = seneca.make$('sys/user');
-
+      var userEntity = seneca.make$(ENTITY_NS);
       userEntity.load$({ id: reset.user }, function (err, user) {
         if (err) { return done(err); }
-        seneca.act({ role: 'user', cmd: 'change_password', user: user, password: args.password, repeat: args.repeat }, function (err, out) {
+        user.password = args.password;
+        checkPassword(user, function (err, user) {
           if (err) { return done(err); }
-
-          out.reset = reset;
-          if (!out.ok) { return done(null, out); }
-
-          reset.active = false;
-          reset.save$(function (err, reset) {
+          if (typeof user.ok !== 'undefined' && !user.ok) {
+            return done(null, user);
+          }
+          delete user.password;
+          seneca.act({ role: 'user', cmd: 'change_password', user: user, password: args.password, repeat: args.repeat }, function (err, out) {
             if (err) { return done(err); }
-            return done(null, { user: user, reset: reset, ok: true });
+
+            out.reset = reset;
+            if (!out.ok) { return done(null, out); }
+
+            reset.active = false;
+            reset.save$(function (err, reset) {
+              if (err) { return done(err); }
+              return done(null, { user: user, reset: reset, ok: true });
+            });
           });
         });
       });
