@@ -419,7 +419,6 @@ module.exports = function (options) {
         if (err) {
           return done(err);
         }
-        console.log('load_usersdojos', usersDojos);
         return done(null, profile, usersDojos);
       });
     }
@@ -430,7 +429,6 @@ module.exports = function (options) {
           return done(err);
         }
 
-        console.log('getDojosForUser()', dojos);
         profile.dojos = _.map(dojos, function (dojo) {
           return {id: dojo.id, name: dojo.name, urlSlug: dojo.urlSlug};
         });

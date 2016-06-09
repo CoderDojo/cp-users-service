@@ -7,17 +7,17 @@ module.exports = function(){
         userTypes: 'champion'
       },
       { role: 'basic-user',
-        customValidator: [{
-          role: 'cd-users',
-          cmd: 'is_self'
-        }]
+        // customValidator: [{
+        //   role: 'cd-users',
+        //   cmd: 'is_self'
+        // }]
       },
       { role: 'basic-user',
         userType: 'parent',
-        customValidator: [{
-          role: 'cd-users',
-          cmd: 'is_parent_of',
-        }]
+        // customValidator: [{
+        //   role: 'cd-users',
+        //   cmd: 'is_parent_of',
+        // }]
       }],
       'list': [{
         role: 'basic-user',

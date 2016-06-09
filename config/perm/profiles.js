@@ -7,12 +7,46 @@ module.exports = function(){
       }],
       'user_profile_data': [{
         role: 'basic-user',
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_self'
+        }]
+      }, {
+        role: 'basic-user',
+        userType: 'parent-guardian',
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_parent_of'
+        }]
       }],
       'load': [{
         role: 'basic-user',
-      }],
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_self'
+        }]
+      }, {
+        role: 'basic-user',
+        userType: 'parent-guardian',
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_parent_of'
+        }]
+      }
+    ],
       'load_user_profile': [{
         role: 'basic-user',
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_self'
+        }]
+      }, {
+        role: 'basic-user',
+        userType: 'parent-guardian',
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_parent_of'
+        }]
       }],
       'save-youth-profile': [{
         role: 'basic-user',
@@ -59,13 +93,7 @@ module.exports = function(){
       }],
 
       'load_hidden_fields': [{
-        role: 'basic-user',
-        customValidator: [{
-          role: 'cd-users',
-          cmd: 'is_self'
-        }]
-      },
-      { role: 'cdf-admin'
+        role: 'none'
       }],
       'list': [{
         role: 'basic-user',
