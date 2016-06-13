@@ -14,6 +14,9 @@ module.exports = function(){
         'login': [{
           role: 'none',
         }],
+        'logout': [{
+          role: 'none',
+        }],
       },
 
   };

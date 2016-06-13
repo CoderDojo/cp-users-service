@@ -7,17 +7,17 @@ module.exports = function(){
         userTypes: 'champion'
       },
       { role: 'basic-user',
-        // customValidator: [{
-        //   role: 'cd-users',
-        //   cmd: 'is_self'
-        // }]
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_self'
+        }]
       },
       { role: 'basic-user',
         userType: 'parent',
-        // customValidator: [{
-        //   role: 'cd-users',
-        //   cmd: 'is_parent_of',
-        // }]
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_parent_of',
+        }]
       }],
       'list': [{
         role: 'basic-user',
@@ -30,12 +30,20 @@ module.exports = function(){
         role: 'cdf-admin',
       }],
 
+      //  TODO : check if own dojo members?
       'get_users_by_emails': [{
         role: 'basic-user',
         userTypes: 'champion'
       },
       { role: 'basic-user',
-        permissions: ['dojo-admin']
+        //NOTE: isn't perm a customVal now ?
+        customValidator: [{
+          role: 'cd-dojos',
+          cmd: 'is_having_perm',
+          param: {
+            perm: 'dojo-admin'
+          }
+        }]
       }],
 
       'update': [{
@@ -56,7 +64,7 @@ module.exports = function(){
       'get_init_user_types': [{
         role: 'none',
       }],
-
+      //  Could be public as champion are public by design
       'is_champion': [{
         role: 'basic-user',
       }],
@@ -69,18 +77,31 @@ module.exports = function(){
         role: 'none',
       }],
 
-      //  TODO: lookup
       'load_champions_for_user': [{
         role: 'basic-user',
+        customValidator: [
+          { role: 'cd-users',
+            cmd: 'is_self'
+          }]
       }],
-
+      'load_dojo_admins_for_user': [{
+        role: 'basic-user',
+        customValidator: [
+          { role: 'cd-users',
+            cmd: 'is_self'
+          }]
+      }],
       'record_login': [{
         role: 'basic-user',
       }],
 
       //  TODO: lookup
       'load_prev_founder': [{
-        role: 'cdf-admin',
+        role: 'basic-user',
+        customValidator: [{
+          role: 'cd-dojos',
+          cmd: 'is_dojo_admin'
+        }]
       }],
       'kpi_number_of_youths_registered': [{
         role: 'cdf-admin',

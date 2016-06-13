@@ -77,6 +77,8 @@ module.exports = function(){
           cmd: 'is_self'
         }]
       }],
+      //  TODO : ensure you're calling it for yourself?
+      //  TODO : strict mode to avoid the permission hierarchy
       'invite-parent-guardian': [{
         role: 'basic-user',
         userType: 'attendee-o13'
@@ -107,25 +109,24 @@ module.exports = function(){
       'get_avatar': [{
         role: 'none',
       }],
-      'load_parents_for_user': [{
-        role: 'basic-user',
+      'load_parents_for_user': [
+      { role: 'basic-user',
         userType: 'champion'
       },
       { role: 'basic-user',
         customValidator: [{
           role: 'cd-users',
           cmd: 'is_self'
-      }]}],
-      'invite_ninja': [{
-        role: 'basic-user',
-        userType: 'parent'
-      }],
-      'approve_invite_ninja': [{
-        role: 'basic-user',
-        userType: 'attendee-o13'
+        }]
+      },
+      { role: 'basic-user',
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_parent_of'
+        }]
       }],
 
-      'ninjas_for_user': [{
+      'invite_ninja': [{
         role: 'basic-user',
         userType: 'parent-guardian'
       },
@@ -135,6 +136,21 @@ module.exports = function(){
       },
       {
         role: 'basic-user',
+        userType: 'mentor'
+      }],
+      //  TODO : check if approved = the one supposed to open
+      'approve_invite_ninja': [{
+        role: 'basic-user',
+        userType: 'attendee-o13'
+      }],
+      'ninjas_for_user': [{
+        role: 'basic-user',
+        userType: 'parent-guardian'
+      },
+      { role: 'basic-user',
+        userType: 'champion'
+      },
+      { role: 'basic-user',
         customValidator:[ {
           role: 'cd-users',
           cmd: 'is_self'
