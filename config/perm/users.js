@@ -31,11 +31,7 @@ module.exports = function(){
       }],
 
       //  TODO : check if own dojo members?
-      'get_users_by_emails': [{
-        role: 'basic-user',
-        userTypes: 'champion'
-      },
-      { role: 'basic-user',
+      'get_users_by_emails': [{ role: 'basic-user',
         //NOTE: isn't perm a customVal now ?
         customValidator: [{
           role: 'cd-dojos',
@@ -83,6 +79,13 @@ module.exports = function(){
           { role: 'cd-users',
             cmd: 'is_self'
           }]
+      }, {
+        role: 'basic-user',
+        userType: 'champion',
+        customValidator: [{
+          role: 'cd-dojos',
+          cmd: 'belongs_to_dojo'
+        }]
       }],
       'load_dojo_admins_for_user': [{
         role: 'basic-user',
@@ -90,6 +93,13 @@ module.exports = function(){
           { role: 'cd-users',
             cmd: 'is_self'
           }]
+      }, {
+        role: 'basic-user',
+        userType: 'champion',
+        customValidator: [{
+          role: 'cd-dojos',
+          cmd: 'belongs_to_dojo'
+        }]
       }],
       'record_login': [{
         role: 'basic-user',

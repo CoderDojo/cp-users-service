@@ -18,6 +18,13 @@ module.exports = function(){
           role: 'cd-users',
           cmd: 'is_parent_of'
         }]
+      }, {
+        role: 'basic-user',
+        userType: 'champion',
+        customValidator: [{
+          role: 'cd-dojos',
+          cmd: 'belongs_to_dojo'
+        }]
       }],
       'load': [{
         role: 'basic-user',
@@ -62,15 +69,13 @@ module.exports = function(){
           role: 'cd-users',
           cmd: 'is_parent_of'
         }]
-      },
-      { role: 'basic-user',
+      }, { role: 'basic-user',
         userType: 'attendee-u13',
         customValidator: [{
           role: 'cd-users',
           cmd: 'is_self'
         }]
-      },
-      { role: 'basic-user',
+      }, { role: 'basic-user',
         userType: 'attendee-o13',
         customValidator: [{
           role: 'cd-users',
