@@ -178,6 +178,15 @@ module.exports = function (options) {
     });
   }
 
+  function sanitiseUser (user) {
+    delete user.pass;
+    delete user.salt;
+    delete user.active;
+    delete user.accounts;
+    delete user.confirmcode;
+    return user;
+  }
+
   function cmd_promote (args, done) {
     var seneca = this;
     var newRoles = args.roles;
@@ -191,10 +200,7 @@ module.exports = function (options) {
         user.roles.push(newRole);
       });
       user.roles = _.uniq(user.roles);
-      userEntity.save$(user, function (err, response) {
-        if (err) return done(err);
-        done(null, response);
-      });
+      userEntity.save$(user, function (err, response) { done(err, sanitiseUser(response)); });
     });
   }
 
