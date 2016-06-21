@@ -80,7 +80,7 @@ module.exports = function (options) {
     var locality = args.locality || 'en_US';
     var emailCode = 'auth-register-';
     var emailSubject = args.emailSubject;
-    var zenHostname = args.zenHostname;
+    var zenHostname = process.env.HOSTNAME || '127.0.0.1:8000';
     delete args.isChampion;
 
     if (args.initUserType.name === 'attendee-u13') {
@@ -328,7 +328,7 @@ module.exports = function (options) {
     var locality = args.locality || 'en_US';
     var emailCode = 'auth-create-reset-';
     var emailSubject = args.emailSubject;
-    var zenHostname = args.zenHostname || '127.0.0.1:8000';
+    var zenHostname = process.env.HOSTNAME || '127.0.0.1:8000';
 
     args = {};
     if (void 0 !== nick) args.nick = nick;
