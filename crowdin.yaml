@@ -50,3 +50,8 @@ files:
     dest: '/invite-parent-guardian.text.txt'
     translation: '/email-templates/invite-parent-guardian-%locale_with_underscore%/%file_name%.ejs'
     type: 'txt'
+
+  -
+    source: '/web/locale/en_US/messages.po'
+    dest: '/messages.po'
+    translation: '/web/locale/%locale_with_underscore%/%original_file_name%'

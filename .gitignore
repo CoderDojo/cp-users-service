@@ -29,3 +29,9 @@ node_modules
 
 .idea
 *~
+
+# i18n dictionaries from crowdin, except en_US
+web/locale/*
+!web/locale/en_US
+email-templates/*
+!email-templates/*-en_US

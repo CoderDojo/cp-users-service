@@ -638,7 +638,7 @@ module.exports = function (options) {
     var invitedParentEmail = data.invitedParentEmail;
     var childId = data.childId;
     var emailSubject = data.emailSubject;
-    var zenHostname = args.zenHostname;
+    var zenHostname = process.env.HOSTNAME || '127.0.0.1:8000';
 
     var childQuery = {
       userId: childId
@@ -795,7 +795,7 @@ module.exports = function (options) {
   }
 
   function cmd_change_avatar (args, done) {
-    var hostname = args.zenHostname;
+    var hostname = process.env.HOSTNAME || '127.0.0.1:8000';
     var file = args.file;
 
     if (!_.contains(args.fileType, 'image')) return done(null, {ok: false, why: 'Avatar upload: file must be an image.'});
@@ -1100,7 +1100,7 @@ module.exports = function (options) {
     }
 
     function emailNinja (parentProfile, done) {
-      var zenHostname = args.zenHostname;
+      var zenHostname = process.env.HOSTNAME || '127.0.0.1:8000';
       var content = {
         ninjaName: ninjaProfile.name,
         parentName: parentProfile.name,
