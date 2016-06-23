@@ -419,7 +419,6 @@ module.exports = function (options) {
         if (err) {
           return done(err);
         }
-
         return done(null, profile, usersDojos);
       });
     }
