@@ -23,7 +23,7 @@ module.exports = function (options) {
     var subject = args.subject;
     var subjectVariables = args.subjectVariables || [];
     var subjectTranslation;
-    if (options.sendemail && options.email) {
+    if (options.sendemail) {
       var emailCode = args.code + args.locality;
       if (!fs.existsSync(path.join(__dirname, '/email-templates/', emailCode))) emailCode = args.code + 'en_US';
       if (!args.to) return done(null, {ok: false, why: 'No recipient set.'});
