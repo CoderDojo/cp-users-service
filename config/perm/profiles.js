@@ -108,8 +108,8 @@ module.exports = function(){
       'change_avatar': [{
         role: 'basic-user',
         customValidator: [{
-          role: 'cd-users',
-          cmd: 'is_self'
+          role: 'cd-profiles',
+          cmd: 'is_own_profile'
       }]}],
       'get_avatar': [{
         role: 'none',

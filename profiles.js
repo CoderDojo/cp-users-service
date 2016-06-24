@@ -122,6 +122,8 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'invite_ninja'}, cmd_invite_ninja);
   seneca.add({role: plugin, cmd: 'approve_invite_ninja'}, cmd_approve_invite_ninja);
   seneca.add({role: plugin, cmd: 'ninjas_for_user'}, cmd_ninjas_for_user);
+  //  Perms
+  seneca.add({role: plugin, cmd: 'is_own_profile'}, require('./lib/profiles/is-own-profile'));
 
   function cmd_search (args, done) {
     if (!args.query) {
