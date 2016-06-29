@@ -14,8 +14,15 @@
   "pre-commit": [
     "test"
   ],
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CoderDojo/cp-users-service.git"
+  },
+  "author": "CoderDojo Foundation",
+  "license": "MIT",
+  "bug": {
+    "url": "https://github.com/CoderDojo/community-platform/issues"
+  },
   "dependencies": {
     "async": "0.9.0",
     "cp-i18n-lib": "git+https://github.com/CoderDojo/cp-i18n-lib.git",
