@@ -305,10 +305,6 @@ module.exports = function (options) {
   }
 
   function cmd_update_youth (args, done) {
-    var userId = args.user ? args.user.id : null;
-    if (!_.contains(args.profile.parents, userId)) {
-      return done(new Error('Not authorized to update profile'));
-    }
     var profile = args.profile;
     var derivedFields = ['password', 'userTypes', 'myChild', 'ownProfileFlag', 'dojos'];
 
