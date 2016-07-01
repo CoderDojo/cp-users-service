@@ -798,6 +798,11 @@ module.exports = function (options) {
     if (!_.contains(args.fileType, 'image')) return done(null, {ok: false, why: 'Avatar upload: file must be an image.'});
     if (file.length > 5242880) return done(null, {ok: false, why: 'Avatar upload: max file size of 5MB exceeded.'});
 
+    var buf = new Buffer(file, 'base64');
+    var type = buf.toString('hex', 0, 4);
+    var types = ['ffd8ffe0', '89504e47', '47494638'];
+    if (!_.contains(types, type)) return done(null, {ok: false, why: 'Avatar upload: file must be an image of type png, jpeg or gif.'});
+
     // pg conf properties
     options.postgresql.database = options.postgresql.name;
     options.postgresql.user = options.postgresql.username;
@@ -831,8 +836,6 @@ module.exports = function (options) {
             done = noop;
             return;
           }
-
-          var buf = new Buffer(file, 'base64');
 
           stream.write(buf, 'base64', function () {
             stream.end();
