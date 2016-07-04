@@ -124,5 +124,12 @@ module.exports = function(){
       'kpi_number_of_youth_females_registered': [{
         role: 'cdf-admin',
       }],
+      'get_lms_link': [{
+        role: 'basic-user',
+        userType: 'champion'
+      }, {
+        role: 'basic-user',
+        userType: 'mentor'
+      }],
   };
 };
