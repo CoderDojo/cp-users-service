@@ -32,7 +32,7 @@ require('./migrate-psql-db.js')(function (err) {
             { postgresql: config['postgresql-store'],
               logger: log.logger
             });
-  seneca.use(require('./oauth2.js'), config.oauth2);
+  seneca.use(require('./oauth2.js'), {clients: config.oauth2.clients});
   seneca.use('user');
   seneca.use('auth');
   seneca.use(require('./users.js'),

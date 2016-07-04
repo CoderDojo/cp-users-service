@@ -282,14 +282,14 @@ module.exports = function (options) {
   function cmd_is_champion (args, done) {
     var seneca = this;
 
-    seneca.make(ENTITY_NS).load$({id: args.id}, function (err, user) {
+    seneca.make(ENTITY_NS).load$({id: args.user.id}, function (err, user) {
       if (err) {
         return done(err);
       }
 
       user = user.data$();
 
-      var query = {userId: args.id};
+      var query = {userId: args.user.id};
 
       seneca.act({
         role: 'cd-dojos',
