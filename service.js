@@ -27,7 +27,7 @@ require('./migrate-psql-db.js')(function (err) {
   seneca.use(require('./email-notifications.js'));
   seneca.use(require('./agreements.js'));
   seneca.use(require('./profiles.js'), { postgresql: config['postgresql-store'] });
-  seneca.use(require('./oauth2.js'), config.oauth2);
+  seneca.use(require('./oauth2.js'), {clients: config.oauth2.clients});
   seneca.use('user');
   seneca.use('auth');
   seneca.use(require('./users.js'),
