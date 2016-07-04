@@ -5,7 +5,7 @@ if (process.env.NEW_RELIC_ENABLED === 'true') require('newrelic');
 var config = require('./config/config.js')();
 var seneca = require('seneca')(config);
 var store = require('seneca-postgresql-store');
-var log = require('cp-logs')({name: 'cp-users-service', level: 'warn'});
+var log = require('cp-logs-lib')({name: 'cp-users-service', level: 'warn'});
 config.log = log.log;
 
 seneca.log.info('using config', JSON.stringify(config, null, 4));
