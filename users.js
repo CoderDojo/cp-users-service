@@ -321,9 +321,7 @@ module.exports = function (options) {
 
   function cmd_reset_password (args, done) {
     var seneca = this;
-    args.data = {};
-    args.data.email = args.email;
-    if (!_.isEmpty(args.data)) {
+    if (!_.isEmpty(args.email) || !_.isEmpty(args.nick) || !_.isEmpty(args.username)) {
       seneca.act({role: plugin, cmd: 'create_reset'}, args, function (err, response) {
         if (err) return done(err);
         return done(null, response);
@@ -343,7 +341,6 @@ module.exports = function (options) {
     var emailSubject = args.emailSubject;
     var zenHostname = process.env.HOSTNAME || '127.0.0.1:8000';
 
-    args = {};
     var msg = {role: 'user', cmd: 'create_reset'};
     if (void 0 !== nick) msg.nick = nick;
     if (void 0 !== email) msg.email = email;
