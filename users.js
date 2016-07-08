@@ -34,7 +34,10 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'kpi_number_of_youth_females_registered'}, cmd_kpi_number_of_youth_females_registered);
   seneca.add({role: plugin, cmd: 'is_self'}, require('./lib/users/is-self'));
   seneca.add({role: plugin, cmd: 'is_parent_of'}, require('./lib/users/is-parent-of'));
+  //  LMS Integration
   seneca.add({role: plugin, cmd: 'get_lms_link'}, require('./lib/users/lms/get-lms-link'));
+  seneca.add({role: plugin, cmd: 'check_lms_certificate_authenticity'}, require('./lib/users/lms/check-certificate-authenticity'));
+  seneca.add({role: plugin, cmd: 'award_lms_badge'}, require('./lib/users/lms/award-badge'));
 
   function cmd_load_prev_founder (args, done) {
     var seneca = this;
