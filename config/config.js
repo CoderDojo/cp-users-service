@@ -28,9 +28,7 @@ module.exports = function () {
     'postgresql-store': pgConfig(),
     'email-notifications': {
       sendemail: true,
-      sendFrom: 'The CoderDojo Team <info@coderdojo.org>',
-      email: {
-      }
+      sendFrom: 'The CoderDojo Team <info@coderdojo.org>'
     },
     mailtrap: {
       folder: path.resolve(__dirname + '/../email-templates'),
@@ -65,8 +63,10 @@ module.exports = function () {
     },
     oauth2: {
       clients: {
-        coderdojoadultforums: process.env.CODERDOJO_ADULT_FORUMS_SECRET || 'ilikecode',
-        coderdojoyouthforums: process.env.CODERDOJO_YOUTH_FORUMS_SECRET || 'ilikecode'
+        coderdojoadultforums: { code: process.env.CODERDOJO_ADULT_FORUMS_SECRET || 'ilikecode',
+          baseUrl: process.env.ADULT_FORUM + '/auth/CoderDojo/callback'},
+        coderdojoyouthforums: { code: process.env.CODERDOJO_YOUTH_FORUMS_SECRET || 'ilikecode',
+        baseUrl: process.env.YOUTH_FORUM + '/auth/CoderDojo/callback'}
       }
     },
     nodebb: {

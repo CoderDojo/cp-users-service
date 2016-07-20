@@ -14,12 +14,20 @@
   "pre-commit": [
     "test"
   ],
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CoderDojo/cp-users-service.git"
+  },
+  "author": "CoderDojo Foundation",
+  "license": "MIT",
+  "bug": {
+    "url": "https://github.com/CoderDojo/community-platform/issues"
+  },
   "dependencies": {
     "async": "0.9.0",
     "cp-i18n-lib": "git+https://github.com/CoderDojo/cp-i18n-lib.git",
     "cp-permissions-plugin": "git://github.com/CoderDojo/cp-permissions-plugin#0.0.1",
+    "cp-logs-lib": "git://github.com/CoderDojo/cp-logs-lib#v1.0.1",
     "cuid": "1.2.5",
     "ejs": "1.0.0",
     "jed": "1.1.0",
@@ -35,12 +43,13 @@
     "po2json": "0.4.2",
     "postgrator": "2.2.0",
     "request": "2.58.0",
-    "seneca": "0.7.2",
-    "seneca-auth": "0.2.10",
+    "seneca": "1.4",
+    "seneca-auth": "1.0",
     "seneca-mail": "0.2.1",
     "seneca-postgresql-store": "1.1.3",
-    "seneca-user": "0.2.10",
+    "seneca-user": "1.0",
     "shortid": "2.2.2",
+    "util": "^0.10.3",
     "xoauth2": "1.1.0"
   },
   "devDependencies": {
