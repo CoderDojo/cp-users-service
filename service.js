@@ -7,6 +7,7 @@ var seneca = require('seneca')(config);
 var store = require('seneca-postgresql-store');
 var log = require('cp-logs-lib')({name: 'cp-users-service', level: 'warn'});
 config.log = log.log;
+var util = require('util');
 
 seneca.log.info('using config', JSON.stringify(config, null, 4));
 
@@ -45,6 +46,19 @@ require('./migrate-psql-db.js')(function (err) {
   seneca.use(require('cp-permissions-plugin'), {
     config: __dirname + '/config/permissions'
   });
+
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
+  process.on('uncaughtException', shutdown);
+
+  function shutdown (err) {
+    if (err !== void 0 && err.stack !== void 0) {
+      console.error(new Date().toString() + ' FATAL: UncaughtException, please report: ' + util.inspect(err));
+      console.error(util.inspect(err.stack));
+      console.trace();
+    }
+    process.exit(0);
+  }
 
   seneca.listen()
   .client({ type: 'web', port: 10304, pin: { role: 'cd-salesforce', cmd: '*' } })

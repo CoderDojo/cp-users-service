@@ -28,9 +28,7 @@ module.exports = function () {
     'postgresql-store': pgConfig(),
     'email-notifications': {
       sendemail: true,
-      sendFrom: 'The CoderDojo Team <info@coderdojo.org>',
-      email: {
-      }
+      sendFrom: 'The CoderDojo Team <info@coderdojo.org>'
     },
     mailtrap: {
       folder: path.resolve(__dirname + '/../email-templates'),
