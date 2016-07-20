@@ -13,7 +13,7 @@ module.exports = function (options) {
   var so = seneca.options();
   var protocol = process.env.PROTOCOL || 'http';
 
-  seneca.add({role: 'auth', cmd: 'create_reset'}, cmd_create_reset);
+  seneca.add({role: plugin, cmd: 'create_reset'}, cmd_create_reset);
   seneca.add({role: plugin, cmd: 'load'}, cmd_load);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'register'}, cmd_register);
@@ -321,15 +321,18 @@ module.exports = function (options) {
 
   function cmd_reset_password (args, done) {
     var seneca = this;
-    seneca.act({role: 'auth', cmd: 'create_reset'}, args, function (err, response) {
-      if (err) return done(err);
-      return done(null, response);
-    });
+    if (!_.isEmpty(args.email) || !_.isEmpty(args.nick) || !_.isEmpty(args.username)) {
+      seneca.act({role: plugin, cmd: 'create_reset'}, args, function (err, response) {
+        if (err) return done(err);
+        return done(null, response);
+      });
+    } else {
+      return done(null, {ok: false, err: 'Missing parameters'});
+    }
   }
 
   function cmd_create_reset (args, done) {
     var seneca = this;
-    var useract = seneca.pin({role: 'user', cmd: '*'});
 
     var nick = args.nick || args.username;
     var email = args.email;
@@ -338,11 +341,11 @@ module.exports = function (options) {
     var emailSubject = args.emailSubject;
     var zenHostname = process.env.HOSTNAME || '127.0.0.1:8000';
 
-    args = {};
-    if (void 0 !== nick) args.nick = nick;
-    if (void 0 !== email) args.email = email;
+    var msg = {role: 'user', cmd: 'create_reset'};
+    if (void 0 !== nick) msg.nick = nick;
+    if (void 0 !== email) msg.email = email;
 
-    useract.create_reset(args, function (err, out) {
+    seneca.act(msg, function (err, out) {
       if (err || !out.ok) return done(err, out);
       if (options['email-notifications'].sendemail) {
         seneca.act({role: 'email-notifications', cmd: 'send'},
@@ -350,7 +353,9 @@ module.exports = function (options) {
           locality: locality,
           to: out.user.email,
           subject: emailSubject,
-          content: {name: out.user.name, resetlink: protocol + '://' + zenHostname + '/reset_password/' + out.reset.id, year: moment(new Date()).format('YYYY')}
+          content: {name: out.user.name,
+            resetlink: protocol + '://' + zenHostname + '/reset_password/' + out.reset.id,
+            year: moment(new Date()).format('YYYY')}
         }, function (err, response) {
           if (err) return done(err);
           return done(null, { ok: out.ok });
@@ -467,7 +472,6 @@ module.exports = function (options) {
   function cmd_login (args, done) {
     this.prior(args, function (err, loginResponse) {
       if (err) return done(err);
-
       if (!loginResponse.ok || !loginResponse.user) return done(null, loginResponse);
 
       async.series([
