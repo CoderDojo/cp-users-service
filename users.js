@@ -5,6 +5,7 @@ var async = require('async');
 var request = require('request');
 var moment = require('moment');
 var pg = require('pg');
+var crypto = require('crypto');
 
 module.exports = function (options) {
   var seneca = this;
@@ -34,6 +35,14 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'kpi_number_of_youth_females_registered'}, cmd_kpi_number_of_youth_females_registered);
   seneca.add({role: 'cd-users', cmd: 'is_self'}, require('./lib/users/is-self'));
   seneca.add({role: 'cd-users', cmd: 'is_parent_of'}, require('./lib/users/is-parent-of'));
+
+  seneca.add({role: 'user', cmd: 'encrypt_password'}, function (data, cb) {
+    //  Default seneca's salt is 16b length (too small entropy) and can generate NULL char, which pg cannot handle
+    if (_.isUndefined(data.salt)) {
+      data.salt = crypto.randomBytes(256).toString('hex');
+    }
+    this.prior(data, cb);
+  });
 
   function cmd_load_prev_founder (args, done) {
     var seneca = this;
