@@ -87,26 +87,28 @@ module.exports = function (options) {
   }
 
   function cmd_register (args, done) {
-    var isChampion = args.isChampion === true;
-    var locality = args.locality || 'en_US';
+    var profile = args.profile;
+    var user = args.user;
+    var locality = user.locality || 'en_US';
     var emailCode = 'auth-register-';
-    var emailSubject = args.emailSubject;
+    var emailSubject = user.emailSubject;
     var zenHostname = process.env.HOSTNAME || '127.0.0.1:8000';
-    delete args.isChampion;
+    var isChampion = user.isChampion === true;
+    delete user.isChampion;
 
-    if (args.initUserType.name === 'attendee-u13') {
+    if (user.initUserType.name === 'attendee-u13') {
       return done(new Error('Unable to register as attendee-u13'));
     }
 
     // Roles Available: basic-user, cdf-admin
     var seneca = this;
 
-    if (!args['g-recaptcha-response']) {
+    if (!user['g-recaptcha-response']) {
       return done(new Error('Error with captcha'));
     }
 
     var secret = so['recaptcha_secret_key'];
-    var captchaResponse = args['g-recaptcha-response'];
+    var captchaResponse = user['g-recaptcha-response'];
 
     var postData = {
       url: 'https://www.google.com/recaptcha/api/siteverify',
@@ -134,26 +136,26 @@ module.exports = function (options) {
 
     function checkPermissions (success, done) {
       // if forumMods array contains the users email, make them an admin
-      if (options.users.cdfAdmins.indexOf(args.email) > -1) {
-        args.roles = ['cdf-admin'];
+      if (options.users.cdfAdmins.indexOf(user.email) > -1) {
+        user.roles = ['cdf-admin'];
       } else {
-        args.roles = ['basic-user'];
+        user.roles = ['basic-user'];
       }
 
       return done(null, success);
     }
 
     function registerUser (success, done) {
-      args = _.omit(args, ['g-recaptcha-response', 'zenHostname', 'locality', 'user', 'emailSubject']);
+      user = _.omit(user, ['g-recaptcha-response', 'zenHostname', 'locality', 'user', 'emailSubject']);
 
-      args.mailingList = (args.mailingList) ? 1 : 0;
+      user.mailingList = (user.mailingList) ? 1 : 0;
 
-      checkPassword(args, function (err, args) {
+      checkPassword(user, function (err, user) {
         if (err) return done(err);
-        if (typeof args.ok !== 'undefined' && !args.ok) {
-          return done(null, args);
+        if (typeof user.ok !== 'undefined' && !user.ok) {
+          return done(null, user);
         }
-        seneca.act({role: 'user', cmd: 'register'}, args, function (err, registerResponse) {
+        seneca.act({role: 'user', cmd: 'register'}, user, function (err, registerResponse) {
           if (err) return done(err);
           if (!registerResponse.ok) {
             return done(null, registerResponse);
@@ -164,13 +166,12 @@ module.exports = function (options) {
           var userType = 'attendee-o13';
           if (user.initUserType) userType = user.initUserType.name;
 
-          var profileData = {
-            userId: user.id,
-            name: user.name,
-            email: user.email,
-            userType: userType
-          };
-          seneca.act({role: 'cd-profiles', cmd: 'save', profile: profileData}, function (err, profile) {
+          profile.userId = user.id;
+          profile.name = user.name;
+          profile.email = user.email;
+          profile.userType = userType;
+
+          seneca.act({role: 'cd-profiles', cmd: 'save', profile: profile}, function (err, profile) {
             if (err) return done(err);
             if (registerResponse.ok === true && isChampion === true) {
               seneca.act({role: 'cd-salesforce', cmd: 'queud_update_users', param: {user: registerResponse.user}, fatal$: false});

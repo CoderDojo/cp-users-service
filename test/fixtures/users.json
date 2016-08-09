@@ -1,42 +1,187 @@
 [
   {
-    "name": "test1",
-    "email": "test1@example.com",
-    "password": "password1",
-    "termsConditionsAccepted": true,
+    "user": {
+      "name": "test1",
+      "email": "test1@example.com",
+      "password": "password1",
+      "termsConditionsAccepted": true,
       "initUserType":"attendee-u13",
-    "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      },
+      "city": {},
+      "countryname": "Ireland",
+      "countrynumber": null,
+      "continent": "EU",
+      "alpha2": "IE",
+      "alpha3": "IRL",
+      "admin1Code": null,
+      "admin1Name": null,
+      "admin2Code": null,
+      "admin2Name": null,
+      "admin3Code": null,
+      "admin3Name": null,
+      "admin4Code": null,
+      "admin4Name": null,
+      "state": {},
+      "county": {},
+      "placeName": "Test"
+    }
   },
   {
-    "name": "test2",
-    "email": "test2@example.com",
-    "password": "passiword2",
-    "termsConditionsAccepted": true,
+    "user": {
+      "name": "test2",
+      "email": "test2@example.com",
+      "password": "passiword2",
+      "termsConditionsAccepted": true,
       "initUserType":"attendee-o13",
-    "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      },
+      "city": {},
+      "countryname": "Ireland",
+      "countrynumber": null,
+      "continent": "EU",
+      "alpha2": "IE",
+      "alpha3": "IRL",
+      "admin1Code": null,
+      "admin1Name": null,
+      "admin2Code": null,
+      "admin2Name": null,
+      "admin3Code": null,
+      "admin3Name": null,
+      "admin4Code": null,
+      "admin4Name": null,
+      "state": {},
+      "county": {},
+      "placeName": "Test"
+    }
   },
   {
-    "name": "test3",
-    "email": "test3@example.com",
-    "password": "password3",
-    "termsConditionsAccepted": true,
+    "user": {
+      "name": "test3",
+      "email": "test3@example.com",
+      "password": "password3",
+      "termsConditionsAccepted": true,
       "initUserType":"parent-guardian",
-    "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+    "dob": "1982-01-31T22:00:00.000Z",
+    "country": {
+        "countryName": "Ireland",
+        "countryNumber": "372",
+        "continent": "EU",
+        "alpha2": "IE",
+        "alpha3": "IRL"
+    },
+    "city": {},
+    "countryname": "Ireland",
+    "countrynumber": null,
+    "continent": "EU",
+    "alpha2": "IE",
+    "alpha3": "IRL",
+    "admin1Code": null,
+    "admin1Name": null,
+    "admin2Code": null,
+    "admin2Name": null,
+    "admin3Code": null,
+    "admin3Name": null,
+    "admin4Code": null,
+    "admin4Name": null,
+    "state": {},
+    "county": {},
+    "placeName": "Test"
+    }
   },
   {
-    "name": "test4",
-    "email": "test4@example.com",
-    "password": "password4",
-    "termsConditionsAccepted": true,
+    "user": {
+      "name": "test4",
+      "email": "test4@example.com",
+      "password": "password4",
+      "termsConditionsAccepted": true,
       "initUserType":"mentor",
-    "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      },
+      "city": {},
+      "countryname": "Ireland",
+      "countrynumber": null,
+      "continent": "EU",
+      "alpha2": "IE",
+      "alpha3": "IRL",
+      "admin1Code": null,
+      "admin1Name": null,
+      "admin2Code": null,
+      "admin2Name": null,
+      "admin3Code": null,
+      "admin3Name": null,
+      "admin4Code": null,
+      "admin4Name": null,
+      "state": {},
+      "county": {},
+      "placeName": "Test"
+    }
   },
   {
-    "name": "test5",
-    "email": "test5@example.com",
-    "password": "password5",
-    "termsConditionsAccepted": true,
+    "user": {
+      "name": "test5",
+      "email": "test5@example.com",
+      "password": "password5",
+      "termsConditionsAccepted": true,
       "initUserType":"champion",
-    "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      },
+      "city": {},
+      "countryname": "Ireland",
+      "countrynumber": null,
+      "continent": "EU",
+      "alpha2": "IE",
+      "alpha3": "IRL",
+      "admin1Code": null,
+      "admin1Name": null,
+      "admin2Code": null,
+      "admin2Name": null,
+      "admin3Code": null,
+      "admin3Name": null,
+      "admin4Code": null,
+      "admin4Name": null,
+      "state": {},
+      "county": {},
+      "placeName": "Test"
+    }
   }
 ]
