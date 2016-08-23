@@ -21,6 +21,7 @@ module.exports = function (options) {
   ];
 
   var mentorPublicFields = [
+    'id',
     'name',
     'languagesSpoken',
     'programmingLanguages',
@@ -56,6 +57,7 @@ module.exports = function (options) {
   ];
 
   var parentGuardianPublicFields = [
+    'id',
     'name',
     'languagesSpoken',
     'programmingLanguages',
