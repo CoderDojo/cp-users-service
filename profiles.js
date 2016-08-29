@@ -173,6 +173,7 @@ module.exports = function (options) {
       if (profile.id) {
         profile = _.omit(profile, immutableFields);
       }
+
       seneca.make$(ENTITY_NS).save$(profile, function (err, profile) {
         if (err) return done(err);
         if (process.env.SALESFORCE_ENABLED === 'true') {
@@ -183,7 +184,10 @@ module.exports = function (options) {
             }
           });
         }
-
+        //  TODO: use seneca-mesh to avoid coupling the integration to the user
+        if (args.user && !_.isEmpty(profile.email) && args.user.lmsId && args.user.email !== profile.email) {
+          seneca.act({role: 'cd-users', cmd: 'update_lms_user', lmsId: args.user.lmsId, userEmail: args.user.email, profileEmail: profile.email});
+        }
         syncUserObj(profile, function (err, res) {
           if (err) return done(err);
 
