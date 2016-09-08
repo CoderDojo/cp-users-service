@@ -125,11 +125,7 @@ module.exports = function(){
         role: 'cdf-admin',
       }],
       'get_lms_link': [{
-        role: 'basic-user',
-        userType: 'champion'
-      }, {
-        role: 'basic-user',
-        userType: 'mentor'
+        role: 'basic-user'
       }],
   };
 };
