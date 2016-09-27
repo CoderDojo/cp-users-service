@@ -571,7 +571,7 @@ module.exports = function (options) {
     function resolveChildren (profile, done) {
       var resolvedChildren = [];
 
-      if (!_.isEmpty(profile.children) && (_.contains(profile.userTypes, 'parent-guardian') || _.contains(profile.user.roles, 'cdf-admin'))) {
+      if (!_.isEmpty(profile.children)) {
         async.each(profile.children, function (child, callback) {
           seneca.make$(ENTITY_NS).list$({userId: child}, function (err, results) {
             if (err) {
