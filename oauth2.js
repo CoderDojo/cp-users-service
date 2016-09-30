@@ -171,22 +171,26 @@ module.exports = function (options) {
   }
 
   function cmd_profile (args, done) {
-    _getUserForAccessToken(args.access_token, function (err, user) {
-      if (err) return done(null, {error: err, http$: {status: 500}});
-      var profile = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        isAdmin: _.contains(user.roles, 'cdf-admin'),
-        isChampion: user.isChampion,
-        isYouthOver13: user.isYouthOver13,
-        isMentor: user.isMentor,
-        isParent: user.isParent,
-        isVerified: user.isVerified,
-        profileId: user.profileId
-      };
-      return done(null, profile);
-    });
+    if (args.token) {
+      _getUserForAccessToken(args.access_token, function (err, user) {
+        if (err) return done(null, {error: err, http$: {status: 500}});
+        var profile = {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          isAdmin: _.contains(user.roles, 'cdf-admin'),
+          isChampion: user.isChampion,
+          isYouthOver13: user.isYouthOver13,
+          isMentor: user.isMentor,
+          isParent: user.isParent,
+          isVerified: user.isVerified,
+          profileId: user.profileId
+        };
+        return done(null, profile);
+      });
+    } else {
+      return done(null, {error: 'Please provide a token', http$: {status: 422}});
+    }
   }
 
   return {
