@@ -31,10 +31,8 @@ module.exports = function(){
         //NOTE: isn't perm a customVal now ?
         customValidator: [{
           role: 'cd-dojos',
-          cmd: 'is_having_perm',
-          param: {
-            perm: 'dojo-admin'
-          }
+          cmd: 'have_permissions',
+          perm: 'dojo-admin'
         }]
       }],
 
