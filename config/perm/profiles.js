@@ -123,19 +123,15 @@ module.exports = function(){
       { role: 'basic-user',
         customValidator: [{
           role: 'cd-dojos',
-          cmd: 'is_having_perm',
-          param: {
-            perm: 'dojo-admin'
-          }
+          cmd: 'have_permissions',
+          perm: 'dojo-admin'
         }]
       },
       { role: 'basic-user',
         customValidator: [{
           role: 'cd-dojos',
-          cmd: 'is_having_perm',
-          param: {
-            perm: 'ticketing-admin'
-          }
+          cmd: 'have_permissions',
+          perm: 'ticketing-admin'
         }]
       },
       { role: 'basic-user',
