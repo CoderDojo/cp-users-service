@@ -21,6 +21,7 @@ module.exports = function(){
       }, {
         role: 'basic-user',
         userType: 'champion',
+        extendedUserTypes: true,
         customValidator: [{
           role: 'cd-dojos',
           cmd: 'belongs_to_dojo'
@@ -116,7 +117,26 @@ module.exports = function(){
       }],
       'load_parents_for_user': [
       { role: 'basic-user',
-        userType: 'champion'
+        userType: 'champion',
+        extendedUserTypes: true
+      },
+      { role: 'basic-user',
+        customValidator: [{
+          role: 'cd-dojos',
+          cmd: 'is_having_perm',
+          param: {
+            perm: 'dojo-admin'
+          }
+        }]
+      },
+      { role: 'basic-user',
+        customValidator: [{
+          role: 'cd-dojos',
+          cmd: 'is_having_perm',
+          param: {
+            perm: 'ticketing-admin'
+          }
+        }]
       },
       { role: 'basic-user',
         customValidator: [{
@@ -137,7 +157,8 @@ module.exports = function(){
       },
       {
         role: 'basic-user',
-        userType: 'champion'
+        userType: 'champion',
+        extendedUserTypes: true
       },
       {
         role: 'basic-user',
@@ -153,7 +174,8 @@ module.exports = function(){
         userType: 'parent-guardian'
       },
       { role: 'basic-user',
-        userType: 'champion'
+        userType: 'champion',
+        extendedUserTypes: true
       },
       { role: 'basic-user',
         customValidator:[ {

@@ -19,10 +19,6 @@ module.exports = function(){
           cmd: 'is_parent_of',
         }]
       }],
-      'list': [{
-        role: 'basic-user',
-        userTypes: 'champion'
-      }],
       'register': [{
         role: 'none',
       }],
@@ -82,6 +78,7 @@ module.exports = function(){
       }, {
         role: 'basic-user',
         userType: 'champion',
+        extendedUserTypes: true,
         customValidator: [{
           role: 'cd-dojos',
           cmd: 'belongs_to_dojo'
