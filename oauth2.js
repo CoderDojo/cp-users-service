@@ -162,7 +162,6 @@ module.exports = function (options) {
     //  TODO : check if code exists maybe ?
     _getAccessTokenForAccessCode(args.code, function (err, access_token) {
       if (err) return done(null, {error: err, http$: {status: 500}});
-
       var resp = {
         'access_token': access_token
       };
@@ -171,7 +170,7 @@ module.exports = function (options) {
   }
 
   function cmd_profile (args, done) {
-    if (args.token) {
+    if (args.access_token) {
       _getUserForAccessToken(args.access_token, function (err, user) {
         if (err) return done(null, {error: err, http$: {status: 500}});
         var profile = {
