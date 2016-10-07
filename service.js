@@ -44,6 +44,10 @@ require('./migrate-psql-db.js')(function (err) {
               'users': config['users'],
               'logger': log.logger
             });
+  seneca.use(require('./user-profile.js'),
+            { postgresql: config['postgresql-store'],
+              logger: log.logger
+            });
   seneca.use(require('./nodebb-api.js'), config.nodebb);
   seneca.use(require('cp-permissions-plugin'), {
     config: __dirname + '/config/permissions'
