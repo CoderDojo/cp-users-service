@@ -551,7 +551,7 @@ module.exports = function (options) {
       if (loginResponse.user.roles.indexOf('cdf-admin') > -1) {
         return next(null, loginResponse);
       } else {
-        return done(null, {ok: false});
+        return done(null, {ok: false, why: 'user not allowed'});
       }
     }
 
