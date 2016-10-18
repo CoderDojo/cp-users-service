@@ -5,8 +5,6 @@ machine:
     LANG: en_US.utf8
 dependencies:
   pre:
-    - curl -O https://download.srcclr.com/srcclr-2.5.11-linux.tgz
-    - tar -xzf srcclr-2.5.11-linux.tgz
     - gem install mime-types -v 2.6.2
     - gem install rest-client -v 1.8
     - gem install crowdin-cli
@@ -16,8 +14,9 @@ dependencies:
     - npm install
 test:
   override:
-    - ./srcclr-2.5.11/bin/srcclr scan
     - npm run test
+  post:
+    - curl -sSL https://download.sourceclear.com/ci.sh | bash
 deployment:
   production:
     branch: master
