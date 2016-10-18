@@ -29,6 +29,7 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'load_dojo_admins_for_user'}, cmd_load_dojo_admins_for_user);
   seneca.add({role: plugin, cmd: 'record_login'}, cmd_record_login);
   seneca.add({role: 'user', cmd: 'login'}, cmd_login);
+  seneca.add({role: 'user', cmd: 'cdf_login'}, cmd_cdf_login);
   seneca.add({role: plugin, cmd: 'load_prev_founder'}, cmd_load_prev_founder);
   seneca.add({role: plugin, cmd: 'kpi_number_of_youths_registered'}, cmd_kpi_number_of_youths_registered);
   seneca.add({role: plugin, cmd: 'kpi_number_of_champions_and_mentors_registered'}, cmd_kpi_number_of_champions_and_mentors_registered);
@@ -525,6 +526,40 @@ module.exports = function (options) {
         seneca.act({role: plugin, cmd: 'record_login'}, {data: loginResponse}, next);
       }
     });
+  }
+
+  function cmd_cdf_login (args, done) {
+    async.waterfall([
+      login,
+      verifyPermissions,
+      recordLogin
+    ], function (err, loginResponse) {
+      if (err) return done(err);
+      return done(null, loginResponse);
+    });
+
+    function login (next) {
+      seneca.act({role: 'user', cmd: 'login', email: args.email, password: args.password}, function (err, loginResponse) {
+        if (err) return done(err);
+        if (!loginResponse.ok || !loginResponse.user) return done(null, loginResponse);
+        return next(null, loginResponse);
+      });
+    }
+
+    function verifyPermissions (loginResponse, next) {
+      if (loginResponse.user.roles.indexOf('cdf-admin') > -1) {
+        return next(null, loginResponse);
+      } else {
+        return done(null, {ok: false, why: 'user not allowed'});
+      }
+    }
+
+    function recordLogin (loginResponse, next) {
+      seneca.act({role: plugin, cmd: 'record_login'}, {data: loginResponse}, function (err, recorded) {
+        if (err) return done(err);
+        return next(null, loginResponse);
+      });
+    }
   }
 
   function cmd_kpi_number_of_youths_registered (args, done) {
