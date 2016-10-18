@@ -535,7 +535,6 @@ module.exports = function (options) {
       recordLogin
     ], function (err, loginResponse) {
       if (err) return done(err);
-      console.log('cdfLogin', loginResponse);
       return done(null, loginResponse);
     });
 
