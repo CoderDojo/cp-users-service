@@ -51,6 +51,9 @@ module.exports = function (options) {
     this.prior(data, cb);
   });
 
+  // Define patterns for join_request view
+  require('./lib/users/join-request')(seneca, plugin);
+
   function cmd_load_prev_founder (args, done) {
     var seneca = this;
     seneca.act({role: plugin, cmd: 'load', id: args.id}, function (err, user) {
