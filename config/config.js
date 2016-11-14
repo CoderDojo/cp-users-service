@@ -8,7 +8,7 @@ var generator = require('xoauth2').createXOAuth2Generator({
   refreshToken: process.env.GMAIL_REFRESH_TOKEN
 });
 
-module.exports = function () {
+module.exports = function (options) {
   function pgConfig () {
     return {
       name: process.env.POSTGRES_NAME,
@@ -53,12 +53,12 @@ module.exports = function () {
         }
       }
     },
-    'recaptcha_secret_key': process.env.RECAPTCHA_SECRET_KEY,
+    'recaptcha_secret_key': process.env.RECAPTCHA_SECRET_KEY || '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe',
     transport: {
       type: 'web',
       web: {
         timeout: 120000,
-        port: 10303
+        port: options && options.port ? options.port : 10303
       }
     },
     oauth2: {
