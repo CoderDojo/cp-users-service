@@ -15,7 +15,6 @@ var async = require('async');
        createIndependants,
        createDependantsChildren
      ], function (err, users) {
-       console.log('Finished creating users')
        return done(null);
      });
 
@@ -61,7 +60,6 @@ var async = require('async');
          ], cb);
 
        }, function (err, data) {
-         console.log('Finished creating dep users', err, data);
          return wfCb();
        });
 
