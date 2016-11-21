@@ -34,7 +34,9 @@
       "admin4Name": null,
       "state": {},
       "county": {},
-      "placeName": "Test"
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "requiredFieldsComplete": true
     }
   },
   {
@@ -72,7 +74,9 @@
       "admin4Name": null,
       "state": {},
       "county": {},
-      "placeName": "Test"
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "requiredFieldsComplete": true
     }
   },
   {
@@ -110,7 +114,9 @@
       "admin4Name": null,
       "state": {},
       "county": {},
-      "placeName": "Test"
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "requiredFieldsComplete": true
     }
   },
   {
@@ -148,7 +154,9 @@
       "admin4Name": null,
       "state": {},
       "county": {},
-      "placeName": "Test"
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "requiredFieldsComplete": true
     }
   },
   {
@@ -186,7 +194,10 @@
       "admin4Name": null,
       "state": {},
       "county": {},
-      "placeName": "Test"
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "address" : "CHQ building, Dublin 1",
+      "requiredFieldsComplete": true
     }
   },
   {
@@ -224,7 +235,10 @@
       "admin4Name": null,
       "state": {},
       "county": {},
-      "placeName": "Test"
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "address" : "CHQ building, Dublin 1",
+      "requiredFieldsComplete": true
     }
   },{
     "user": {
@@ -261,7 +275,10 @@
       "admin4Name": null,
       "state": {},
       "county": {},
-      "placeName": "Test"
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "address" : "CHQ building, Dublin 1",
+      "requiredFieldsComplete": true
     }
   },{
     "user": {
@@ -298,7 +315,10 @@
       "admin4Name": null,
       "state": {},
       "county": {},
-      "placeName": "Test"
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "address" : "CHQ building, Dublin 1",
+      "requiredFieldsComplete": true
     }
   },{
     "user": {
@@ -335,7 +355,10 @@
       "admin4Name": null,
       "state": {},
       "county": {},
-      "placeName": "Test"
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "address" : "CHQ building, Dublin 1",
+      "requiredFieldsComplete": true
     }
   },
   {
@@ -373,7 +396,10 @@
       "admin4Name": null,
       "state": {},
       "county": {},
-      "placeName": "Test"
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "address" : "CHQ building, Dublin 1",
+      "requiredFieldsComplete": true
     }
   }
 ]
