@@ -84,7 +84,8 @@ module.exports = function (options) {
         if (userProfile.userType === 'champion') user.isChampion = true;
         if (userProfile.userType === 'attendee-o13') user.isYouthOver13 = true;
         if (userProfile.userType === 'mentor') user.isMentor = true;
-        if (userProfile.userType === 'parent-guardian') user.isParent = true;
+        if (userProfile.userType === 'parent-guardian') user.isAdult = true;
+        if (user.isAdult && userProfile.children && userProfile.children.length > 0) user.isParent = true;
 
         seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: user.id}}, function (err, usersDojos) {
           if (err) return done(err);
@@ -182,6 +183,7 @@ module.exports = function (options) {
           isYouthOver13: user.isYouthOver13,
           isMentor: user.isMentor,
           isParent: user.isParent,
+          isAdult: user.isAdult,
           isVerified: user.isVerified,
           profileId: user.profileId
         };
