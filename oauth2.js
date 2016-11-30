@@ -85,7 +85,7 @@ module.exports = function (options) {
         if (userProfile.userType === 'attendee-o13') user.isYouthOver13 = true;
         if (userProfile.userType === 'mentor') user.isMentor = true;
         if (userProfile.userType === 'parent-guardian') user.isAdult = true;
-        if (user.isAdult && userProfile.children && userProfile.children.length > 0) user.isParent = true;
+        if (userProfile.children && userProfile.children.length > 0) user.isParent = true;
 
         seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: user.id}}, function (err, usersDojos) {
           if (err) return done(err);
