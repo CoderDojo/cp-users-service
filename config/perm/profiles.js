@@ -20,11 +20,9 @@ module.exports = function(){
         }]
       }, {
         role: 'basic-user',
-        userType: 'champion',
-        extendedUserTypes: true,
         customValidator: [{
           role: 'cd-dojos',
-          cmd: 'belongs_to_dojo'
+          cmd: 'belongs_to_dojo' // internally checks if is a dojo-admin
         }]
       }],
       'load': [{

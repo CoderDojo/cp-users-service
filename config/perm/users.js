@@ -4,7 +4,11 @@ module.exports = function(){
   return {
       'load': [{
         role: 'basic-user',
-        userTypes: 'champion'
+        customValidator: [{
+          role: 'cd-dojos',
+          cmd: 'have_permissions',
+          perm: 'dojo-admin'
+        }]
       },
       { role: 'basic-user',
         customValidator: [{
@@ -13,7 +17,7 @@ module.exports = function(){
         }]
       },
       { role: 'basic-user',
-        userType: 'parent',
+        userType: 'parent-guardian',
         customValidator: [{
           role: 'cd-users',
           cmd: 'is_parent_of',
@@ -44,7 +48,7 @@ module.exports = function(){
         }]
       },
       { role: 'basic-user',
-        userType: 'parent',
+        userType: 'parent-guardian',
         customValidator: [{
           role: 'cd-users',
           cmd: 'is_parent_of'
@@ -69,17 +73,20 @@ module.exports = function(){
 
       'load_champions_for_user': [{
         role: 'basic-user',
-        customValidator: [
-          { role: 'cd-users',
+        customValidator: [{
+          role: 'cd-users',
             cmd: 'is_self'
           }]
-      }, {
-        role: 'basic-user',
-        userType: 'champion',
-        extendedUserTypes: true,
-        customValidator: [{
-          role: 'cd-dojos',
-          cmd: 'belongs_to_dojo'
+        },
+        { role: 'basic-user',
+          extendedUserTypes: true,
+          customValidator: [{
+            role: 'cd-dojos',
+            cmd: 'belongs_to_dojo'
+        },
+        { role: 'cd-dojos',
+          cmd: 'have_permissions',
+          perm: 'dojo-admin'
         }]
       }],
       'load_dojo_admins_for_user': [{
@@ -90,7 +97,6 @@ module.exports = function(){
           }]
       }, {
         role: 'basic-user',
-        userType: 'champion',
         customValidator: [{
           role: 'cd-dojos',
           cmd: 'belongs_to_dojo'
