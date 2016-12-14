@@ -1,10 +1,11 @@
 'use strict';
 
 var seneca = require('seneca')(),
-    config = require(__dirname + '/config/config.js')(),
+    _      = require('lodash'),
+    config = _.pick((require('../config/config.js')()),
+     ['postgresql-store', 'recaptcha_secret_key', 'transport', 'users', 'strict']),
     util   = require('util'),
     async  = require('async'),
-    _      = require('lodash'),
     fs     = require('fs'),
     expect = require('chai').expect,
     lab = exports.lab = require('lab').script();

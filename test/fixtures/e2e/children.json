@@ -1,0 +1,35 @@
+[{
+  "parentEmail": "parent1@example.com",
+  "data": {
+    "name": "child1",
+    "alias": "nick1",
+    "dob": "2010-01-31T22:00:00.000Z",
+    "email": "",
+    "userTypes": ["attendee-u13"],
+    "requiredFieldsComplete": false,
+    "password": ""
+  }
+},
+{
+  "parentEmail": "parent1@example.com",
+  "data": {
+    "name": "child2",
+    "alias": "nick2",
+    "dob": "2002-01-31T22:00:00.000Z",
+    "email": "child2@example.com",
+    "userTypes": ["attendee-o13"],
+    "requiredFieldsComplete": false,
+    "password": "imakitten"
+  }
+},
+{
+  "parentEmail": "parent2@example.com",
+  "data": {
+    "name": "child3",
+    "alias": "nick3",
+    "dob": "2010-01-31T22:00:00.000Z",
+    "email": "child3@example.com",
+    "userTypes": ["attendee-o13"],
+    "password": ""
+  }
+}]
