@@ -121,6 +121,7 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'change_avatar'}, cmd_change_avatar);
   seneca.add({role: plugin, cmd: 'get_avatar'}, cmd_get_avatar);
   seneca.add({role: plugin, cmd: 'load_parents_for_user'}, cmd_load_parents_for_user);
+  seneca.add({role: plugin, cmd: 'load_children_for_user'}, cmd_load_children_for_user);
   seneca.add({role: plugin, cmd: 'invite_ninja'}, cmd_invite_ninja);
   seneca.add({role: plugin, cmd: 'approve_invite_ninja'}, cmd_approve_invite_ninja);
   seneca.add({role: plugin, cmd: 'ninjas_for_user'}, cmd_ninjas_for_user);
@@ -991,6 +992,23 @@ module.exports = function (options) {
       }, function (err, parents) {
         if (err) return done(err);
         return done(null, parents);
+      });
+    });
+  }
+
+  function cmd_load_children_for_user (args, done) {
+    var seneca = this;
+    var userId = args.userId;
+
+    seneca.act({role: plugin, cmd: 'list', query: {userId: userId}}, function (err, response) {
+      if (err) return done(err);
+      var parentProfile = response[0];
+      if (!parentProfile || !parentProfile.children) return done();
+      async.map(parentProfile.children, function (childUserId, cb) {
+        seneca.act({role: 'cd-users', cmd: 'load', id: childUserId, user: args.user}, cb);
+      }, function (err, children) {
+        if (err) return done(err);
+        return done(null, children);
       });
     });
   }
