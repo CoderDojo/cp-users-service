@@ -146,6 +146,31 @@ module.exports = function(){
           cmd: 'is_parent_of'
         }]
       }],
+      'load_children_for_user': [{
+        role: 'basic-user',
+        userType: 'champion',
+        extendedUserTypes: true
+      }, {
+        role: 'basic-user',
+        customValidator: [{
+          role: 'cd-dojos',
+          cmd: 'have_permissions',
+          perm: 'dojo-admin'
+        }]
+      }, {
+        role: 'basic-user',
+        customValidator: [{
+          role: 'cd-dojos',
+          cmd: 'have_permissions',
+          perm: 'ticketing-admin'
+        }]
+      }, {
+        role: 'basic-user',
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_self'
+        }]
+      }],
 
       'invite_ninja': [{
         role: 'basic-user',
