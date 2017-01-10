@@ -42,6 +42,7 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'change_avatar'}, cmd_change_avatar);
   seneca.add({role: plugin, cmd: 'get_avatar'}, cmd_get_avatar);
   seneca.add({role: plugin, cmd: 'load_parents_for_user'}, cmd_load_parents_for_user);
+  seneca.add({role: plugin, cmd: 'load_children_for_user'}, require('./lib/profiles/load-children-for-user'));
   seneca.add({role: plugin, cmd: 'invite_ninja'}, cmd_invite_ninja);
   seneca.add({role: plugin, cmd: 'approve_invite_ninja'}, cmd_approve_invite_ninja);
   seneca.add({role: plugin, cmd: 'ninjas_for_user'}, cmd_ninjas_for_user);

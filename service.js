@@ -6,6 +6,7 @@ if (process.env.NEW_RELIC_ENABLED === 'true') require('newrelic');
 
 var config = require('./config/config.js')();
 var seneca = require('seneca')(config);
+var _ = require('lodash');
 var store = require('seneca-postgresql-store');
 var service = 'cp-users-service';
 var log = require('cp-logs-lib')({name: service, level: 'warn'});
@@ -16,7 +17,7 @@ var dgram = require('dgram');
 seneca.log.info('using config', JSON.stringify(config, null, 4));
 
 seneca.options(config);
-
+seneca.decorate('customValidatorLogFormatter', require('./lib/custom-validator-log-formatter'));
 seneca.use(store, config['postgresql-store']);
 if (process.env.MAILTRAP_ENABLED === 'true') {
   seneca.use('mail', config.mailtrap);
@@ -32,16 +33,6 @@ function shutdown (err) {
   }
   process.exit(0);
 }
-
-seneca.ready(function (err) {
-  if (err) return shutdown(err);
-  var message = new Buffer(service);
-  var client = dgram.createSocket('udp4');
-  client.send(message, 0, message.length, 11404, 'localhost', function (err, bytes) {
-    if (err) return shutdown(err);
-    client.close();
-  });
-});
 
 require('./migrate-psql-db.js')(function (err) {
   if (err) {
@@ -79,4 +70,48 @@ require('./migrate-psql-db.js')(function (err) {
   process.on('uncaughtException', shutdown);
 
   require('./network.js')(seneca);
+
+  seneca.ready(function (err) {
+    if (err) return shutdown(err);
+    var message = new Buffer(service);
+    var client = dgram.createSocket('udp4');
+    client.send(message, 0, message.length, 11404, 'localhost', function (err, bytes) {
+      if (err) return shutdown(err);
+      client.close();
+    });
+
+    var escape = require('seneca-postgresql-store/lib/relational-util').escapeStr;
+    ['load', 'list'].forEach(function (cmd) {
+      seneca.wrap('role: entity, cmd: ' + cmd, function filterFields (args, cb) {
+        try {
+          ['limit$', 'skip$'].forEach(function (field) {
+            if (args.q[field] && args.q[field] !== 'NULL' && !/^[0-9]+$/g.test(args.q[field] + '')) {
+              throw new Error('Expect limit$, skip$ to be a number');
+            }
+          });
+          if (args.q.sort$) {
+            if (args.q.sort$ && typeof args.q.sort$ === 'object') {
+              var order = args.q.sort$;
+              _.each(order, function (ascdesc, column) {
+                if (!/^[a-zA-Z0-9_]+$/g.test(column)) {
+                  throw new Error('Unexpect characters in sort$');
+                }
+              });
+            } else {
+              throw new Error('Expect sort$ to be an object');
+            }
+          }
+          if (args.q.fields$) {
+            args.q.fields$.forEach(function (field, index) {
+              args.q.fields$[index] = '\"' + escape(field) + '\"';
+            });
+          }
+          this.prior(args, cb);
+        } catch (err) {
+          // cb to avoid seneca-transport to hang while waiting for timeout error
+          return cb(err);
+        }
+      });
+    });
+  });
 });
