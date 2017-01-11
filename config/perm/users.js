@@ -26,16 +26,6 @@ module.exports = function(){
         role: 'cdf-admin',
       }],
 
-      //  TODO : check if own dojo members?
-      'get_users_by_emails': [{ role: 'basic-user',
-        //NOTE: isn't perm a customVal now ?
-        customValidator: [{
-          role: 'cd-dojos',
-          cmd: 'have_permissions',
-          perm: 'dojo-admin'
-        }]
-      }],
-
       'update': [{
         role: 'basic-user',
         customValidator: [{
@@ -119,8 +109,11 @@ module.exports = function(){
       'kpi_number_of_youth_females_registered': [{
         role: 'cdf-admin',
       }],
+      'get_users_by_emails': [{
+        role: 'cdf-admin',
+      }],
       'get_lms_link': [{
         role: 'basic-user'
-      }],
+      }]
   };
 };
