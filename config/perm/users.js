@@ -13,7 +13,7 @@ module.exports = function(){
         }]
       },
       { role: 'basic-user',
-        userType: 'parent',
+        userType: 'parent-guardian',
         customValidator: [{
           role: 'cd-users',
           cmd: 'is_parent_of',
@@ -34,7 +34,7 @@ module.exports = function(){
         }]
       },
       { role: 'basic-user',
-        userType: 'parent',
+        userType: 'parent-guardian',
         customValidator: [{
           role: 'cd-users',
           cmd: 'is_parent_of'
@@ -65,6 +65,12 @@ module.exports = function(){
           }]
       }, {
         role: 'basic-user',
+        customValidator: [
+          { role: 'cd-users',
+            cmd: 'is_parent_of'
+          }]
+      }, {
+        role: 'basic-user',
         userType: 'champion',
         extendedUserTypes: true,
         customValidator: [{
@@ -77,6 +83,12 @@ module.exports = function(){
         customValidator: [
           { role: 'cd-users',
             cmd: 'is_self'
+          }]
+      }, {
+        role: 'basic-user',
+        customValidator: [
+          { role: 'cd-users',
+            cmd: 'is_parent_of'
           }]
       }, {
         role: 'basic-user',
