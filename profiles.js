@@ -177,6 +177,7 @@ module.exports = function (options) {
         profile.userType = data && data.user && data.user.initUserType && data.user.initUserType.name;
 
         profile = _.omit(profile, ['userTypes', 'password']);
+        _.defaults(profile, {private: true});
         var userId = args.user ? args.user.id : null;
         saveChild(profile, userId, done);
       });

@@ -6,24 +6,7 @@ module.exports = function(){
         role: 'basic-user',
       }],
       'user_profile_data': [{
-        role: 'basic-user',
-        customValidator: [{
-          role: 'cd-users',
-          cmd: 'is_self'
-        }]
-      }, {
-        role: 'basic-user',
-        userType: 'parent-guardian',
-        customValidator: [{
-          role: 'cd-users',
-          cmd: 'is_parent_of'
-        }]
-      }, {
-        role: 'basic-user',
-        customValidator: [{
-          role: 'cd-dojos',
-          cmd: 'belongs_to_dojo' // internally checks if is a dojo-admin
-        }]
+        role: 'none',
       }],
       'load': [{
         role: 'basic-user',

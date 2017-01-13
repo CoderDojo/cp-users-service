@@ -172,10 +172,7 @@ module.exports = function (options) {
           var userType = 'attendee-o13';
           if (user.initUserType) userType = user.initUserType.name;
 
-          profile.userId = user.id;
-          profile.name = user.name;
-          profile.email = user.email;
-          profile.userType = userType;
+          _.defaults(profile, {private: true, userId: user.id, name: user.name, email: user.email, userType: userType});
 
           seneca.act({role: 'cd-profiles', cmd: 'save', profile: profile}, function (err, profile) {
             if (err) return done(err);
