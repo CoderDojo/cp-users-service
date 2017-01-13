@@ -2,15 +2,7 @@
 
 module.exports = function(){
   return {
-      'load': [{
-        role: 'basic-user',
-        customValidator: [{
-          role: 'cd-dojos',
-          cmd: 'have_permissions',
-          perm: 'dojo-admin'
-        }]
-      },
-      { role: 'basic-user',
+      'load': [{ role: 'basic-user',
         customValidator: [{
           role: 'cd-users',
           cmd: 'is_self'
@@ -69,10 +61,9 @@ module.exports = function(){
           }]
         },
         { role: 'basic-user',
-          extendedUserTypes: true,
           customValidator: [{
             role: 'cd-dojos',
-            cmd: 'have_permissions',
+            cmd: 'have_permissions_on_user',
             perm: 'dojo-admin'
           }]
       }, {
@@ -96,10 +87,10 @@ module.exports = function(){
           }]
       }, {
         role: 'basic-user',
-        userType: 'champion',
         customValidator: [{
           role: 'cd-dojos',
-          cmd: 'belongs_to_dojo'
+          cmd: 'have_permissions_on_user',
+          perm: 'dojo-admin'
         }]
       }],
       'record_login': [{
