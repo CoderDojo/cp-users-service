@@ -104,14 +104,14 @@ module.exports = function(){
       { role: 'basic-user',
         customValidator: [{
           role: 'cd-dojos',
-          cmd: 'have_permissions',
+          cmd: 'have_permissions_on_user',
           perm: 'dojo-admin'
         }]
       },
       { role: 'basic-user',
         customValidator: [{
           role: 'cd-dojos',
-          cmd: 'have_permissions',
+          cmd: 'have_permissions_on_user',
           perm: 'ticketing-admin'
         }]
       },
@@ -135,14 +135,14 @@ module.exports = function(){
         role: 'basic-user',
         customValidator: [{
           role: 'cd-dojos',
-          cmd: 'have_permissions',
+          cmd: 'have_permissions_on_user',
           perm: 'dojo-admin'
         }]
       }, {
         role: 'basic-user',
         customValidator: [{
           role: 'cd-dojos',
-          cmd: 'have_permissions',
+          cmd: 'have_permissions_on_user',
           perm: 'ticketing-admin'
         }]
       }, {
@@ -159,8 +159,7 @@ module.exports = function(){
       },
       {
         role: 'basic-user',
-        userType: 'champion',
-        extendedUserTypes: true
+        userType: 'champion'
       },
       {
         role: 'basic-user',

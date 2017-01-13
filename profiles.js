@@ -677,7 +677,6 @@ module.exports = function (options) {
       // Ninja should have attendee-o13 user type.
       async.series([
         validateRequestingUserIsNotParentOfNinja,
-        validateRequestingUserIsParent,
         validateNinjaEmailExists,
         validateNinjaHasAttendeeO13UserType
       ], done);
@@ -689,28 +688,6 @@ module.exports = function (options) {
           var userId = args.user ? args.user.id : null;
           if (ninjaProfile && _.contains(ninjaProfile.parents, userId)) return done(new Error('User is already a parent of this Ninja'));
           return done();
-        });
-      }
-
-      function validateRequestingUserIsParent (done) {
-        var userId = args.user ? args.user.id : null;
-        seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: userId}}, function (err, usersDojos) {
-          if (err) return done(err);
-          if (_.isEmpty(usersDojos)) {
-            // Not yet a member of any Dojo, check the user type in their profile.
-            seneca.act({role: plugin, cmd: 'list'}, {query: {userId: userId}}, function (err, parentProfiles) {
-              if (err) return done(err);
-              var parentProfile = parentProfiles[0];
-              if (parentProfile.userType === 'parent-guardian') return done();
-              return done(new Error('You must be a parent to invite a Ninja'));
-            });
-          } else {
-            var parentTypeFound = _.find(usersDojos, function (parentUserDojo) {
-              return _.contains(parentUserDojo.userTypes, 'parent-guardian');
-            });
-            if (parentTypeFound) return done();
-            return done(new Error('You must be a parent to invite a Ninja'));
-          }
         });
       }
 

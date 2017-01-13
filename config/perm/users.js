@@ -30,16 +30,6 @@ module.exports = function(){
         role: 'cdf-admin',
       }],
 
-      //  TODO : check if own dojo members?
-      'get_users_by_emails': [{ role: 'basic-user',
-        //NOTE: isn't perm a customVal now ?
-        customValidator: [{
-          role: 'cd-dojos',
-          cmd: 'have_permissions',
-          perm: 'dojo-admin'
-        }]
-      }],
-
       'update': [{
         role: 'basic-user',
         customValidator: [{
@@ -82,12 +72,15 @@ module.exports = function(){
           extendedUserTypes: true,
           customValidator: [{
             role: 'cd-dojos',
-            cmd: 'belongs_to_dojo'
-        },
-        { role: 'cd-dojos',
-          cmd: 'have_permissions',
-          perm: 'dojo-admin'
-        }]
+            cmd: 'have_permissions',
+            perm: 'dojo-admin'
+          }]
+      }, {
+        role: 'basic-user',
+        customValidator: [
+          { role: 'cd-users',
+            cmd: 'is_parent_of'
+          }]
       }],
       'load_dojo_admins_for_user': [{
         role: 'basic-user',
@@ -97,6 +90,13 @@ module.exports = function(){
           }]
       }, {
         role: 'basic-user',
+        customValidator: [
+          { role: 'cd-users',
+            cmd: 'is_parent_of'
+          }]
+      }, {
+        role: 'basic-user',
+        userType: 'champion',
         customValidator: [{
           role: 'cd-dojos',
           cmd: 'belongs_to_dojo'
@@ -125,8 +125,11 @@ module.exports = function(){
       'kpi_number_of_youth_females_registered': [{
         role: 'cdf-admin',
       }],
+      'get_users_by_emails': [{
+        role: 'cdf-admin',
+      }],
       'get_lms_link': [{
         role: 'basic-user'
-      }],
+      }]
   };
 };
