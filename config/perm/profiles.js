@@ -178,8 +178,7 @@ module.exports = function(){
       },
       {
         role: 'basic-user',
-        userType: 'champion',
-        extendedUserTypes: true
+        userType: 'champion'
       },
       {
         role: 'basic-user',
