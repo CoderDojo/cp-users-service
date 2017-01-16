@@ -96,61 +96,12 @@ module.exports = function(){
       'get_avatar': [{
         role: 'none',
       }],
-      'load_parents_for_user': [
-      { role: 'basic-user',
-        userType: 'champion',
-        extendedUserTypes: true
-      },
-      { role: 'basic-user',
-        customValidator: [{
-          role: 'cd-dojos',
-          cmd: 'have_permissions_on_user',
-          perm: 'dojo-admin'
-        }]
-      },
-      { role: 'basic-user',
-        customValidator: [{
-          role: 'cd-dojos',
-          cmd: 'have_permissions_on_user',
-          perm: 'ticketing-admin'
-        }]
-      },
-      { role: 'basic-user',
-        customValidator: [{
-          role: 'cd-users',
-          cmd: 'is_self'
-        }]
-      },
-      { role: 'basic-user',
-        customValidator: [{
-          role: 'cd-users',
-          cmd: 'is_parent_of'
-        }]
+      // Relies on user-profile-data data scoping
+      'load_parents_for_user': [{
+        role: 'basic-user'
       }],
       'load_children_for_user': [{
-        role: 'basic-user',
-        userType: 'champion',
-        extendedUserTypes: true
-      }, {
-        role: 'basic-user',
-        customValidator: [{
-          role: 'cd-dojos',
-          cmd: 'have_permissions_on_user',
-          perm: 'dojo-admin'
-        }]
-      }, {
-        role: 'basic-user',
-        customValidator: [{
-          role: 'cd-dojos',
-          cmd: 'have_permissions_on_user',
-          perm: 'ticketing-admin'
-        }]
-      }, {
-        role: 'basic-user',
-        customValidator: [{
-          role: 'cd-users',
-          cmd: 'is_self'
-        }]
+        role: 'basic-user'
       }],
 
       'invite_ninja': [{

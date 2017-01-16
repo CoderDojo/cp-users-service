@@ -41,11 +41,12 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'change_avatar'}, cmd_change_avatar);
   seneca.add({role: plugin, cmd: 'get_avatar'}, cmd_get_avatar);
-  seneca.add({role: plugin, cmd: 'load_parents_for_user'}, cmd_load_parents_for_user);
+  seneca.add({role: plugin, cmd: 'load_parents_for_user'}, require('./lib/profiles/load-parents-for-user'));
   seneca.add({role: plugin, cmd: 'load_children_for_user'}, require('./lib/profiles/load-children-for-user'));
   seneca.add({role: plugin, cmd: 'invite_ninja'}, cmd_invite_ninja);
   seneca.add({role: plugin, cmd: 'approve_invite_ninja'}, cmd_approve_invite_ninja);
-  seneca.add({role: plugin, cmd: 'ninjas_for_user'}, cmd_ninjas_for_user);
+  // Legacy call, replaced by load_children_for_user
+  seneca.add({role: plugin, cmd: 'ninjas_for_user'}, require('./lib/profiles/load-children-for-user'));
   //  Perms
   seneca.add({role: plugin, cmd: 'is_own_profile'}, require('./lib/profiles/is-own-profile'));
 
@@ -636,23 +637,6 @@ module.exports = function (options) {
     profilesEntity.list$(query, done);
   }
 
-  function cmd_load_parents_for_user (args, done) {
-    var seneca = this;
-    var userId = args.userId;
-
-    seneca.act({role: plugin, cmd: 'list', query: {userId: userId}}, function (err, response) {
-      if (err) return done(err);
-      var childProfile = response[0];
-      if (!childProfile || !childProfile.parents) return done();
-      async.map(childProfile.parents, function (parentUserId, cb) {
-        seneca.act({role: 'cd-users', cmd: 'load', id: parentUserId, user: args.user}, cb);
-      }, function (err, parents) {
-        if (err) return done(err);
-        return done(null, parents);
-      });
-    });
-  }
-
   function cmd_invite_ninja (args, done) {
     var seneca = this;
     var ninjaData = args.ninjaData;
@@ -820,26 +804,6 @@ module.exports = function (options) {
         }, done);
       });
     }
-  }
-
-  function cmd_ninjas_for_user (args, done) {
-    var seneca = this;
-    var userId = args.userId;
-
-    if (args.user.id !== userId) return done(null, {ok: false, why: 'Invalid request'});
-
-    seneca.act({role: plugin, cmd: 'list', query: {userId: userId}}, function (err, profiles) {
-      if (err) return done(err);
-      if (_.isEmpty(profiles)) return done(null, []);
-      var parentProfile = profiles[0];
-      if (_.isEmpty(parentProfile.children)) return done(null, []);
-      async.map(parentProfile.children, function (ninjaUserId, cb) {
-        seneca.act({role: plugin, cmd: 'list', query: {userId: ninjaUserId}}, function (err, ninjaProfiles) {
-          if (err) return cb(err);
-          return cb(null, ninjaProfiles[0]);
-        });
-      }, done);
-    });
   }
 
   return {
