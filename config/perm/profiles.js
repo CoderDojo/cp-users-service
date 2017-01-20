@@ -37,28 +37,21 @@ module.exports = function(){
           cmd: 'is_parent_of'
         }]
       }],
-      'save-youth-profile': [{
-        role: 'basic-user',
-        userType: 'parent-guardian'
-      }],
       'save': [{
         role: 'basic-user',
       }],
+      // Create youth
+      'save-youth-profile': [{
+        role: 'basic-user'
+      }],
+      // Update youth
       'update-youth-profile': [{
         role: 'basic-user',
-        userType: 'parent-guardian',
         customValidator: [{
           role: 'cd-users',
           cmd: 'is_parent_of'
         }]
       }, { role: 'basic-user',
-        userType: 'attendee-u13',
-        customValidator: [{
-          role: 'cd-users',
-          cmd: 'is_self'
-        }]
-      }, { role: 'basic-user',
-        userType: 'attendee-o13',
         customValidator: [{
           role: 'cd-users',
           cmd: 'is_self'
