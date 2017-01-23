@@ -122,6 +122,47 @@
   },
   {
     "user": {
+      "name": "parent3",
+      "email": "parent3@example.com",
+      "password": "testparent3",
+      "initUserType": {"name": "parent-guardian", "title": "Parent/Guardian"},
+      "termsConditionsAccepted": true,
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      },
+      "private": false,
+      "userType": "parent-guardian",
+      "city": {},
+      "countryname": "Ireland",
+      "countrynumber": null,
+      "continent": "EU",
+      "alpha2": "IE",
+      "alpha3": "IRL",
+      "admin1Code": null,
+      "admin1Name": null,
+      "admin2Code": null,
+      "admin2Name": null,
+      "admin3Code": null,
+      "admin3Name": null,
+      "admin4Code": null,
+      "admin4Name": null,
+      "state": {},
+      "county": {},
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "requiredFieldsComplete": true
+    }
+  },
+  {
+    "user": {
       "name": "mentor1",
       "email": "mentor1@example.com",
       "password": "testmentor1",
@@ -178,6 +219,47 @@
           "alpha2": "IE",
           "alpha3": "IRL"
       },
+      "userType": "parent-guardian",
+      "city": {},
+      "countryname": "Ireland",
+      "countrynumber": null,
+      "continent": "EU",
+      "alpha2": "IE",
+      "alpha3": "IRL",
+      "admin1Code": null,
+      "admin1Name": null,
+      "admin2Code": null,
+      "admin2Name": null,
+      "admin3Code": null,
+      "admin3Name": null,
+      "admin4Code": null,
+      "admin4Name": null,
+      "state": {},
+      "county": {},
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "requiredFieldsComplete": true
+    }
+  },
+  {
+    "user": {
+      "name": "mentor3",
+      "email": "mentor3@example.com",
+      "password": "testmentor3",
+      "termsConditionsAccepted": true,
+      "initUserType": {"name": "parent-guardian", "title": "Parent/Guardian"},
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      },
+      "private": false,
       "userType": "parent-guardian",
       "city": {},
       "countryname": "Ireland",
@@ -442,5 +524,334 @@
       "address" : "CHQ building, Dublin 1",
       "requiredFieldsComplete": true
     }
+  },
+  {
+    "user": {
+      "name": "champion7",
+      "email": "champion7@example.com",
+      "password": "testchampion7",
+      "termsConditionsAccepted": true,
+      "initUserType": {"name": "parent-guardian", "title": "Parent/Guardian"},
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      },
+      "private": false,
+      "userType":"parent-guardian",
+      "city": {},
+      "countryname": "Ireland",
+      "countrynumber": null,
+      "continent": "EU",
+      "alpha2": "IE",
+      "alpha3": "IRL",
+      "admin1Code": null,
+      "admin1Name": null,
+      "admin2Code": null,
+      "admin2Name": null,
+      "admin3Code": null,
+      "admin3Name": null,
+      "admin4Code": null,
+      "admin4Name": null,
+      "state": {},
+      "county": {},
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "address" : "CHQ building, Dublin 1",
+      "requiredFieldsComplete": true
+    }
+  },
+  {
+    "user": {
+      "name": "parentAdmin1",
+      "email": "parentAdmin1@example.com",
+      "password": "testparentAdmin1",
+      "termsConditionsAccepted": true,
+      "initUserType": {"name": "parent-guardian", "title": "Parent/Guardian"},
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      },
+      "userType":"parent-guardian",
+      "city": {},
+      "countryname": "Ireland",
+      "countrynumber": null,
+      "continent": "EU",
+      "alpha2": "IE",
+      "alpha3": "IRL",
+      "admin1Code": null,
+      "admin1Name": null,
+      "admin2Code": null,
+      "admin2Name": null,
+      "admin3Code": null,
+      "admin3Name": null,
+      "admin4Code": null,
+      "admin4Name": null,
+      "state": {},
+      "county": {},
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "address" : "CHQ building, Dublin 1",
+      "requiredFieldsComplete": true
+    }
+  },
+  {
+    "user": {
+      "name": "parentTicketing1",
+      "email": "parentTicketing1@example.com",
+      "password": "testparentTicketing1",
+      "termsConditionsAccepted": true,
+      "initUserType": {"name": "parent-guardian", "title": "Parent/Guardian"},
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      },
+      "userType":"parent-guardian",
+      "city": {},
+      "countryname": "Ireland",
+      "countrynumber": null,
+      "continent": "EU",
+      "alpha2": "IE",
+      "alpha3": "IRL",
+      "admin1Code": null,
+      "admin1Name": null,
+      "admin2Code": null,
+      "admin2Name": null,
+      "admin3Code": null,
+      "admin3Name": null,
+      "admin4Code": null,
+      "admin4Name": null,
+      "state": {},
+      "county": {},
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "address" : "CHQ building, Dublin 1",
+      "requiredFieldsComplete": true
+    }
+  },
+  {
+    "user": {
+      "name": "parentFullAccess1",
+      "email": "parentFullAccess1@example.com",
+      "password": "testparentFullAccess1",
+      "termsConditionsAccepted": true,
+      "initUserType": {"name": "parent-guardian", "title": "Parent/Guardian"},
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      },
+      "userType":"parent-guardian",
+      "city": {},
+      "countryname": "Ireland",
+      "countrynumber": null,
+      "continent": "EU",
+      "alpha2": "IE",
+      "alpha3": "IRL",
+      "admin1Code": null,
+      "admin1Name": null,
+      "admin2Code": null,
+      "admin2Name": null,
+      "admin3Code": null,
+      "admin3Name": null,
+      "admin4Code": null,
+      "admin4Name": null,
+      "state": {},
+      "county": {},
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "address" : "CHQ building, Dublin 1",
+      "requiredFieldsComplete": true
+    }
+  },
+  {
+    "user": {
+      "name": "mentorAdmin1",
+      "email": "mentorAdmin1@example.com",
+      "password": "testmentorAdmin1",
+      "termsConditionsAccepted": true,
+      "initUserType": {"name": "parent-guardian", "title": "Parent/Guardian"},
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      },
+      "userType":"parent-guardian",
+      "city": {},
+      "countryname": "Ireland",
+      "countrynumber": null,
+      "continent": "EU",
+      "alpha2": "IE",
+      "alpha3": "IRL",
+      "admin1Code": null,
+      "admin1Name": null,
+      "admin2Code": null,
+      "admin2Name": null,
+      "admin3Code": null,
+      "admin3Name": null,
+      "admin4Code": null,
+      "admin4Name": null,
+      "state": {},
+      "county": {},
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "address" : "CHQ building, Dublin 1",
+      "requiredFieldsComplete": true
+    }
+  },
+  {
+    "user": {
+      "name": "mentorTicketing1",
+      "email": "mentorTicketing1@example.com",
+      "password": "testmentorTicketing1",
+      "termsConditionsAccepted": true,
+      "initUserType": {"name": "parent-guardian", "title": "Parent/Guardian"},
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      },
+      "userType":"parent-guardian",
+      "city": {},
+      "countryname": "Ireland",
+      "countrynumber": null,
+      "continent": "EU",
+      "alpha2": "IE",
+      "alpha3": "IRL",
+      "admin1Code": null,
+      "admin1Name": null,
+      "admin2Code": null,
+      "admin2Name": null,
+      "admin3Code": null,
+      "admin3Name": null,
+      "admin4Code": null,
+      "admin4Name": null,
+      "state": {},
+      "county": {},
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "address" : "CHQ building, Dublin 1",
+      "requiredFieldsComplete": true
+    }
+  },
+  {
+    "user": {
+      "name": "mentorFullAccess1",
+      "email": "mentorFullAccess1@example.com",
+      "password": "testmentorFullAccess1",
+      "termsConditionsAccepted": true,
+      "initUserType": {"name": "parent-guardian", "title": "Parent/Guardian"},
+      "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+    },
+    "profile": {
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      },
+      "userType":"parent-guardian",
+      "city": {},
+      "countryname": "Ireland",
+      "countrynumber": null,
+      "continent": "EU",
+      "alpha2": "IE",
+      "alpha3": "IRL",
+      "admin1Code": null,
+      "admin1Name": null,
+      "admin2Code": null,
+      "admin2Name": null,
+      "admin3Code": null,
+      "admin3Name": null,
+      "admin4Code": null,
+      "admin4Name": null,
+      "state": {},
+      "county": {},
+      "place": {"nameWithHierarchy":"Dublin"},
+      "placeName": "Dublin",
+      "address" : "CHQ building, Dublin 1",
+      "requiredFieldsComplete": true
+    }
   }
+  ,  {
+      "user": {
+        "name": "randomParent1",
+        "email": "randomParent1@example.com",
+        "password": "testrandomParent1",
+        "termsConditionsAccepted": true,
+        "initUserType": {"name": "parent-guardian", "title": "Parent/Guardian"},
+        "g-recaptcha-response": "03AHJ_VuufpHRAc3bbYfeMunZ-nOYP5rjdSwlw7e4Btq-RGYYvCRTJJkXptbQuBwJDL0ZWQ7eHeQRoTI9iRZlakVlpVDB9rd0kYw2iNcMXG9qNNNBNv_qNjTyE4RwZ3x0zAt2aqg-LjboEqRyLqbOO032kal8wz_GGKbrykJMV0kiSdCbABlSalNHUwlP9II7nGs1me9x84owsr5ZCFkCYtQehguTm6nMe9HRq7hLbQb4hK8HuWwfqQ1z5CIuKk7el5taxNC1h4QuqWsNgGlWAv_Gqp4dJjz683kNCV2vbTlofz6FwttNZwD-mS1l4OrTCdvdX9JBcipXbjlIF1RFyBbXGvSAftp3_ajmoAjstwSdAZVtD1Whm_x8nUo_0pFp6x0n0Y1j8Ztc87oxAXswI-Yvf8JFu8Bhaw_SwAz2Qk7meR2Mvx5lKz_3IzK_b15gnmXenqamBpksv"
+      },
+      "profile": {
+        "dob": "1982-01-31T22:00:00.000Z",
+        "country": {
+            "countryName": "Ireland",
+            "countryNumber": "372",
+            "continent": "EU",
+            "alpha2": "IE",
+            "alpha3": "IRL"
+        },
+        "userType":"parent-guardian",
+        "city": {},
+        "countryname": "Ireland",
+        "countrynumber": null,
+        "continent": "EU",
+        "alpha2": "IE",
+        "alpha3": "IRL",
+        "admin1Code": null,
+        "admin1Name": null,
+        "admin2Code": null,
+        "admin2Name": null,
+        "admin3Code": null,
+        "admin3Name": null,
+        "admin4Code": null,
+        "admin4Name": null,
+        "state": {},
+        "county": {},
+        "place": {"nameWithHierarchy":"Dublin"},
+        "placeName": "Dublin",
+        "address" : "CHQ building, Dublin 1",
+        "requiredFieldsComplete": true
+      }
+    }
 ]

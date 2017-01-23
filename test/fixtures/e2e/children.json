@@ -19,7 +19,19 @@
     "email": "child2@example.com",
     "userTypes": ["attendee-o13"],
     "requiredFieldsComplete": false,
-    "password": "imakitten"
+    "password": "testchild2"
+  }
+},
+{
+  "parentEmail": "parent1@example.com",
+  "data": {
+    "name": "child2-1",
+    "alias": "nick2-1",
+    "dob": "2002-01-31T22:00:00.000Z",
+    "email": "child2-1@example.com",
+    "userTypes": ["attendee-o13"],
+    "requiredFieldsComplete": true,
+    "password": "testchild2-1"
   }
 },
 {
@@ -30,6 +42,19 @@
     "dob": "2010-01-31T22:00:00.000Z",
     "email": "child3@example.com",
     "userTypes": ["attendee-o13"],
-    "password": ""
+    "password": "child3test"
+  }
+},
+{
+  "parentEmail": "parent3@example.com",
+  "data": {
+    "name": "child3-1",
+    "alias": "nick3-1",
+    "dob": "2002-01-31T22:00:00.000Z",
+    "email": "child3-1@example.com",
+    "userTypes": ["attendee-o13"],
+    "requiredFieldsComplete": false,
+    "private": false,
+    "password": "testchild3-1"
   }
 }]

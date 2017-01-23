@@ -34,16 +34,6 @@ function shutdown (err) {
   process.exit(0);
 }
 
-seneca.ready(function (err) {
-  if (err) return shutdown(err);
-  var message = new Buffer(service);
-  var client = dgram.createSocket('udp4');
-  client.send(message, 0, message.length, 11404, 'localhost', function (err, bytes) {
-    if (err) return shutdown(err);
-    client.close();
-  });
-});
-
 require('./migrate-psql-db.js')(function (err) {
   if (err) {
     console.error(err);
@@ -79,18 +69,17 @@ require('./migrate-psql-db.js')(function (err) {
   process.on('SIGTERM', shutdown);
   process.on('uncaughtException', shutdown);
 
-  function shutdown (err) {
-    if (err !== void 0 && err.stack !== void 0) {
-      console.error(new Date().toString() + ' FATAL: UncaughtException, please report: ' + util.inspect(err));
-      console.error(util.inspect(err.stack));
-      console.trace();
-    }
-    process.exit(0);
-  }
-
   require('./network.js')(seneca);
 
-  seneca.ready(function () {
+  seneca.ready(function (err) {
+    if (err) return shutdown(err);
+    var message = new Buffer(service);
+    var client = dgram.createSocket('udp4');
+    client.send(message, 0, message.length, 11404, 'localhost', function (err, bytes) {
+      if (err) return shutdown(err);
+      client.close();
+    });
+
     var escape = require('seneca-postgresql-store/lib/relational-util').escapeStr;
     ['load', 'list'].forEach(function (cmd) {
       seneca.wrap('role: entity, cmd: ' + cmd, function filterFields (args, cb) {
