@@ -85,7 +85,14 @@ module.exports = function(){
         customValidator: [{
           role: 'cd-profiles',
           cmd: 'is_own_profile'
-      }]}],
+        }]
+      },
+      { role: 'basic-user',
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_parent_of'
+        }]
+      }],
       'get_avatar': [{
         role: 'none',
       }],
