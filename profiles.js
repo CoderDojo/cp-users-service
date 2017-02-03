@@ -207,7 +207,7 @@ module.exports = function (options) {
             dojoId: parentDojo,
             userTypes: [userType]
           };
-          seneca.act({role: 'cd-dojos', cmd: 'save_usersdojos', userDojo: userDojo}, cb);
+          seneca.act({role: 'cd-dojos', cmd: 'save_usersdojos', userDojo: userDojo, user: args.user}, cb);
         }, function (err, res) {
           if (err) return done(err);
           return done(null, profile);
@@ -799,7 +799,7 @@ module.exports = function (options) {
               dojoId: parentUserDojo.dojoId,
               userTypes: ['attendee-o13']
             };
-            seneca.act({role: 'cd-dojos', cmd: 'save_usersdojos', userDojo: userDojo}, cb);
+            seneca.act({role: 'cd-dojos', cmd: 'save_usersdojos', userDojo: userDojo, user: args.user}, cb);
           });
         }, done);
       });
