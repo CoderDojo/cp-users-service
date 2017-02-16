@@ -51,7 +51,8 @@ module.exports = function(){
           role: 'cd-users',
           cmd: 'is_parent_of'
         }]
-      }, { role: 'basic-user',
+      }, {
+        role: 'basic-user',
         customValidator: [{
           role: 'cd-users',
           cmd: 'is_self'

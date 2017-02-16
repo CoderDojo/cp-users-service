@@ -22,7 +22,7 @@ module.exports = function (options) {
 
   var immutableFields = ['userType', 'avatar'];
 
-  var requiredProfileFields = ['name', 'alias', 'dob', 'country', 'place', 'address'];
+  var requiredProfileFields = ['name', 'alias', 'dob', 'country', 'place'];
 
   // var userTypes = ['champion', 'mentor', 'parent-guardian', 'attendee-o13', 'attendee-u13'];
   // var userTypes = ['attendee-u13', 'attendee-o13', 'parent-guardian', 'mentor', 'champion'];
@@ -154,9 +154,12 @@ module.exports = function (options) {
     var password = profile.password;
 
     var nick = profile.alias || profile.name;
+    profile.name = profile.firstName && profile.lastName ? profile.firstName + ' ' + profile.lastName : profile.name;
 
     var user = {
       name: profile.name,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
       nick: nick,
       email: profile.email,
       initUserType: {name: initUserType},
@@ -236,6 +239,10 @@ module.exports = function (options) {
 
   function cmd_update_youth (args, done) {
     var profile = args.profile;
+    var profileKeys = _.keys(profile);
+    var missingKeys = _.difference(requiredProfileFields, profileKeys);
+    if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
+
     var derivedFields = ['password', 'userTypes', 'myChild', 'ownProfileFlag', 'dojos'];
 
     var fieldsToBeRemoved = _.union(derivedFields, immutableFields);
