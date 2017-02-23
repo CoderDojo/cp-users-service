@@ -13,6 +13,7 @@ module.exports = function (options) {
   var ENTITY_NS = 'sys/user';
   var so = seneca.options();
   var protocol = process.env.PROTOCOL || 'http';
+  var requiredProfileFields = ['name', 'dob', 'country', 'place'];
 
   seneca.add({role: plugin, cmd: 'create_reset'}, cmd_create_reset);
   seneca.add({role: plugin, cmd: 'load'}, cmd_load);
@@ -173,6 +174,10 @@ module.exports = function (options) {
           if (user.initUserType) userType = user.initUserType.name;
 
           _.defaults(profile, {private: true, userId: user.id, name: user.name, email: user.email, userType: userType});
+
+          var profileKeys = _.keys(profile);
+          var missingKeys = _.difference(requiredProfileFields, profileKeys);
+          if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
 
           seneca.act({role: 'cd-profiles', cmd: 'save', profile: profile}, function (err, profile) {
             if (err) return done(err);
