@@ -88,16 +88,13 @@ module.exports = function (options) {
     }
 
     function saveProfile (done) {
-      var profileKeys = _.keys(profile);
-      var missingKeys = _.difference(requiredProfileFields, profileKeys);
       var userId = args.user ? args.user.id : null;
-      if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
       if (userId !== profile.userId) return done(null, new Error('Profiles can only be saved by the profile user.'));
       if (profile.id) {
         profile = _.omit(profile, immutableFields);
       }
 
-      seneca.make$(ENTITY_NS).save$(profile, function (err, profile) {
+      seneca.act({role: plugin, cmd: 'save', profile: profile}, function (err, profile) {
         if (err) return done(err);
         if (process.env.SALESFORCE_ENABLED === 'true') {
           seneca.act({ role: 'cd-profiles', cmd: 'load', id: profile.id }, function (err, fullProfile) {
@@ -239,16 +236,12 @@ module.exports = function (options) {
 
   function cmd_update_youth (args, done) {
     var profile = args.profile;
-    var profileKeys = _.keys(profile);
-    var missingKeys = _.difference(requiredProfileFields, profileKeys);
-    if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
-
     var derivedFields = ['password', 'userTypes', 'myChild', 'ownProfileFlag', 'dojos'];
 
     var fieldsToBeRemoved = _.union(derivedFields, immutableFields);
 
     profile = _.omit(profile, fieldsToBeRemoved);
-    seneca.make$(ENTITY_NS).save$(profile, function (err, profile) {
+    seneca.act({role: plugin, cmd: 'save', profile: profile}, function (err, profile) {
       if (err) {
         return done(err);
       }
@@ -298,6 +291,7 @@ module.exports = function (options) {
     var profileKeys = _.keys(profile);
     var missingKeys = _.difference(requiredProfileFields, profileKeys);
     if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
+    profile.name = profile.firstName && profile.lastName ? profile.firstName + ' ' + profile.lastName : profile.name;
 
     seneca.make$(ENTITY_NS).save$(profile, done);
   }
