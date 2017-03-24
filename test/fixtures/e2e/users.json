@@ -1,7 +1,8 @@
 [
   {
     "user": {
-      "name": "manager1",
+      "firstName": "manager",
+      "lastName": "one",
       "email": "manager1@example.com",
       "password": "Manager1@Zen",
       "initUserType": {"name": "parent-guardian", "title": "Parent/Guardian"},
@@ -42,7 +43,8 @@
   },
   {
     "user": {
-      "name": "parent1",
+      "firstName": "parent",
+      "lastName": "one",
       "email": "parent1@example.com",
       "password": "testparent1",
       "initUserType": {"name": "parent-guardian", "title": "Parent/Guardian"},
@@ -82,7 +84,8 @@
   },
   {
     "user": {
-      "name": "parent2",
+      "firstName": "parent",
+      "lastName": "two",
       "email": "parent2@example.com",
       "password": "testparent2",
       "termsConditionsAccepted": true,
@@ -122,7 +125,8 @@
   },
   {
     "user": {
-      "name": "parent3",
+      "firstName": "parent",
+      "lastName": "three",
       "email": "parent3@example.com",
       "password": "testparent3",
       "initUserType": {"name": "parent-guardian", "title": "Parent/Guardian"},
@@ -163,7 +167,8 @@
   },
   {
     "user": {
-      "name": "mentor1",
+      "firstName": "mentor",
+      "lastName": "one",
       "email": "mentor1@example.com",
       "password": "testmentor1",
       "termsConditionsAccepted": true,
@@ -203,7 +208,8 @@
   },
   {
     "user": {
-      "name": "mentor2",
+      "firstName": "mentor",
+      "lastName": "two",
       "email": "mentor2@example.com",
       "password": "testmentor2",
       "termsConditionsAccepted": true,
@@ -243,7 +249,8 @@
   },
   {
     "user": {
-      "name": "mentor3",
+      "firstName": "mentor",
+      "lastName": "three",
       "email": "mentor3@example.com",
       "password": "testmentor3",
       "termsConditionsAccepted": true,
@@ -284,7 +291,8 @@
   },
   {
     "user": {
-      "name": "champion1",
+      "firstName": "champion",
+      "lastName": "one",
       "email": "champion1@example.com",
       "password": "testchampion1",
       "termsConditionsAccepted": true,
@@ -325,7 +333,8 @@
   },
   {
     "user": {
-      "name": "champion2",
+      "firstName": "champion",
+      "lastName": "two",
       "email": "champion2@example.com",
       "password": "testchampion2",
       "termsConditionsAccepted": true,
@@ -365,7 +374,8 @@
     }
   },{
     "user": {
-      "name": "champion3",
+      "firstName": "champion",
+      "lastName": "three",
       "email": "champion3@example.com",
       "password": "testchampion3",
       "termsConditionsAccepted": true,
@@ -405,7 +415,8 @@
     }
   },{
     "user": {
-      "name": "champion4",
+      "firstName": "champion",
+      "lastName": "four",
       "email": "champion4@example.com",
       "password": "testchampion4",
       "termsConditionsAccepted": true,
@@ -445,7 +456,8 @@
     }
   },{
     "user": {
-      "name": "champion5",
+      "firstName": "champion",
+      "lastName": "five",
       "email": "champion5@example.com",
       "password": "testchampion5",
       "termsConditionsAccepted": true,
@@ -486,7 +498,8 @@
   },
   {
     "user": {
-      "name": "champion6",
+      "firstName": "champion",
+      "lastName": "six",
       "email": "champion6@example.com",
       "password": "testchampion6",
       "termsConditionsAccepted": true,
@@ -527,7 +540,8 @@
   },
   {
     "user": {
-      "name": "champion7",
+      "firstName": "champion",
+      "lastName": "seven",
       "email": "champion7@example.com",
       "password": "testchampion7",
       "termsConditionsAccepted": true,
@@ -569,7 +583,8 @@
   },
   {
     "user": {
-      "name": "parentAdmin1",
+      "firstName": "parentAdmin",
+      "lastName": "one",
       "email": "parentAdmin1@example.com",
       "password": "testparentAdmin1",
       "termsConditionsAccepted": true,
@@ -610,7 +625,8 @@
   },
   {
     "user": {
-      "name": "parentTicketing1",
+      "firstName": "parentTicketing",
+      "lastName": "one",
       "email": "parentTicketing1@example.com",
       "password": "testparentTicketing1",
       "termsConditionsAccepted": true,
@@ -651,7 +667,8 @@
   },
   {
     "user": {
-      "name": "parentFullAccess1",
+      "firstName": "parentFullAccess",
+      "lastName": "one",
       "email": "parentFullAccess1@example.com",
       "password": "testparentFullAccess1",
       "termsConditionsAccepted": true,
@@ -692,7 +709,8 @@
   },
   {
     "user": {
-      "name": "mentorAdmin1",
+      "firstName": "mentorAdmin",
+      "lastName": "one",
       "email": "mentorAdmin1@example.com",
       "password": "testmentorAdmin1",
       "termsConditionsAccepted": true,
@@ -733,7 +751,8 @@
   },
   {
     "user": {
-      "name": "mentorTicketing1",
+      "firstName": "mentorTicketing",
+      "lastName": "one",
       "email": "mentorTicketing1@example.com",
       "password": "testmentorTicketing1",
       "termsConditionsAccepted": true,
@@ -774,7 +793,8 @@
   },
   {
     "user": {
-      "name": "mentorFullAccess1",
+      "firstName": "mentorFullAccess",
+      "lastName": "one",
       "email": "mentorFullAccess1@example.com",
       "password": "testmentorFullAccess1",
       "termsConditionsAccepted": true,
@@ -815,7 +835,8 @@
   }
   ,  {
       "user": {
-        "name": "randomParent1",
+        "firstName": "randomParent",
+        "lastName": "one",
         "email": "randomParent1@example.com",
         "password": "testrandomParent1",
         "termsConditionsAccepted": true,

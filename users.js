@@ -162,6 +162,7 @@ module.exports = function (options) {
         if (typeof user.ok !== 'undefined' && !user.ok) {
           return done(null, user);
         }
+        user.name = user.firstName + ' ' + user.lastName;
         seneca.act({role: 'user', cmd: 'register'}, user, function (err, registerResponse) {
           if (err) return done(err);
           if (!registerResponse.ok) {
@@ -173,7 +174,15 @@ module.exports = function (options) {
           var userType = 'attendee-o13';
           if (user.initUserType) userType = user.initUserType.name;
 
-          _.defaults(profile, {private: true, userId: user.id, name: user.name, email: user.email, userType: userType});
+          _.defaults(profile, {
+            private: true,
+            userId: user.id,
+            name: user.name,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            userType: userType
+          });
 
           var profileKeys = _.keys(profile);
           var missingKeys = _.difference(requiredProfileFields, profileKeys);
