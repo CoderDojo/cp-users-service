@@ -22,7 +22,7 @@ module.exports = function (options) {
 
   var immutableFields = ['userType', 'avatar'];
 
-  var requiredProfileFields = ['name', 'alias', 'dob', 'country', 'place', 'address'];
+  var requiredProfileFields = ['name', 'alias', 'dob', 'country', 'place'];
 
   // var userTypes = ['champion', 'mentor', 'parent-guardian', 'attendee-o13', 'attendee-u13'];
   // var userTypes = ['attendee-u13', 'attendee-o13', 'parent-guardian', 'mentor', 'champion'];
@@ -88,16 +88,13 @@ module.exports = function (options) {
     }
 
     function saveProfile (done) {
-      var profileKeys = _.keys(profile);
-      var missingKeys = _.difference(requiredProfileFields, profileKeys);
       var userId = args.user ? args.user.id : null;
-      if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
       if (userId !== profile.userId) return done(null, new Error('Profiles can only be saved by the profile user.'));
       if (profile.id) {
         profile = _.omit(profile, immutableFields);
       }
 
-      seneca.make$(ENTITY_NS).save$(profile, function (err, profile) {
+      seneca.act({role: plugin, cmd: 'save', profile: profile}, function (err, profile) {
         if (err) return done(err);
         if (process.env.SALESFORCE_ENABLED === 'true') {
           seneca.act({ role: 'cd-profiles', cmd: 'load', id: profile.id }, function (err, fullProfile) {
@@ -154,9 +151,12 @@ module.exports = function (options) {
     var password = profile.password;
 
     var nick = profile.alias || profile.name;
+    profile.name = profile.firstName && profile.lastName ? profile.firstName + ' ' + profile.lastName : profile.name;
 
     var user = {
       name: profile.name,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
       nick: nick,
       email: profile.email,
       initUserType: {name: initUserType},
@@ -241,7 +241,7 @@ module.exports = function (options) {
     var fieldsToBeRemoved = _.union(derivedFields, immutableFields);
 
     profile = _.omit(profile, fieldsToBeRemoved);
-    seneca.make$(ENTITY_NS).save$(profile, function (err, profile) {
+    seneca.act({role: plugin, cmd: 'save', profile: profile}, function (err, profile) {
       if (err) {
         return done(err);
       }
@@ -291,6 +291,7 @@ module.exports = function (options) {
     var profileKeys = _.keys(profile);
     var missingKeys = _.difference(requiredProfileFields, profileKeys);
     if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
+    profile.name = profile.firstName && profile.lastName ? profile.firstName + ' ' + profile.lastName : profile.name;
 
     seneca.make$(ENTITY_NS).save$(profile, done);
   }
