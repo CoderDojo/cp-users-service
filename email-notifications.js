@@ -5,7 +5,7 @@ var path = require('path');
 var CpTranslations = require('cp-translations');
 var I18NHelper = require('cp-i18n-lib');
 var i18nHelper = new I18NHelper({
-  poFilePath: path.resolve('web/locale/'),
+  poFilePath: CpTranslations.getPoFilePath(),
   poFileName: 'messages.po',
   domain: 'coder-dojo-platform'
 });
