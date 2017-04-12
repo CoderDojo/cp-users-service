@@ -1,7 +1,6 @@
 'use strict';
 
 var fs = require('fs');
-var path = require('path');
 var CpTranslations = require('cp-translations');
 var I18NHelper = require('cp-i18n-lib');
 var i18nHelper = new I18NHelper({
