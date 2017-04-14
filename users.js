@@ -37,6 +37,7 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'kpi_number_of_youth_females_registered'}, cmd_kpi_number_of_youth_females_registered);
   seneca.add({role: plugin, cmd: 'is_self'}, require('./lib/users/is-self'));
   seneca.add({role: plugin, cmd: 'is_parent_of'}, require('./lib/users/is-parent-of'));
+  seneca.add({role: plugin, ctrl: 'user', cmd: 'load'}, require('./lib/controllers/users/load'));
   //  LMS Integration
   seneca.add({role: plugin, cmd: 'get_lms_link'}, require('./lib/users/lms/get-lms-link'));
   seneca.add({role: plugin, cmd: 'update_lms_user'}, require('./lib/users/lms/update-user'));
