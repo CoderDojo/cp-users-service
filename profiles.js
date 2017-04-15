@@ -90,11 +90,13 @@ module.exports = function (options) {
     function saveProfile (done) {
       var userId = args.user ? args.user.id : null;
       if (userId !== profile.userId) return done(null, new Error('Profiles can only be saved by the profile user.'));
-      if (profile.id) {
-        profile = _.omit(profile, immutableFields);
-      }
 
-      seneca.act({role: plugin, cmd: 'save', profile: profile}, function (err, profile) {
+      var cleanedProfile = _.omit(profile, 'user');
+      // Fields accessible from saveProfile that needs to be passed down to the user entity
+      if (profile.id) {
+        cleanedProfile = _.omit(cleanedProfile, immutableFields);
+      }
+      seneca.act({role: plugin, cmd: 'save', profile: cleanedProfile}, function (err, retProfile) {
         if (err) return done(err);
         if (process.env.SALESFORCE_ENABLED === 'true') {
           seneca.act({ role: 'cd-profiles', cmd: 'load', id: profile.id }, function (err, fullProfile) {
@@ -105,13 +107,13 @@ module.exports = function (options) {
           });
         }
         //  TODO: use seneca-mesh to avoid coupling the integration to the user
-        if (args.user && !_.isEmpty(profile.email) && args.user.lmsId && args.user.email !== profile.email) {
-          seneca.act({role: 'cd-users', cmd: 'update_lms_user', lmsId: args.user.lmsId, userEmail: args.user.email, profileEmail: profile.email});
+        if (args.user && !_.isEmpty(retProfile.email) && args.user.lmsId && args.user.email !== retProfile.email) {
+          seneca.act({role: 'cd-users', cmd: 'update_lms_user', lmsId: args.user.lmsId, userEmail: args.user.email, profileEmail: retProfile.email});
         }
         syncUserObj(profile, function (err, res) {
           if (err) return done(err);
 
-          syncForumProfile(profile, function (err, res) {
+          syncForumProfile(retProfile, function (err, res) {
             if (err) seneca.log.error(err);
             var query = {userId: profile.userId};
             seneca.act({role: plugin, cmd: 'load'}, query, done);
@@ -123,12 +125,14 @@ module.exports = function (options) {
 
   function syncUserObj (profile, done) {
     var updatedFields = {};
+    var userFields = ['mailingList'];
     updatedFields.id = profile.userId;
     _.each(syncedFields, function (field) {
       updatedFields[field] = profile[field];
     });
+    _.extend(updatedFields, _.pick(profile.user, userFields));
     if (updatedFields.email) updatedFields.nick = profile.email;
-    seneca.act({role: 'cd-users', cmd: 'update', user: updatedFields, id: updatedFields.id}, done);
+    seneca.act({role: 'cd-users', cmd: 'update', user: updatedFields}, done);
   }
 
   function syncForumProfile (profile, done) {
