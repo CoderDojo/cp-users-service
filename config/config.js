@@ -1,5 +1,6 @@
 'use strict';
 var path = require('path');
+var CpTranslations = require('cp-translations');
 
 var generator = require('xoauth2').createXOAuth2Generator({
   user: process.env.GMAIL_USER,
@@ -31,7 +32,7 @@ module.exports = function (options) {
       sendFrom: 'The CoderDojo Team <info@coderdojo.org>'
     },
     mailtrap: {
-      folder: path.resolve(__dirname + '/../email-templates'),
+      folder: path.resolve(CpTranslations.getEmailTemplatePath()),
       mail: {
         from: 'no-reply@coderdojo.com'
       },
@@ -45,7 +46,7 @@ module.exports = function (options) {
       }
     },
     gmail: {
-      folder: path.resolve(__dirname + '/../email-templates'),
+      folder: path.resolve(CpTranslations.getEmailTemplatePath()),
       config: {
         service: 'gmail',
         auth: {
