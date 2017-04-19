@@ -245,7 +245,8 @@ module.exports = function (options) {
     var fieldsToBeRemoved = _.union(derivedFields, immutableFields);
 
     profile = _.omit(profile, fieldsToBeRemoved);
-    seneca.act({role: plugin, cmd: 'save', profile: profile}, function (err, profile) {
+    var cleanedProfile = _.omit(profile, 'user');
+    seneca.act({role: plugin, cmd: 'save', profile: cleanedProfile}, function (err, savedProfile) {
       if (err) {
         return done(err);
       }
