@@ -165,6 +165,7 @@ module.exports = function (options) {
       email: profile.email,
       initUserType: {name: initUserType},
       password: password,
+      mailingList: profile.user ? profile.user.mailingList : 0,
       roles: ['basic-user']
     };
 
@@ -259,8 +260,10 @@ module.exports = function (options) {
     });
   }
 
+  // Note : tbdeleted
   function saveChild (profile, parentId, done) {
     if (_.contains(profile.parents, parentId)) {
+      delete profile.user;
       seneca.make$(ENTITY_NS).save$(profile, function (err, profile) {
         if (err) {
           return done(err);
