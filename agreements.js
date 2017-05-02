@@ -8,46 +8,48 @@ module.exports = function (options) {
   var ENTITY_NS = 'cd/agreements';
 
   seneca.add({role: plugin, cmd: 'save'}, cmd_save);
-  seneca.add({role: plugin, cmd: 'list'}, cmd_list);
   seneca.add({role: plugin, cmd: 'count'}, cmd_count);
-  seneca.add({role: plugin, cmd: 'load_user_agreement'}, cmd_load_user_agreement);
+  seneca.add({role: plugin, cmd: 'list'}, cmd_list);
+  seneca.add({role: plugin, cmd: 'getVersion'}, cmd_get_version);
+  seneca.add({role: plugin, cmd: 'loadUserAgreement'}, cmd_load_user_agreement);
+
+  function cmd_get_version (args, done) {
+    var version = 2;
+    return done(null, {version: version});
+  }
 
   function cmd_save (args, done) {
     var agreementEntity = seneca.make$(ENTITY_NS);
     var agreement = args.agreement;
-
     agreement.timestamp = new Date();
-
-    agreementEntity.load$({userId: agreement.userId}, function (err, response) {
-      if (err) return done(err);
-      if (!response || !response.id) {
-        agreementEntity.save$(agreement, done);
-      } else {
-        return done(null, {msg: 'Charter already signed.'});
-      }
-    });
-  }
-
-  function cmd_list (args, done) {
-    var seneca = this;
-
-    function get_user_agreements (userId, done) {
-      seneca.make(ENTITY_NS).list$({userId: userId}, done);
+    var user = args.user;
+    agreement.userId = user.id;
+    async.waterfall([
+      getCurrentVersion,
+      loadCurrentAgreementsForUser,
+      saveAgreement
+    ], done);
+    function getCurrentVersion (wCb) {
+      seneca.act({role: plugin, cmd: 'getVersion'}, function (err, response) {
+        if (err) return done(err);
+        agreement.agreementVersion = response.version;
+        wCb(null, response.version);
+      });
     }
-
-    async.mapSeries(args.userIds, function (userId, done) {
-      async.waterfall([
-        function (done) {
-          get_user_agreements(userId, done);
-        },
-        function (agreements, done) {
-          return done(null, {
-            userId: userId,
-            agreements: agreements
-          });
-        }
-      ], done);
-    }, done);
+    function loadCurrentAgreementsForUser (version, wCb) {
+      agreementEntity.load$({userId: agreement.userId, agreementVersion: version},
+      function (err, response) {
+        if (err) return done(err);
+        return wCb(null, response);
+      });
+    }
+    function saveAgreement (response, wCb) {
+      if (!response || !response.id) {
+        agreementEntity.save$(agreement, wCb);
+      } else {
+        if (response && response.id) return wCb(null, {msg: 'Charter already signed.'});
+      }
+    }
   }
 
   function cmd_count (args, done) {
@@ -67,10 +69,15 @@ module.exports = function (options) {
     });
   }
 
+  function cmd_list (args, done) {
+    var query = args.query;
+    seneca.make(ENTITY_NS).list$(query, done);
+  }
+
   function cmd_load_user_agreement (args, done) {
     var seneca = this;
 
-    seneca.make(ENTITY_NS).load$({userId: args.id}, done);
+    seneca.make(ENTITY_NS).load$({userId: args.userId, agreementVersion: args.version}, done);
   }
 
   return {
