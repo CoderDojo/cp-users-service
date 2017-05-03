@@ -877,7 +877,8 @@
     },
     {
       "user": {
-        "name": "userRequestingAccess1",
+        "firstName": "userRequestingAccess",
+        "lastName": "one",
         "email": "userRequestingAccess1@example.com",
         "password": "testuserRequestingAccess1",
         "termsConditionsAccepted": true,
@@ -917,7 +918,8 @@
     },
     {
       "user": {
-        "name": "userRequestingAccess2",
+        "firstName": "userRequestingAccess",
+        "lastName": "two",
         "email": "userRequestingAccess2@example.com",
         "password": "testuserRequestingAccess2",
         "termsConditionsAccepted": true,
