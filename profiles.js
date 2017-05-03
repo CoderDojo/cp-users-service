@@ -60,8 +60,7 @@ module.exports = function (options) {
 
   function cmd_create (args, done) {
     var profile = args.profile;
-    if (!args.user) return done(null, {ok: false, why: 'args.user is undefined'});
-
+    var user = args.user;
     async.series([
       validateRequest,
       saveProfile
@@ -75,22 +74,30 @@ module.exports = function (options) {
       profileEntity.load$(profile.id, function (err, originalProfile) {
         if (err) return done(err);
         if (!originalProfile) return done();
-        if (originalProfile.email !== profile.email) {
-          seneca.act({role: 'cd-users', cmd: 'list', query: {nick: profile.email}}, function (err, users) {
-            if (err) return done(err);
-            if (!_.isEmpty(users)) return done(new Error('This email is already associated with an account.'));
-            return done();
-          });
-        } else {
-          return done();
-        }
+        async.series([
+          function checkEmailModified (sCb) {
+            if (originalProfile.email !== profile.email) {
+              seneca.act({role: 'cd-users', cmd: 'list', query: {nick: profile.email}}, function (err, users) {
+                if (err) return sCb(err);
+                if (!_.isEmpty(users)) return sCb(new Error('This email is already associated with an account.'));
+                return sCb();
+              });
+            } else {
+              return sCb();
+            }
+          },
+          function checkDoBModified (sCb) {
+            if (!moment(originalProfile.dob).isSame(profile.dob) && !_.includes(user.roles, 'cdf-admin')) {
+              return sCb(new Error('You cannot change your own date of birth, contact a cdf admin'));
+            } else {
+              return sCb();
+            }
+          }
+        ], done);
       });
     }
 
     function saveProfile (done) {
-      var userId = args.user ? args.user.id : null;
-      if (userId !== profile.userId) return done(null, new Error('Profiles can only be saved by the profile user.'));
-
       var cleanedProfile = _.omit(profile, 'user');
       // Fields accessible from saveProfile that needs to be passed down to the user entity
       if (profile.id) {
