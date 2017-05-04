@@ -2,13 +2,6 @@
 var path = require('path');
 var CpTranslations = require('cp-translations');
 
-var generator = require('xoauth2').createXOAuth2Generator({
-  user: process.env.GMAIL_USER,
-  clientId: process.env.GMAIL_CLIENT_ID,
-  clientSecret: process.env.GMAIL_CLIENT_SECRET,
-  refreshToken: process.env.GMAIL_REFRESH_TOKEN
-});
-
 module.exports = function (options) {
   function pgConfig () {
     return {
@@ -45,15 +38,18 @@ module.exports = function (options) {
         }
       }
     },
-    gmail: {
+    email: {
       folder: path.resolve(CpTranslations.getEmailTemplatePath()),
       config: {
-        service: 'gmail',
+        pool: true,
+        service: 'sendgrid',
         auth: {
-          xoauth2: generator
+          user: process.env.MAIL_USER,
+          pass: process.env.MAIL_PASS
         }
       }
     },
+
     'recaptcha_secret_key': process.env.RECAPTCHA_SECRET_KEY || '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe',
     transport: {
       type: 'web',
@@ -67,7 +63,7 @@ module.exports = function (options) {
         coderdojoadultforums: { code: process.env.CODERDOJO_ADULT_FORUMS_SECRET || 'ilikecode',
           baseUrl: process.env.ADULT_FORUM + '/auth/CoderDojo/callback'},
         coderdojoyouthforums: { code: process.env.CODERDOJO_YOUTH_FORUMS_SECRET || 'ilikecode',
-        baseUrl: process.env.YOUTH_FORUM + '/auth/CoderDojo/callback'}
+          baseUrl: process.env.YOUTH_FORUM + '/auth/CoderDojo/callback'}
       }
     },
     nodebb: {

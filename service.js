@@ -22,7 +22,7 @@ seneca.use(store, config['postgresql-store']);
 if (process.env.MAILTRAP_ENABLED === 'true') {
   seneca.use('mail', config.mailtrap);
 } else {
-  seneca.use('mail', config.gmail);
+  seneca.use('mail', config.email);
 }
 
 function shutdown (err) {
