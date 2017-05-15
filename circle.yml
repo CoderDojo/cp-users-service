@@ -28,13 +28,13 @@ deployment:
   staging:
     branch: staging
     codedeploy:
-      cp-users-service:
+      cp-users-service-staging:
         application_root: /
         region: eu-west-1
         revision_location:
           revision_type: S3
           s3_location:
             bucket: zen-deployments
-            key_pattern: staging/applications/cp-users-service-ci-{SHORT_COMMIT}-{BUILD_NUM}.zip
+            key_pattern: staging/applications/cp-users-service-staging-{SHORT_COMMIT}-{BUILD_NUM}.zip
         deployment_group: staging-zen
         deployment_config: CodeDeployDefault.OneAtATime
