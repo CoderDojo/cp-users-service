@@ -1,4 +1,4 @@
-DO $$ 
+DO $$
     BEGIN
         BEGIN
             ALTER TABLE cd_profiles ADD COLUMN user_type character varying;

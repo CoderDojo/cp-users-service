@@ -1,4 +1,4 @@
-DO $$ 
+DO $$
     BEGIN
         BEGIN
             ALTER TABLE sys_user ADD COLUMN last_login timestamp with time zone;

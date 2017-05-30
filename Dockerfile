@@ -1,17 +1,13 @@
-FROM mhart/alpine-node:0.10
-MAINTAINER nearForm <info@nearform.com>
+FROM mhart/alpine-node:0.10.38
+MAINTAINER butlerx <butlerx@notthe.cloud>
 
-RUN apk-install git make gcc g++ python postgresql-client
-  
-RUN mkdir -p /usr/src/app /usr/src/app/config /usr/src/app/email-templates /usr/src/app/data /usr/src/app/scripts
+RUN apk add --update git build-base python postgresql-client && \
+    mkdir -p /usr/src/app
 WORKDIR /usr/src/app
-
-COPY package.json /usr/src/app/
-RUN npm install --production && rm -rf /root/.npm
-COPY config /usr/src/app/config/
-COPY data /usr/src/app/data/
-COPY scripts /usr/src/app/scripts/
-COPY email-templates /usr/src/app/email-templates/
-COPY *.js /usr/src/app/  
-
-RUN apk del make gcc g++ python && rm -rf /tmp/* /root/.npm /root/.node-gyp
+ADD . /usr/src/app/
+RUN npm install && \
+    rm -rf /root/.npm && \
+    apk del build-base  python && \
+    rm -rf /tmp/* /root/.npm /root/.node-gyp
+EXPOSE 10303
+CMD ["node", "service.js"]
