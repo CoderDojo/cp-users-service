@@ -16,6 +16,8 @@ module.exports = function (options) {
 
   var syncedFields = [
     'name',
+    'firstName',
+    'lastName',
     'email',
     'phone'
   ];
@@ -110,7 +112,10 @@ module.exports = function (options) {
         if (args.user && !_.isEmpty(retProfile.email) && args.user.lmsId && args.user.email !== retProfile.email) {
           seneca.act({role: 'cd-users', cmd: 'update_lms_user', lmsId: args.user.lmsId, userEmail: args.user.email, profileEmail: retProfile.email});
         }
-        syncUserObj(profile, function (err, res) {
+        // save mutates the profile values, like "name" from "firstName" + "lastName" and need to be ported to the synced sys_user
+        var syncProfile = _.omit(retProfile, immutableFields);
+        syncProfile.user = profile.user;
+        syncUserObj(syncProfile, function (err, res) {
           if (err) return done(err);
 
           syncForumProfile(retProfile, function (err, res) {
@@ -251,8 +256,10 @@ module.exports = function (options) {
       if (err) {
         return done(err);
       }
-
-      syncUserObj(profile, function (err, res) {
+      // save mutates the profile values, like "name" from "firstName" + "lastName" and need to be ported to the synced sys_user
+      savedProfile = _.omit(savedProfile, fieldsToBeRemoved);
+      savedProfile.user = profile.user;
+      syncUserObj(savedProfile, function (err, res) {
         if (err) return done(err);
 
         return done(null, profile);
