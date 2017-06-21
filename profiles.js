@@ -51,6 +51,8 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'ninjas_for_user'}, require('./lib/profiles/load-children-for-user'));
   //  Perms
   seneca.add({role: plugin, cmd: 'is_own_profile'}, require('./lib/profiles/is-own-profile'));
+  // one-shot
+  seneca.add({role: plugin, cmd: '1202_syncSysUserName'}, require('./lib/fixes/1202-sync-sys-user-profile'));
 
   function cmd_search (args, done) {
     if (!args.query) {
