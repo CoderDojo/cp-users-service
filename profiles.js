@@ -159,7 +159,7 @@ module.exports = function (options) {
     var initUserType = profile.userTypes[0];
     var password = profile.password;
 
-    var nick = profile.alias || profile.name;
+    var nick = profile.alias;
     profile.name = profile.firstName && profile.lastName ? profile.firstName + ' ' + profile.lastName : profile.name;
 
     var user = {
@@ -173,6 +173,9 @@ module.exports = function (options) {
       mailingList: profile.user ? profile.user.mailingList : 0,
       roles: ['basic-user']
     };
+
+    // mutates user.nick & profile.alias
+    var aliasGenerator = require('./lib/profiles/alias-generator').bind(seneca);
 
     function registerUser (youth, done) {
       if (youth) {
@@ -227,6 +230,7 @@ module.exports = function (options) {
 
     if (initUserType === 'attendee-o13') {
       async.waterfall([
+        async.apply(aliasGenerator, user, profile),
         async.apply(registerUser, false),
         addUserToParentsDojos
       ], function (err, res) {
@@ -235,6 +239,7 @@ module.exports = function (options) {
       });
     } else if (initUserType === 'attendee-u13') {
       async.waterfall([
+        async.apply(aliasGenerator, user, profile),
         async.apply(registerUser, true),
         addUserToParentsDojos
       ], function (err, res) {
