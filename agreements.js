@@ -47,7 +47,11 @@ module.exports = function (options) {
       if (!response || !response.id) {
         agreementEntity.save$(agreement, wCb);
       } else {
-        if (response && response.id) return wCb(null, {msg: 'Charter already signed.'});
+        if (response && response.id) {
+          return wCb(null, {msg: 'Charter already signed.'});
+        } else {
+          seneca.log.warn('Unexpected scenario when saving an agreement', response);
+        }
       }
     }
   }
