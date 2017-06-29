@@ -622,6 +622,13 @@ module.exports = function (options) {
                 bufs.push(d);
               });
 
+              stream.on('error', function (err) {
+                client.query('ROLLBACK', function () {
+                  client.end();
+                  done(err);
+                });
+              });
+
               stream.on('end', function () {
                 client.query('COMMIT', function () {
                   client.end();
