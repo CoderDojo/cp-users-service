@@ -8,7 +8,6 @@
   },
   "scripts": {
     "test": "npm run lint && bash -c 'source ./config/development.env; ./node_modules/.bin/lab --ignore __core-js_shared__ --flat --threshold 50 -r html -o ./coverage/coverage.html -r lcov -o ./coverage/lcov.info -r json -o ./coverage/coverage.json -r lab-quieter-reporter -o stdout -m 5000'",
-    "testdata": "node test/lib/service.js",
     "covrep": "bash test/covrep.sh",
     "lint": "./node_modules/.bin/semistandard *.js config/config.js"
   },

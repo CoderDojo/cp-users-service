@@ -23,7 +23,7 @@ seneca.ready(function() {
 
 require('../../network.js')(seneca);
 // Add "its" µs as a dependency
-seneca.client({type: 'web', host: process.env.CD_USERS || 'localhost', port: 10303, pin: {role: 'cd-profiles', cmd: '*'}})
-.client({type: 'web', host: process.env.CD_USERS || 'localhost', port: 10303, pin: {role: 'cd-agreements', cmd: '*'}})
-.client({ type: 'web', host: process.env.CD_USERS || 'localhost', port: 10303, pin: {role: 'user', cmd: '*'}})
-.client({type: 'web', host: process.env.CD_USERS || 'localhost', port: 10303, pin: {role: 'cd-users', cmd: '*'}})
+seneca.client({ type: 'web', port: 10303, pin: { role: 'cd-profiles', cmd: '*' } })
+.client({ type: 'web', port: 10303, pin: { role: 'cd-agreements', cmd: '*' } })
+.client({ type: 'web', port: 10303, pin: { role: 'user', cmd: '*' } })
+.client({ type: 'web', port: 10303, pin: { role: 'cd-users', cmd: '*' } });
