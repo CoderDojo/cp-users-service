@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS cd_oauth2
 (
   id character varying,
-  userid character varying,
+  userid character varying,  
   code character varying,
   token character varying,
   created timestamp with time zone,
@@ -13,4 +13,6 @@ WITH (
 
 CREATE UNIQUE INDEX cd_oauth2_userid_idx ON cd_oauth2 (userid);
 CREATE UNIQUE INDEX cd_oauth2_code_idx ON cd_oauth2 (code);
-CREATE UNIQUE INDEX cd_oauth2_token_idx ON cd_oauth2 (token);
+CREATE UNIQUE INDEX cd_oauth2_token_idx ON cd_oauth2 (token);  
+
+  

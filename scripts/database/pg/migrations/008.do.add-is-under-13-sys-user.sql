@@ -1,4 +1,4 @@
-DO $$
+DO $$ 
     BEGIN
         BEGIN
             ALTER TABLE sys_user ADD COLUMN is_under_13 boolean DEFAULT false;
