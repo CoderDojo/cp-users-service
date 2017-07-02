@@ -10,6 +10,7 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'save'}, cmd_save);
   seneca.add({role: plugin, cmd: 'count'}, cmd_count);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
+  seneca.add({role: plugin, cmd: 'load'}, cmd_load);
   seneca.add({role: plugin, cmd: 'getVersion'}, cmd_get_version);
   seneca.add({role: plugin, cmd: 'loadUserAgreement'}, cmd_load_user_agreement);
 
@@ -76,6 +77,11 @@ module.exports = function (options) {
   function cmd_list (args, done) {
     var query = args.query;
     seneca.make(ENTITY_NS).list$(query, done);
+  }
+
+  function cmd_load (args, done) {
+    var id = args.id;
+    seneca.make(ENTITY_NS).load$(id, done);
   }
 
   function cmd_load_user_agreement (args, done) {
