@@ -102,14 +102,6 @@ module.exports = function (options) {
       }
       seneca.act({role: plugin, cmd: 'save', profile: cleanedProfile}, function (err, retProfile) {
         if (err) return done(err);
-        if (process.env.SALESFORCE_ENABLED === 'true') {
-          seneca.act({ role: 'cd-profiles', cmd: 'load', id: profile.id }, function (err, fullProfile) {
-            if (err) return done(err);
-            if (fullProfile.userType.toLowerCase() === 'champion') {
-              seneca.act({role: 'cd-salesforce', cmd: 'queud_update_profiles', param: {profile: fullProfile}, fatal$: false});
-            }
-          });
-        }
         //  TODO: use seneca-mesh to avoid coupling the integration to the user
         if (args.user && !_.isEmpty(retProfile.email) && args.user.lmsId && args.user.email !== retProfile.email) {
           seneca.act({role: 'cd-users', cmd: 'update_lms_user', lmsId: args.user.lmsId, userEmail: args.user.email, profileEmail: retProfile.email});
