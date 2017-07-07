@@ -2,8 +2,9 @@
 node_modules
 .gitignore
 *.md
-Dockerfile
+*Dockerfile
 *.sh
+!docker-entrypoint.sh
 deploy
 example
 *.yml
