@@ -289,18 +289,17 @@ lab.experiment('Agreements Microservice test', function(){
 
   lab.experiment('List', function(){
     lab.test('load agreements from db', function(done){
-      seneca.act({role: role, cmd:'list', userIds:[agrms[0].userId, agrms[1].userId]}, function(err, listedAgrms){
-
-        // console.log('listedAgrms:' + util.inspect(listedAgrms));
+      seneca.act({role: role, cmd:'list', query: {}}, function(err, listedAgrms){
+        // console.log('listedAgrms:' + util.inspect(listedAgrms), [agrms[0].userId, agrms[1].userId]);
 
         expect(listedAgrms[0].userId).to.be.equal(agrms[0].userId);
         expect(listedAgrms[1].userId).to.be.equal(agrms[1].userId);
 
         expect(listedAgrms.length).to.be.equal(2);
         if (using_postgres) delete agrms[0].id; // cleanup after the fix
-        expect_contain_properties(listedAgrms[0].agreements[0], agrms[0]);
+        expect_contain_properties(listedAgrms[0], agrms[0]);
         if (using_postgres) delete agrms[1].id;
-        expect_contain_properties(listedAgrms[1].agreements[0], agrms[1]);
+        expect_contain_properties(listedAgrms[1], agrms[1]);
 
         done();
       });
