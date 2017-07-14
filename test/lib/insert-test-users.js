@@ -29,14 +29,13 @@ module.exports = function () {
           }
           return cb(err, response);
         });
-      }, wfCb);
-    }
+       }
 
-    function createDependantsChildren (wfCb) {
-      var children = require('../fixtures/e2e/children.json');
-      async.eachSeries(children, function (child, cb) {
-        function getParent (wfCb) {
-          seneca.act({role: 'cd-users', cmd: 'list', query: {email: child.parentEmail}}, function (err, parents) {
+       function saveAgreement (champ, wfCb) {
+         var payload = {
+           fullName: champ.name
+         };
+         seneca.act({role: 'cd-agreements', cmd: 'save', agreement: payload, user: champ}, function (err, agreement) {
             if (err) return done(err);
             return wfCb(null, parents[0]);
           });
