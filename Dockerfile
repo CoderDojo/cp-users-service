@@ -5,8 +5,9 @@ RUN apk add --update git build-base python postgresql-client && \
     mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 ADD . /usr/src/app/
+ENV DEP_VERSION=latest
 RUN npm install && \
-    rm -rf /root/.npm && \
+    npm install cp-translations@$DEP_VERSION && \
     apk del build-base  python && \
     rm -rf /tmp/* /root/.npm /root/.node-gyp
 EXPOSE 10303
