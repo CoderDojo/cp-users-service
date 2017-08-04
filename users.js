@@ -104,7 +104,6 @@ module.exports = function (options) {
     var emailCode = 'auth-register-';
     var emailSubject = user.emailSubject;
     var zenHostname = process.env.HOSTNAME || '127.0.0.1:8000';
-    var isChampion = user.isChampion === true;
     delete user.isChampion;
 
     if (user.initUserType.name === 'attendee-u13') {
@@ -194,9 +193,6 @@ module.exports = function (options) {
 
           seneca.act({role: 'cd-profiles', cmd: 'save', profile: profile}, function (err, profile) {
             if (err) return done(err);
-            if (registerResponse.ok === true && isChampion === true) {
-              seneca.act({role: 'cd-salesforce', cmd: 'queud_update_users', param: {user: registerResponse.user}, fatal$: false});
-            }
             done(null, registerResponse);
           });
         });
