@@ -87,10 +87,9 @@ module.exports = function () {
 
       function saveAgreement (champ, wfCb) {
         var payload = {
-          fullName: champ.name,
-          userId: champ.id
+          fullName: champ.name
         };
-        seneca.act({role: 'cd-agreements', cmd: 'save', agreement: payload}, function (err, agreement) {
+        seneca.act({role: 'cd-agreements', cmd: 'save', agreement: payload, user: champ}, function (err, agreement) {
            if (err) return done(err);
            return wfCb(null, agreement);
         });
