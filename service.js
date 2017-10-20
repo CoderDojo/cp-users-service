@@ -68,6 +68,7 @@ require('./migrate-psql-db.js')(function (err) {
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
   process.on('uncaughtException', shutdown);
+  process.on('SIGUSR2', shutdown);
 
   require('./network.js')(seneca);
 
