@@ -29,7 +29,6 @@ module.exports = function (options) {
   // var userTypes = ['champion', 'mentor', 'parent-guardian', 'attendee-o13', 'attendee-u13'];
   // var userTypes = ['attendee-u13', 'attendee-o13', 'parent-guardian', 'mentor', 'champion'];
 
-  seneca.add({role: plugin, cmd: 'ping'}, require('./lib/profiles/ping'));
   seneca.add({role: plugin, cmd: 'create'}, cmd_create);
   seneca.add({role: plugin, cmd: 'user_profile_data'}, require('./lib/profiles/user-profile-data'));
   seneca.add({role: plugin, cmd: 'load'}, cmd_load);
