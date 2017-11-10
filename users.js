@@ -15,6 +15,7 @@ module.exports = function (options) {
   var protocol = process.env.PROTOCOL || 'http';
   var requiredProfileFields = ['name', 'dob', 'country', 'place'];
 
+  seneca.add({role: plugin, cmd: 'ping'}, require('./lib/ping'));
   seneca.add({role: plugin, cmd: 'create_reset'}, cmd_create_reset);
   seneca.add({role: plugin, cmd: 'load'}, cmd_load);
   seneca.add({role: plugin, cmd: 'list'}, cmd_list);
