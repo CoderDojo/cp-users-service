@@ -16,24 +16,7 @@
           "continent": "EU",
           "alpha2": "IE",
           "alpha3": "IRL"
-      },
-      "city": {},
-      "countryname": "Ireland",
-      "countrynumber": null,
-      "continent": "EU",
-      "alpha2": "IE",
-      "alpha3": "IRL",
-      "admin1Code": null,
-      "admin1Name": null,
-      "admin2Code": null,
-      "admin2Name": null,
-      "admin3Code": null,
-      "admin3Name": null,
-      "admin4Code": null,
-      "admin4Name": null,
-      "state": {},
-      "county": {},
-      "placeName": "Test"
+      }
     }
   },
   {
@@ -53,24 +36,7 @@
           "continent": "EU",
           "alpha2": "IE",
           "alpha3": "IRL"
-      },
-      "city": {},
-      "countryname": "Ireland",
-      "countrynumber": null,
-      "continent": "EU",
-      "alpha2": "IE",
-      "alpha3": "IRL",
-      "admin1Code": null,
-      "admin1Name": null,
-      "admin2Code": null,
-      "admin2Name": null,
-      "admin3Code": null,
-      "admin3Name": null,
-      "admin4Code": null,
-      "admin4Name": null,
-      "state": {},
-      "county": {},
-      "placeName": "Test"
+      }
     }
   },
   {
@@ -83,31 +49,14 @@
       "g-recaptcha-response": "03AOPBWq_zZcFSVHCL3zH0t7SThH22MZFcsBmpzXEnUdou5ZalprQmaDDQZBMlWy4fkE9wOlg3GdGVgEmfU26ST_4YliV2RbXKO0oLGcTjmozmMgP7RxX6No6vQ7mGU3CAEYmcIxCAWkrC2E_-DEUmTIlZaMNwbBiaEWjneqyUe47LcpH3OIKGacdbGBmvQjsGHzE73cWvRoMb4x_wTFZ-7-nTN7-txyOZWfnkO-CXovtjD4w14BQ2d8H46Ll1N_0ZFMPGXdH_FFRjo7NJvG83mQ2ZNitnBvklt9q_BIDtGOFvOK3yW4N2KFE"
     },
     "profile": {
-    "dob": "1982-01-31T22:00:00.000Z",
-    "country": {
-        "countryName": "Ireland",
-        "countryNumber": "372",
-        "continent": "EU",
-        "alpha2": "IE",
-        "alpha3": "IRL"
-    },
-    "city": {},
-    "countryname": "Ireland",
-    "countrynumber": null,
-    "continent": "EU",
-    "alpha2": "IE",
-    "alpha3": "IRL",
-    "admin1Code": null,
-    "admin1Name": null,
-    "admin2Code": null,
-    "admin2Name": null,
-    "admin3Code": null,
-    "admin3Name": null,
-    "admin4Code": null,
-    "admin4Name": null,
-    "state": {},
-    "county": {},
-    "placeName": "Test"
+      "dob": "1982-01-31T22:00:00.000Z",
+      "country": {
+          "countryName": "Ireland",
+          "countryNumber": "372",
+          "continent": "EU",
+          "alpha2": "IE",
+          "alpha3": "IRL"
+      }
     }
   },
   {
@@ -127,24 +76,7 @@
           "continent": "EU",
           "alpha2": "IE",
           "alpha3": "IRL"
-      },
-      "city": {},
-      "countryname": "Ireland",
-      "countrynumber": null,
-      "continent": "EU",
-      "alpha2": "IE",
-      "alpha3": "IRL",
-      "admin1Code": null,
-      "admin1Name": null,
-      "admin2Code": null,
-      "admin2Name": null,
-      "admin3Code": null,
-      "admin3Name": null,
-      "admin4Code": null,
-      "admin4Name": null,
-      "state": {},
-      "county": {},
-      "placeName": "Test"
+      }
     }
   },
   {
@@ -164,24 +96,7 @@
           "continent": "EU",
           "alpha2": "IE",
           "alpha3": "IRL"
-      },
-      "city": {},
-      "countryname": "Ireland",
-      "countrynumber": null,
-      "continent": "EU",
-      "alpha2": "IE",
-      "alpha3": "IRL",
-      "admin1Code": null,
-      "admin1Name": null,
-      "admin2Code": null,
-      "admin2Name": null,
-      "admin3Code": null,
-      "admin3Name": null,
-      "admin4Code": null,
-      "admin4Name": null,
-      "state": {},
-      "county": {},
-      "placeName": "Test"
+      }
     }
   }
 ]
