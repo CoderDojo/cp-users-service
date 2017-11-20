@@ -14,7 +14,9 @@ config.log = log.log;
 var util = require('util');
 var dgram = require('dgram');
 
-seneca.log.info('using config', JSON.stringify(config, null, 4));
+if (process.env.NODE_ENV !== 'production') {
+  seneca.log.info('using config', JSON.stringify(config, null, 4));
+}
 
 seneca.options(config);
 seneca.decorate('customValidatorLogFormatter', require('./lib/custom-validator-log-formatter'));
@@ -26,10 +28,16 @@ if (process.env.MAILTRAP_ENABLED === 'true') {
 }
 
 function shutdown (err) {
-  if (err !== void 0 && err.stack !== void 0) {
-    console.error(new Date().toString() + ' FATAL: UncaughtException, please report: ' + util.inspect(err));
-    console.error(util.inspect(err.stack));
-    console.trace();
+  if (err !== undefined) {
+    var error = {
+      date: new Date().toString(),
+      msg: err.stack !== undefined
+        ? 'FATAL: UncaughtException, please report: ' + util.inspect(err.stack)
+        : 'FATAL: UncaughtException, no stack trace',
+      err: util.inspect(err)
+    };
+    console.error(JSON.stringify(error));
+    process.exit(1);
   }
   process.exit(0);
 }
