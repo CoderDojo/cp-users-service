@@ -8,6 +8,7 @@ var config = require('./config/config.js')();
 var seneca = require('seneca')(config);
 var _ = require('lodash');
 var store = require('seneca-postgresql-store');
+var storeQuery = require('seneca-store-query');
 var service = 'cp-users-service';
 var log = require('cp-logs-lib')({name: service, level: 'warn'});
 config.log = log.log;
@@ -21,6 +22,7 @@ if (process.env.NODE_ENV !== 'production') {
 seneca.options(config);
 seneca.decorate('customValidatorLogFormatter', require('./lib/custom-validator-log-formatter'));
 seneca.use(store, config['postgresql-store']);
+seneca.use(storeQuery);
 if (process.env.MAILTRAP_ENABLED === 'true') {
   seneca.use('mail', config.mailtrap);
 } else {
@@ -89,7 +91,7 @@ require('./migrate-psql-db.js')(function (err) {
       client.close();
     });
 
-    var escape = require('seneca-postgresql-store/lib/relational-util').escapeStr;
+    var escape = require('seneca-standard-query/lib/relational-util').escapeStr;
     ['load', 'list'].forEach(function (cmd) {
       seneca.wrap('role: entity, cmd: ' + cmd, function filterFields (args, cb) {
         try {
