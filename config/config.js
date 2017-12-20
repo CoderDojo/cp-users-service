@@ -1,5 +1,7 @@
 'use strict';
 var path = require('path');
+var camelCase = require('camelcase');  // Lodash functions for that are stripping $ which we use for special keys
+var decamelize = require('decamelize');
 var CpTranslations = require('cp-translations');
 
 module.exports = function (options) {
@@ -9,7 +11,10 @@ module.exports = function (options) {
       host: process.env.POSTGRES_HOST || '127.0.0.1',
       port: process.env.POSTGRES_PORT || 5432,
       username: process.env.POSTGRES_USERNAME,
-      password: process.env.POSTGRES_PASSWORD
+      password: process.env.POSTGRES_PASSWORD,
+      nolimit: true,
+      fromColumnName: (attr) => camelCase(attr),
+      toColumnName: (attr) => decamelize(attr)
     };
   }
 
