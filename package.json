@@ -56,7 +56,7 @@
     "seneca-newrelic": "Wardormeur/seneca-newrelic",
     "seneca-postgresql-store": "2.3",
     "seneca-store-query": "0.0.5",
-    "seneca-user": "2.0.0",
+    "seneca-user": "2.1.1",
     "shortid": "2.2.2",
     "util": "^0.10.3",
     "xoauth2": "1.1.0"
