@@ -58,7 +58,7 @@ require('./migrate-psql-db.js')(function (err) {
               logger: log.logger
             });
   seneca.use(require('./oauth2.js'), {clients: config.oauth2.clients});
-  seneca.use('user', { failedCount: 3 });
+  seneca.use('user', { failedLoginCount: 3 });
   seneca.use('auth');
   seneca.use(require('./users.js'),
             { 'email-notifications': config['email-notifications'],
