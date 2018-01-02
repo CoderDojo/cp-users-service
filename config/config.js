@@ -51,7 +51,7 @@ module.exports = function (options) {
         }
       }
     },
-
+    log: options && options.log ? options.log : undefined,
     'recaptcha_secret_key': process.env.RECAPTCHA_SECRET_KEY || '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe',
     transport: {
       type: 'web',

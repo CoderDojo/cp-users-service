@@ -12,7 +12,7 @@
     "covrep": "bash test/covrep.sh",
     "lint": "./node_modules/.bin/semistandard *.js config/config.js",
     "start": "node service.js",
-    "dev": "nodemon service.js"
+    "dev": "nodemon service.js | bunyan"
   },
   "pre-commit": [
     "test"
