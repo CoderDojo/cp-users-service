@@ -2,8 +2,8 @@
 process.setMaxListeners(0);
 require('events').EventEmitter.prototype._maxListeners = 100;
 
-if (process.env.NEW_RELIC_ENABLED === 'true') require('newrelic');
-
+const newrelic = process.env.NEW_RELIC_ENABLED === 'true' ? require('newrelic') : undefined;
+const senecaNR = require('seneca-newrelic');
 var config = require('./config/config.js')();
 var seneca = require('seneca')(config);
 var _ = require('lodash');
@@ -27,6 +27,18 @@ if (process.env.MAILTRAP_ENABLED === 'true') {
   seneca.use('mail', config.mailtrap);
 } else {
   seneca.use('mail', config.email);
+}
+
+if (!_.isUndefined(newrelic)) {
+  seneca.use(senecaNR, {
+    newrelic,
+    roles: ['cd-users'],
+    filter (p) {
+      p.user = p.user ? p.user.id : undefined;
+      p.login = p.login ? p.login.id : undefined;
+      return p;
+    }
+  });
 }
 
 function shutdown (err) {
