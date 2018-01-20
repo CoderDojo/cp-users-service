@@ -32,7 +32,7 @@ if (process.env.MAILTRAP_ENABLED === 'true') {
 if (!_.isUndefined(newrelic)) {
   seneca.use(senecaNR, {
     newrelic,
-    roles: ['cd-users'],
+    roles: ['cd-users', 'cd-profiles', 'cd-oauth2', 'cd-user-profile'],
     filter (p) {
       p.user = p.user ? p.user.id : undefined;
       p.login = p.login ? p.login.id : undefined;
