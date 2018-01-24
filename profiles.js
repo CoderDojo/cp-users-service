@@ -175,6 +175,7 @@ module.exports = function (options) {
       if (youth) {
         delete user.email;
         delete user.password;
+        delete profile.email;
       }
 
       seneca.act({role: 'user', cmd: 'register'}, user, function (err, data) {
