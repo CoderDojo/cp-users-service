@@ -29,18 +29,6 @@ if (process.env.MAILTRAP_ENABLED === 'true') {
   seneca.use('mail', config.email);
 }
 
-if (!_.isUndefined(newrelic)) {
-  seneca.use(senecaNR, {
-    newrelic,
-    roles: ['cd-users', 'cd-profiles', 'cd-oauth2', 'cd-user-profile'],
-    filter (p) {
-      p.user = p.user ? p.user.id : undefined;
-      p.login = p.login ? p.login.id : undefined;
-      return p;
-    }
-  });
-}
-
 function shutdown (err) {
   if (err !== undefined) {
     var error = {
@@ -86,7 +74,17 @@ require('./migrate-psql-db.js')(function (err) {
   seneca.use(require('cp-permissions-plugin'), {
     config: __dirname + '/config/permissions'
   });
-
+  if (!_.isUndefined(newrelic)) {
+    seneca.use(senecaNR, {
+      newrelic,
+      roles: ['cd-users', 'cd-profiles', 'cd-oauth2', 'cd-user-profile'],
+      filter (p) {
+        p.user = p.user ? p.user.id : undefined;
+        p.login = p.login ? p.login.id : undefined;
+        return p;
+      }
+    });
+  }
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
   process.on('uncaughtException', shutdown);
