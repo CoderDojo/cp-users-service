@@ -3443,8 +3443,8 @@ newline@0.0.3:
   resolved "https://registry.yarnpkg.com/newline/-/newline-0.0.3.tgz#0f6a74493223dba04fe7dbfb6cdc804bf7e46dd0"
 
 newrelic@^2.6.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-2.6.0.tgz#8672c25c3bda68582ba8dd00a25e3198ef98e42e"
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-2.6.1.tgz#ebf490a290616b9002e18a5a0f250b8c6e3ae365"
   dependencies:
     async "^2.1.4"
     concat-stream "^1.5.0"
