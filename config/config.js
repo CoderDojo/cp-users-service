@@ -43,6 +43,17 @@ module.exports = function (options) {
         }
       }
     },
+    maildev: {
+      folder: path.resolve(CpTranslations.getEmailTemplatePath()),
+      mail: {
+        from: 'no-reply@coderdojo.com'
+      },
+      config: {
+        host: 'maildev',
+        port: 25,
+        ignoreTLS: true
+      }
+    },
     email: {
       folder: path.resolve(CpTranslations.getEmailTemplatePath()),
       config: {
