@@ -29,18 +29,15 @@ module.exports = function (options) {
       sendemail: true,
       sendFrom: 'The CoderDojo Team <info@coderdojo.org>'
     },
-    mailtrap: {
+    maildev: {
       folder: path.resolve(CpTranslations.getEmailTemplatePath()),
       mail: {
         from: 'no-reply@coderdojo.com'
       },
       config: {
-        host: process.env.MAIL_HOST,
-        port: process.env.MAIL_PORT,
-        auth: {
-          user: process.env.MAIL_USER,
-          pass: process.env.MAIL_PASS
-        }
+        host: 'maildev',
+        port: 25,
+        ignoreTLS: true
       }
     },
     email: {
