@@ -13,7 +13,7 @@ module.exports = function (options) {
   var ENTITY_NS = 'sys/user';
   var so = seneca.options();
   var protocol = process.env.PROTOCOL || 'http';
-  var requiredProfileFields = ['name', 'dob', 'country', 'place'];
+  var requiredProfileFields = ['name', 'dob', 'country'];
 
   seneca.add({role: plugin, cmd: 'ping'}, require('./lib/ping'));
   seneca.add({role: plugin, cmd: 'create_reset'}, cmd_create_reset);

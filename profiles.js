@@ -24,7 +24,7 @@ module.exports = function (options) {
 
   var immutableFields = ['userType', 'avatar'];
 
-  var requiredProfileFields = ['name', 'alias', 'dob', 'country', 'place'];
+  var requiredProfileFields = ['name', 'alias', 'dob', 'country'];
 
   // var userTypes = ['champion', 'mentor', 'parent-guardian', 'attendee-o13', 'attendee-u13'];
   // var userTypes = ['attendee-u13', 'attendee-o13', 'parent-guardian', 'mentor', 'champion'];
