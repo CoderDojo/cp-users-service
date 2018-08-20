@@ -44,7 +44,7 @@
     "newrelic": "^2.6.0",
     "node-uuid": "1.4.3",
     "optimist": "0.6.1",
-    "pg": "5.2.1",
+    "pg": "5.1.0",
     "pg-large-object": "0.0.1",
     "po2json": "0.4.2",
     "postgrator": "2.8.1",
