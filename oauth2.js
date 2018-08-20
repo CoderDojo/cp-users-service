@@ -98,7 +98,7 @@ module.exports = function (options) {
           var mentorTypeFound = _.find(usersDojos, function (userDojo) {
             return _.includes(userDojo.userTypes, 'mentor');
           });
-          var verifyFound = _.any(usersDojos, 'backgroundChecked');
+          var verifyFound = _.some(usersDojos, 'backgroundChecked');
           if (championTypeFound) user.isChampion = true;
           if (youthOver13TypeFound) user.isYouthOver13 = true;
           if (mentorTypeFound) user.isMentor = true;
