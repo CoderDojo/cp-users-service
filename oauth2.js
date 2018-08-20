@@ -90,13 +90,13 @@ module.exports = function (options) {
         seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: user.id}}, function (err, usersDojos) {
           if (err) return done(err);
           var championTypeFound = _.find(usersDojos, function (userDojo) {
-            return _.contains(userDojo.userTypes, 'champion');
+            return _.includes(userDojo.userTypes, 'champion');
           });
           var youthOver13TypeFound = _.find(usersDojos, function (userDojo) {
-            return _.contains(userDojo.userTypes, 'attendee-o13');
+            return _.includes(userDojo.userTypes, 'attendee-o13');
           });
           var mentorTypeFound = _.find(usersDojos, function (userDojo) {
-            return _.contains(userDojo.userTypes, 'mentor');
+            return _.includes(userDojo.userTypes, 'mentor');
           });
           var verifyFound = _.any(usersDojos, 'backgroundChecked');
           if (championTypeFound) user.isChampion = true;
@@ -178,7 +178,7 @@ module.exports = function (options) {
           id: user.id,
           name: user.name,
           email: user.email,
-          isAdmin: _.contains(user.roles, 'cdf-admin'),
+          isAdmin: _.includes(user.roles, 'cdf-admin'),
           isChampion: user.isChampion,
           isYouthOver13: user.isYouthOver13,
           isMentor: user.isMentor,

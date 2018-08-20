@@ -269,7 +269,7 @@ module.exports = function (options) {
 
   // Note : tbdeleted
   function saveChild (profile, parentId, done) {
-    if (_.contains(profile.parents, parentId)) {
+    if (_.includes(profile.parents, parentId)) {
       delete profile.user;
       seneca.make$(ENTITY_NS).save$(profile, function (err, profile) {
         if (err) {
@@ -417,7 +417,7 @@ module.exports = function (options) {
         seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: requestingUserId}}, function (err, usersDojos) {
           if (err) return done(err);
           var parentTypeFound = _.find(usersDojos, function (userDojo) {
-            return _.contains(userDojo.userTypes, 'parent-guardian');
+            return _.includes(userDojo.userTypes, 'parent-guardian');
           });
           if (parentTypeFound) return done();
           return done(new Error('You must have the parent/guardian user type to accept this invite'));
@@ -463,7 +463,7 @@ module.exports = function (options) {
     }
 
     function removeInviteToken (ninjaProfile, done) {
-      ninjaProfile.parentInvites = _.without(ninjaProfile.parentInvites, _.findWhere(ninjaProfile.parentInvites, {id: inviteTokenId}));
+      ninjaProfile.parentInvites = _.without(ninjaProfile.parentInvites, _.find(ninjaProfile.parentInvites, {id: inviteTokenId}));
       seneca.act({role: plugin, cmd: 'save', profile: ninjaProfile}, done);
     }
   }
@@ -476,13 +476,13 @@ module.exports = function (options) {
     var hostname = process.env.HOSTNAME || '127.0.0.1:8000';
     var file = args.file;
 
-    if (!_.contains(args.fileType, 'image')) return done(null, {ok: false, why: 'Avatar upload: file must be an image.'});
+    if (!_.includes(args.fileType, 'image')) return done(null, {ok: false, why: 'Avatar upload: file must be an image.'});
     if (file.length > 5242880) return done(null, {ok: false, why: 'Avatar upload: max file size of 5MB exceeded.'});
 
     var buf = new Buffer(file.data, 'base64');
     var type = buf.toString('hex', 0, 4);
     var types = ['ffd8ffe0', '89504e47', '47494638'];
-    if (!_.contains(types, type)) return done(null, {ok: false, why: 'Avatar upload: file must be an image of type png, jpeg or gif.'});
+    if (!_.includes(types, type)) return done(null, {ok: false, why: 'Avatar upload: file must be an image of type png, jpeg or gif.'});
 
     // pg conf properties
     options.postgresql.database = options.postgresql.name;
@@ -693,7 +693,7 @@ module.exports = function (options) {
           if (err) return done(err);
           var ninjaProfile = ninjaProfiles[0];
           var userId = args.user ? args.user.id : null;
-          if (ninjaProfile && _.contains(ninjaProfile.parents, userId)) return done(new Error('User is already a parent of this Ninja'));
+          if (ninjaProfile && _.includes(ninjaProfile.parents, userId)) return done(new Error('User is already a parent of this Ninja'));
           return done();
         });
       }
@@ -711,7 +711,7 @@ module.exports = function (options) {
         seneca.act({role: 'cd-dojos', cmd: 'load_usersdojos', query: {userId: ninjaProfile.userId}}, function (err, ninjaUsersDojos) {
           if (err) return done(err);
           var attendeeO13TypeFound = _.find(ninjaUsersDojos, function (ninjaUserDojo) {
-            return _.contains(ninjaUserDojo.userTypes, 'attendee-o13');
+            return _.includes(ninjaUserDojo.userTypes, 'attendee-o13');
           });
           if (attendeeO13TypeFound || ninjaProfile.userType === 'attendee-o13') return done();
           return done(new Error('Ninja must be an over 13 attendee'));
@@ -798,7 +798,7 @@ module.exports = function (options) {
       // Add ninja user id to Parent children array
       if (!parentProfile.children) parentProfile.children = [];
       parentProfile.children.push(ninjaProfile.userId);
-      parentProfile.ninjaInvites = _.without(parentProfile.ninjaInvites, _.findWhere(parentProfile.ninjaInvites, {id: inviteData.inviteTokenId}));
+      parentProfile.ninjaInvites = _.without(parentProfile.ninjaInvites, _.find(parentProfile.ninjaInvites, {id: inviteData.inviteTokenId}));
 
       if (!ninjaProfile.parents) ninjaProfile.parents = [];
       ninjaProfile.parents.push(parentProfile.userId);
