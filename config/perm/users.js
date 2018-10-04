@@ -96,16 +96,8 @@ module.exports = function(){
       'record_login': [{
         role: 'basic-user',
       }],
-
-      //  TODO: lookup
       'load_prev_founder': [{
-        role: 'basic-user',
-        //TODO : how to pass a require a context which is not accessible in the first place ?
-        // customValidator: [{
-        //   role: 'cd-dojos',
-        //   cmd: 'have_permissions',
-        //   perm: 'dojo-admin'
-        // }]
+        role: 'cdf-admin',
       }],
       'kpi_number_of_youths_registered': [{
         role: 'cdf-admin',
