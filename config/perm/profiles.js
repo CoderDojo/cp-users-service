@@ -62,7 +62,16 @@ module.exports = function(){
       //  TODO : strict mode to avoid the permission hierarchy
       'invite-parent-guardian': [{
         role: 'basic-user',
-        userType: 'attendee-o13'
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_self',
+        }],
+      }, {
+        role: 'basic-user',
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_parent_of',
+        }],
       }],
 
       'accept-parent-invite': [{
