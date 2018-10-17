@@ -4,6 +4,16 @@ module.exports = function(){
   return {
       'create': [{
         role: 'basic-user',
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_self'
+        }]
+      }, {
+        role: 'basic-user',
+        customValidator: [{
+          role: 'cd-users',
+          cmd: 'is_parent_of'
+        }]
       }],
       'user_profile_data': [{
         role: 'none',
