@@ -52,7 +52,7 @@ require('./migrate-psql-db.js')(function (err) {
   console.log('Migrations ok');
 
   seneca.use(require('./email-notifications.js'));
-  seneca.use(require('./agreements.js'));
+  seneca.use(require('./lib/agreements'));
   seneca.use(require('./profiles.js'),
             { postgresql: config['postgresql-store'],
               logger: log.logger
