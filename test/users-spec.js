@@ -20,7 +20,7 @@ if (using_postgres) seneca.use('postgresql-store', config["postgresql-store"]);
 
 seneca
   .use(__dirname + '/../users.js', { 'postgresql': config['postgresql-store'], 'users': config['users']})
-  .use(__dirname + '/../agreements.js')
+  .use(__dirname + '/../lib/agreements')
   .use(__dirname + '/../profiles.js')
   .use(__dirname + '/../email-notifications.js')
   .use(__dirname + '/stubs/cd-nodebb-api.js')
