@@ -252,17 +252,22 @@ module.exports = function (options) {
 
     profile = _.omit(profile, fieldsToBeRemoved);
     var cleanedProfile = _.omit(profile, 'user');
-    seneca.act({role: plugin, cmd: 'save', profile: cleanedProfile}, function (err, savedProfile) {
-      if (err) {
-        return done(err);
-      }
-      // save mutates the profile values, like "name" from "firstName" + "lastName" and need to be ported to the synced sys_user
-      savedProfile = _.omit(savedProfile, fieldsToBeRemoved);
-      savedProfile.user = profile.user;
-      syncUserObj(savedProfile, function (err, res) {
-        if (err) return done(err);
+    seneca.act({ role: plugin, cmd: 'load', id: cleanedProfile.id }, function(err, requestedProfile) {
+      if (err) return done(err);
 
-        return done(null, profile);
+      seneca.act({role: plugin, cmd: 'save', profile: cleanedProfile}, function (err, savedProfile) {
+        if (err) {
+          return done(err);
+        }
+        // save mutates the profile values, like "name" from "firstName" + "lastName" and need to be ported to the synced sys_user
+        savedProfile = _.omit(savedProfile, fieldsToBeRemoved);
+        savedProfile.user = profile.user;
+        savedProfile.userId = requestedProfile.userId;
+        syncUserObj(savedProfile, function (err, res) {
+          if (err) return done(err);
+
+          return done(null, profile);
+        });
       });
     });
   }
