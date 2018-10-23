@@ -252,7 +252,7 @@ module.exports = function (options) {
 
     profile = _.omit(profile, fieldsToBeRemoved);
     var cleanedProfile = _.omit(profile, 'user');
-    seneca.act({ role: plugin, cmd: 'load', id: cleanedProfile.id }, function(err, requestedProfile) {
+    seneca.act({ role: plugin, cmd: 'load', id: cleanedProfile.id }, function (err, requestedProfile) {
       if (err) return done(err);
 
       seneca.act({role: plugin, cmd: 'save', profile: cleanedProfile}, function (err, savedProfile) {
