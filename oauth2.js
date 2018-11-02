@@ -2,7 +2,7 @@
 
 var _ = require('lodash');
 var async = require('async');
-var cuid = require('cuid');
+var secureId = require('nanoid');
 
 module.exports = function (options) {
   var seneca = this;
@@ -35,11 +35,11 @@ module.exports = function (options) {
       if (err) return cb(err);
       if (auths.length > 0) return cb(null, auths[0].code);
 
-      var code = cuid();
+      var code = secureId();
       var ucEnt = seneca.make$(OAUTH2_ENTITY);
       ucEnt.userid = user.id;
       ucEnt.code = code;
-      ucEnt.token = cuid();
+      ucEnt.token = secureId();
       ucEnt.created = new Date();
       ucEnt.save$(function (err) {
         if (err) return cb(err);
