@@ -138,7 +138,8 @@ module.exports = function (options) {
           if (!args.user) {
             return done(null, {
               http$: {
-                redirect: '/login?redirect=' + args.redirect_uri
+                // Redirect to the start of the flow, get a new code + crsf token
+                redirect: '/login?referer=' + encodeURIComponent(process.env.ADULT_FORUM + '/auth/CoderDojo')
               }
             });
           } else {
@@ -151,7 +152,7 @@ module.exports = function (options) {
           if (err) return done(null, {error: err, http$: {status: 500}});
           done(null, {
             http$: {
-              redirect: args.redirect_uri + '?code=' + code
+              redirect: args.redirect_uri + '?code=' + code + '&state=' + args.state
             }
           });
         });
