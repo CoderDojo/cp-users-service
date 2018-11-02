@@ -152,8 +152,8 @@ module.exports = function (options) {
           if (err) return done(null, {error: err, http$: {status: 500}});
           done(null, {
             http$: {
-              redirect: args.redirect_uri + '?code=' + code + "&state=" + args.state,
-            },
+              redirect: args.redirect_uri + '?code=' + code + '&state=' + args.state
+            }
           });
         });
       }

@@ -1,10 +1,11 @@
 'use strict';
 
 var querystring = require('querystring');
+var http;
 if (process.env.NODE_ENV !== 'production') {
-  var http = require('http');
+  http = require('http');
 } else {
-  var http = require('https');
+  http = require('https');
 }
 var _ = require('lodash');
 var util = require('util');
@@ -41,7 +42,7 @@ module.exports = function (options) {
       path: base_path + 'users/' + target_user + '/external?' + qs
     }, function (err, res) {
       if (err) return handleErr(err, done);
-      if (!res.payload ) return handleErr(new Error('unexpected error: ' + target_user + res), done);
+      if (!res.payload) return handleErr(new Error('unexpected error: ' + target_user + res), done);
       if (!res.payload.uid) return handleErr(new Error('user not found: ' + target_user), done);
       done(null, res.payload.uid);
     });
