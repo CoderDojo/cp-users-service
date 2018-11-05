@@ -557,8 +557,8 @@ module.exports = function (options) {
                   var forumProfile = _.clone(profile);
                   forumProfile.username = forumProfile.name;
 
-                  forumProfile.uploadedpicture = protocol + '://' + hostname + '/api/1.0/profiles/' + profile.id + '/avatar_img';
-                  forumProfile.picture = protocol + '://' + hostname + '/api/1.0/profiles/' + profile.id + '/avatar_img';
+                  forumProfile.uploadedpicture = protocol + '://' + hostname + '/api/2.0/profiles/' + profile.id + '/avatar_img';
+                  forumProfile.picture = protocol + '://' + hostname + '/api/2.0/profiles/' + profile.id + '/avatar_img';
 
                   seneca.act({role: 'cd-nodebb-api', cmd: 'update', user: forumProfile, id: forumProfile.userId}, function (err, res) {
                     if (err) seneca.log.error(err);
