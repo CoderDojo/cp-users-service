@@ -7,6 +7,8 @@ var moment = require('moment');
 var pg = require('pg');
 var crypto = require('crypto');
 
+var profileUtils = require('./lib/profile-utils');
+
 module.exports = function (options) {
   var seneca = this;
   var plugin = 'cd-users';
@@ -30,6 +32,7 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'load_champions_for_user'}, cmd_load_champions_for_user);
   seneca.add({role: plugin, cmd: 'load_dojo_admins_for_user'}, cmd_load_dojo_admins_for_user);
   seneca.add({role: plugin, cmd: 'record_login'}, cmd_record_login);
+  seneca.add({role: plugin, cmd: 'update_profile_password'}, cmd_update_profile_password);
   seneca.add({role: 'user', cmd: 'login'}, cmd_login);
   seneca.add({role: 'user', cmd: 'cdf_login'}, cmd_cdf_login);
   seneca.add({role: plugin, cmd: 'load_prev_founder'}, cmd_load_prev_founder);
@@ -62,6 +65,13 @@ module.exports = function (options) {
     seneca.act({role: plugin, cmd: 'load', id: args.id}, function (err, user) {
       if (err) return done(err);
       return done(null, _.pick(user, ['id', 'email', 'name']));
+    });
+  }
+
+  function cmd_update_profile_password (args, done) {
+    profileUtils.encodePassword(args.password).then((profileHash) => {
+      const updatedUser = Object.assign({}, args.user, {profilePassword: profileHash});
+      seneca.act({role: plugin, cmd: 'update'}, { id: args.user.id, user: updatedUser }, done);
     });
   }
 
@@ -129,6 +139,13 @@ module.exports = function (options) {
         secret: secret
       }
     };
+
+    function addProfilePassword (data, done) {
+      profileUtils.encodePassword(user.password).then((profileHash) => {
+        user.profilePassword = profileHash;
+        done(null, data);
+      });
+    }
 
     function verifyCaptcha (done) {
       request.post(postData, function (err, response, body) {
@@ -221,6 +238,7 @@ module.exports = function (options) {
     async.waterfall([
       verifyCaptcha,
       checkPermissions,
+      addProfilePassword,
       registerUser,
       sendWelcomeEmail
     ], function (err, results) {
@@ -428,6 +446,8 @@ module.exports = function (options) {
             out.reset = reset;
             if (!out.ok) { return done(null, out); }
 
+            seneca.act({role: plugin, cmd: 'update_profile_password'}, {password: args.password, user: user});
+
             reset.active = false;
             reset.save$(function (err, reset) {
               if (err) { return done(err); }
@@ -503,16 +523,27 @@ module.exports = function (options) {
       if (err) return done(err);
       if (!loginResponse.ok || !loginResponse.user) return done(null, loginResponse);
 
-      async.series([
+      const handlers = [
         verifyPermissions,
         recordLogin
-      ], function (err) {
+      ];
+
+      if (!loginResponse.user.profilePassword) {
+        handlers.push(updateProfilePassword);
+      }
+
+      async.series(handlers, function (err) {
         if (err) {
           return done(err);
         }
 
         return done(null, loginResponse);
       });
+
+      function updateProfilePassword (next) {
+        seneca.act({role: plugin, cmd: 'update_profile_password'}, {password: args.password, user: loginResponse.user});
+        next();
+      }
 
       function verifyPermissions (next) {
         var userRole;
