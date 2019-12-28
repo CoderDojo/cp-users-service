@@ -93,25 +93,26 @@ module.exports = function (options) {
     seneca.make(ENTITY_NS).list$(query, done);
   }
 
-  function checkPassword (args, done) {
-    var containsNumber = /[0-9]/.test(args.password);
-    var containsCharacter = /[!|@|#|$|%|^|&|*|(|)|-|_]/.test(args.password);
-    var containsCapital = /[A-Z]/.test(args.password);
-    var containsLowerCase = /[a-z]/.test(args.password);
+  function checkPassword (user) {
+    var containsNumber = /[0-9]/.test(user.password);
+    var containsCharacter = /[!|@|#|$|%|^|&|*|(|)|-|_]/.test(user.password);
+    var containsCapital = /[A-Z]/.test(user.password);
+    var containsLowerCase = /[a-z]/.test(user.password);
     var minPasswordLength = 8;
 
-    if (args.password === args.email) {
-      return done(null, {ok: false, token: args.token, why: 'Password must not be the same as your email address'});
-    } if ((args.password.length < minPasswordLength) || !(containsNumber || containsCharacter)) {
-      return done(null, {ok: false, token: args.token, why: 'Password must be a minimum of 8 characters in length and contain at least one number or punctuation character'});
-    } if (_.includes(args.roles, 'cdf-admin') && (!containsNumber || !containsCharacter || !containsCapital || !containsLowerCase)) {
-      return done(null, {ok: false, token: args.token, why: 'An admin account must contain at least one number, one special character and one capital.'});
+    if (user.password === user.email) {
+      return {ok: false, token: user.token, why: 'Password must not be the same as your email address'};
+    } if ((user.password.length < minPasswordLength) || !(containsNumber || containsCharacter)) {
+      return {ok: false, token: user.token, why: 'Password must be a minimum of 8 characters in length and contain at least one number or punctuation character'};
+    } if (_.includes(user.roles, 'cdf-admin') && (!containsNumber || !containsCharacter || !containsCapital || !containsLowerCase)) {
+      return {ok: false, token: user.token, why: 'An admin account must contain at least one number, one special character and one capital.'};
     }
-    return done(null, args);
+    return {ok: true};
   }
 
   function cmd_register (args, done) {
     var profile = args.profile;
+    var isTrusted = args.isTrusted;
     var user = args.user;
     var locality = user.locality || 'en_US';
     var emailCode = 'auth-register-';
@@ -126,29 +127,28 @@ module.exports = function (options) {
     // Roles Available: basic-user, cdf-admin
     var seneca = this;
 
-    if (!user['g-recaptcha-response']) {
-      return done(new Error('Error with captcha'));
-    }
-
-    var secret = so['recaptcha_secret_key'];
-    var captchaResponse = user['g-recaptcha-response'];
-
-    var postData = {
-      url: 'https://www.google.com/recaptcha/api/siteverify',
-      form: {
-        response: captchaResponse,
-        secret: secret
-      }
-    };
-
-    function addProfilePassword (data, done) {
+    function addProfilePassword (done) {
       profileUtils.encodePassword(user.password).then((profileHash) => {
         user.profilePassword = profileHash;
-        done(null, data);
+        done(null);
       });
     }
 
     function verifyCaptcha (done) {
+      if (!user['g-recaptcha-response']) {
+        return done(new Error('Error with captcha'));
+      }
+
+      var secret = so['recaptcha_secret_key'];
+      var captchaResponse = user['g-recaptcha-response'];
+
+      var postData = {
+        url: 'https://www.google.com/recaptcha/api/siteverify',
+        form: {
+          response: captchaResponse,
+          secret: secret
+        }
+      };
       request.post(postData, function (err, response, body) {
         if (err) {
           return done(err);
@@ -160,11 +160,11 @@ module.exports = function (options) {
           return done('captcha-failed');
         }
 
-        return done(null, body.success);
+        return done(null);
       });
     }
 
-    function checkPermissions (success, done) {
+    function checkPermissions (done) {
       // if forumMods array contains the users email, make them an admin
       if (options.users.cdfAdmins.indexOf(user.email) > -1) {
         user.roles = ['cdf-admin'];
@@ -172,57 +172,57 @@ module.exports = function (options) {
         user.roles = ['basic-user'];
       }
 
-      return done(null, success);
+      return done(null);
     }
 
-    function registerUser (success, done) {
+    function registerUser (done) {
       user = _.omit(user, ['g-recaptcha-response', 'zenHostname', 'locality', 'user', 'emailSubject']);
 
       user.mailingList = (user.mailingList) ? 1 : 0;
+      const passwordCheckResult = checkPassword(user);
 
-      checkPassword(user, function (err, user) {
-        if (err) return done(err);
-        if (typeof user.ok !== 'undefined' && !user.ok) {
-          return done(null, user);
-        }
+      if (!passwordCheckResult.ok) {
+        return done(null, passwordCheckResult);
+      }
+      if (!user.name) {
         user.name = user.firstName + ' ' + user.lastName;
-        seneca.act({role: 'user', cmd: 'register'}, user, function (err, registerResponse) {
+      }
+      seneca.act({role: 'user', cmd: 'register'}, user, function (err, registerResponse) {
+        if (err) return done(err);
+        if (!registerResponse.ok) {
+          return done(null, registerResponse);
+        }
+
+        var user = registerResponse.user;
+        // Create user profile based on initial user type.
+        var userType = 'attendee-o13';
+        if (user.initUserType) userType = user.initUserType.name;
+
+        _.defaults(profile, {
+          private: true,
+          userId: user.id,
+          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          userType: userType
+        });
+
+        var profileKeys = _.keys(profile);
+        var missingKeys = _.difference(requiredProfileFields, profileKeys);
+        if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
+
+        seneca.act({role: 'cd-profiles', cmd: 'save', profile: profile}, function (err, profile) {
           if (err) return done(err);
-          if (!registerResponse.ok) {
-            return done(null, registerResponse);
-          }
-
-          var user = registerResponse.user;
-          // Create user profile based on initial user type.
-          var userType = 'attendee-o13';
-          if (user.initUserType) userType = user.initUserType.name;
-
-          _.defaults(profile, {
-            private: true,
-            userId: user.id,
-            name: user.name,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            userType: userType
-          });
-
-          var profileKeys = _.keys(profile);
-          var missingKeys = _.difference(requiredProfileFields, profileKeys);
-          if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
-
-          seneca.act({role: 'cd-profiles', cmd: 'save', profile: profile}, function (err, profile) {
-            if (err) return done(err);
-            done(null, registerResponse);
-          });
+          done(null, registerResponse);
         });
       });
     }
 
     function sendWelcomeEmail (registerResponse, done) {
       if (registerResponse.ok) {
-        seneca.act({role: 'email-notifications', cmd: 'send'},
-          {code: emailCode,
+        seneca.act({role: 'email-notifications', cmd: 'send'}, {
+          code: emailCode,
           locality: locality,
           to: args.email,
           subject: emailSubject,
@@ -236,13 +236,15 @@ module.exports = function (options) {
       }
     }
 
-    async.waterfall([
-      verifyCaptcha,
+    var tasks = [
+      !isTrusted && verifyCaptcha,
       checkPermissions,
-      addProfilePassword,
+      !isTrusted && addProfilePassword,
       registerUser,
       sendWelcomeEmail
-    ], function (err, results) {
+    ].filter(Boolean);
+
+    async.waterfall(tasks, function (err, results) {
       if (err) {
         return done(null, {error: err});
       }
@@ -306,20 +308,20 @@ module.exports = function (options) {
     }
   }
 
-  function cmd_get_user_by_profile_id(args, done) {
+  function cmd_get_user_by_profile_id (args, done) {
     var seneca = this;
     var query = {};
-    
+
     query.profileId = args.profileId;
     query.limit$ = query.limit$ ? query.limit$ : 1;
-    
+
     seneca.make(ENTITY_NS).list$(query, function (err, users) {
       if (err) {
         return done(err);
       }
 
       users = _.map(users, function (user) {
-        return {email: user.email, id: user.id, name: user.name };
+        return {email: user.email, id: user.id, name: user.name};
       });
 
       users = _.uniq(users, 'email');
@@ -457,25 +459,23 @@ module.exports = function (options) {
       userEntity.load$({ id: reset.user }, function (err, user) {
         if (err) { return done(err); }
         user.password = args.password;
-        checkPassword(user, function (err, user) {
+        var checkPasswordResult = checkPassword(user);
+        if (!checkPasswordResult.ok) {
+          return done(null, checkPasswordResult);
+        }
+        delete user.password;
+        seneca.act({ role: 'user', cmd: 'change_password', user: user, password: args.password, repeat: args.repeat }, function (err, out) {
           if (err) { return done(err); }
-          if (typeof user.ok !== 'undefined' && !user.ok) {
-            return done(null, user);
-          }
-          delete user.password;
-          seneca.act({ role: 'user', cmd: 'change_password', user: user, password: args.password, repeat: args.repeat }, function (err, out) {
+
+          out.reset = reset;
+          if (!out.ok) { return done(null, out); }
+
+          seneca.act({role: plugin, cmd: 'update_profile_password'}, {password: args.password, user: user});
+
+          reset.active = false;
+          reset.save$(function (err, reset) {
             if (err) { return done(err); }
-
-            out.reset = reset;
-            if (!out.ok) { return done(null, out); }
-
-            seneca.act({role: plugin, cmd: 'update_profile_password'}, {password: args.password, user: user});
-
-            reset.active = false;
-            reset.save$(function (err, reset) {
-              if (err) { return done(err); }
-              return done(null, { user: user, reset: reset, ok: true });
-            });
+            return done(null, { user: user, reset: reset, ok: true });
           });
         });
       });
