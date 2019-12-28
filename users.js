@@ -24,6 +24,7 @@ module.exports = function (options) {
   seneca.add({role: plugin, cmd: 'register'}, cmd_register);
   seneca.add({role: plugin, cmd: 'promote'}, cmd_promote);
   seneca.add({role: plugin, cmd: 'get_users_by_emails'}, cmd_get_users_by_emails);
+  seneca.add({role: plugin, cmd: 'get_user_by_profile_id'}, cmd_get_user_by_profile_id);
   seneca.add({role: plugin, cmd: 'update'}, cmd_update);
   seneca.add({role: plugin, cmd: 'get_init_user_types'}, cmd_get_init_user_types);
   seneca.add({role: plugin, cmd: 'is_champion'}, cmd_is_champion);
@@ -303,6 +304,28 @@ module.exports = function (options) {
     function escapeRegExp (string) {
       return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
+  }
+
+  function cmd_get_user_by_profile_id(args, done) {
+    var seneca = this;
+    var query = {};
+    
+    query.profileId = args.profileId;
+    query.limit$ = query.limit$ ? query.limit$ : 1;
+    
+    seneca.make(ENTITY_NS).list$(query, function (err, users) {
+      if (err) {
+        return done(err);
+      }
+
+      users = _.map(users, function (user) {
+        return {email: user.email, id: user.id, name: user.name };
+      });
+
+      users = _.uniq(users, 'email');
+
+      done(null, users[0] || {});
+    });
   }
 
   function cmd_update (args, done) {
