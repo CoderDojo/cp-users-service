@@ -256,6 +256,7 @@ module.exports = function (options) {
     delete user.active;
     delete user.accounts;
     delete user.confirmcode;
+    delete user.profilePassword;
     return user;
   }
 
