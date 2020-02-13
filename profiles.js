@@ -24,7 +24,7 @@ module.exports = function (options) {
 
   var immutableFields = ['userType', 'avatar'];
 
-  var requiredProfileFields = ['name', 'alias', 'country'];
+  var requiredProfileFields = ['name', 'country'];
 
   // var userTypes = ['champion', 'mentor', 'parent-guardian', 'attendee-o13', 'attendee-u13'];
   // var userTypes = ['attendee-u13', 'attendee-o13', 'parent-guardian', 'mentor', 'champion'];
@@ -124,7 +124,7 @@ module.exports = function (options) {
 
   function syncUserObj (profile, done) {
     var updatedFields = {};
-    var userFields = ['mailingList'];
+    var userFields = ['mailingList', 'termsConditionsAccepted'];
     updatedFields.id = profile.userId;
     _.each(syncedFields, function (field) {
       updatedFields[field] = profile[field];
@@ -307,11 +307,10 @@ module.exports = function (options) {
 
   function cmd_save (args, done) {
     var profile = args.profile;
-
+    profile.name = profile.firstName && profile.lastName ? profile.firstName + ' ' + profile.lastName : profile.name;
     var profileKeys = _.keys(profile);
     var missingKeys = _.difference(requiredProfileFields, profileKeys);
     if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
-    profile.name = profile.firstName && profile.lastName ? profile.firstName + ' ' + profile.lastName : profile.name;
 
     seneca.make$(ENTITY_NS).save$(profile, done);
   }
