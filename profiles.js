@@ -22,6 +22,8 @@ module.exports = function (options) {
     'phone'
   ];
 
+  var syncedUserFields = ['mailingList', 'termsConditionsAccepted'];
+
   var immutableFields = ['userType', 'avatar'];
 
   var requiredProfileFields = ['name', 'alias', 'country'];
@@ -124,12 +126,11 @@ module.exports = function (options) {
 
   function syncUserObj (profile, done) {
     var updatedFields = {};
-    var userFields = ['mailingList'];
     updatedFields.id = profile.userId;
     _.each(syncedFields, function (field) {
       updatedFields[field] = profile[field];
     });
-    _.extend(updatedFields, _.pick(profile.user, userFields));
+    _.extend(updatedFields, _.pick(profile.user, syncedUserFields));
     if (updatedFields.email) updatedFields.nick = profile.email;
     seneca.act({role: 'cd-users', cmd: 'update', user: updatedFields}, done);
   }
