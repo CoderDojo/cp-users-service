@@ -307,7 +307,10 @@ module.exports = function (options) {
 
   function cmd_save (args, done) {
     var profile = args.profile;
-    profile.name = profile.firstName && profile.lastName ? profile.firstName + ' ' + profile.lastName : profile.name;
+    if (!profile.raspberryId || !profile.name) {
+      // if it's a raspberry pi connected account, keep profile.name if present
+      profile.name = profile.firstName && profile.lastName ? profile.firstName + ' ' + profile.lastName : profile.name;
+    }
     var profileKeys = _.keys(profile);
     var missingKeys = _.difference(requiredProfileFields, profileKeys);
     if (_.isEmpty(missingKeys)) profile.requiredFieldsComplete = true;
