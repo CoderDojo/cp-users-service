@@ -547,12 +547,16 @@ module.exports = function (options) {
       if (err) return done(err);
       if (!loginResponse.ok || !loginResponse.user) return done(null, loginResponse);
 
+      if (loginResponse.user.raspberryId && !args.auto) {
+        return done(null, {ok: false, login: null, user: null, why: 'raspberry-linked'});
+      }
+
       const handlers = [
         verifyPermissions,
         recordLogin
       ];
 
-      if (!loginResponse.user.profilePassword) {
+      if (!args.auto && !loginResponse.user.profilePassword) {
         handlers.push(updateProfilePassword);
       }
 
