@@ -4,20 +4,21 @@ require('events').EventEmitter.prototype._maxListeners = 100;
 
 const newrelic = process.env.NEW_RELIC_ENABLED === 'true' ? require('newrelic') : undefined;
 const senecaNR = require('seneca-newrelic');
-var config = require('./config/config.js')();
+
+const service = 'cp-users-service';
+const { logger, log } = require('cp-logs-lib')({
+  name: service,
+  level: process.env.NODE_ENV === 'production' ? 'warn' : 'info'
+});
+const config = require('./config/config.js')({ log });
 var seneca = require('seneca')(config);
 var _ = require('lodash');
 var store = require('seneca-postgresql-store');
 var storeQuery = require('seneca-store-query');
-var service = 'cp-users-service';
-var log = require('cp-logs-lib')({name: service, level: 'warn'});
-config.log = log.log;
 var util = require('util');
 var dgram = require('dgram');
 
-if (process.env.NODE_ENV !== 'production') {
-  seneca.log.info('using config', JSON.stringify(config, null, 4));
-}
+logger.info(config, 'config');
 
 seneca.options(config);
 seneca.decorate('customValidatorLogFormatter', require('./lib/custom-validator-log-formatter'));
@@ -31,45 +32,39 @@ if (process.env.MAILDEV_ENABLED === 'true') {
 
 function shutdown (err) {
   if (err !== undefined) {
-    var error = {
-      date: new Date().toString(),
-      msg: err.stack !== undefined
+    logger.error(
+      err,
+      err.stack !== undefined
         ? 'FATAL: UncaughtException, please report: ' + util.inspect(err.stack)
-        : 'FATAL: UncaughtException, no stack trace',
-      err: util.inspect(err)
-    };
-    console.error(JSON.stringify(error));
+        : 'FATAL: UncaughtException, no stack trace');
     process.exit(1);
   }
   process.exit(0);
 }
 
 require('./migrate-psql-db.js')(function (err) {
-  if (err) {
-    console.error(err);
-    process.exit(-1);
-  }
-  console.log('Migrations ok');
+  if (err) shutdown(err);
+  logger.info('Migrations ok');
 
   seneca.use(require('./email-notifications.js'));
   seneca.use(require('./lib/agreements'));
-  seneca.use(require('./profiles.js'),
-            { postgresql: config['postgresql-store'],
-              logger: log.logger
-            });
-  seneca.use(require('./oauth2.js'), {clients: config.oauth2.clients});
+  seneca.use(require('./profiles.js'), {
+    postgresql: config['postgresql-store'],
+    logger
+  });
+  seneca.use(require('./oauth2.js'), { clients: config.oauth2.clients });
   seneca.use('user');
   seneca.use('auth');
-  seneca.use(require('./users.js'),
-            { 'email-notifications': config['email-notifications'],
-              'postgresql': config['postgresql-store'],
-              'users': config['users'],
-              'logger': log.logger
-            });
-  seneca.use(require('./user-profile.js'),
-            { postgresql: config['postgresql-store'],
-              logger: log.logger
-            });
+  seneca.use(require('./users.js'), {
+    'email-notifications': config['email-notifications'],
+    postgresql: config['postgresql-store'],
+    users: config['users'],
+    logger
+  });
+  seneca.use(require('./user-profile.js'), {
+    postgresql: config['postgresql-store'],
+    logger
+  });
   seneca.use(require('./nodebb-api.js'), config.nodebb);
   seneca.use(require('cp-permissions-plugin'), {
     config: __dirname + '/config/permissions'
@@ -106,7 +101,11 @@ require('./migrate-psql-db.js')(function (err) {
       seneca.wrap('role: entity, cmd: ' + cmd, function filterFields (args, cb) {
         try {
           ['limit$', 'skip$'].forEach(function (field) {
-            if (args.q[field] && args.q[field] !== 'NULL' && !/^[0-9]+$/g.test(args.q[field] + '')) {
+            if (
+              args.q[field] &&
+              args.q[field] !== 'NULL' &&
+              !/^[0-9]+$/g.test(args.q[field] + '')
+            ) {
               throw new Error('Expect limit$, skip$ to be a number');
             }
           });
@@ -124,7 +123,7 @@ require('./migrate-psql-db.js')(function (err) {
           }
           if (args.q.fields$) {
             args.q.fields$.forEach(function (field, index) {
-              args.q.fields$[index] = '\"' + escape(field) + '\"';
+              args.q.fields$[index] = '"' + escape(field) + '"';
             });
           }
           // Loop over each props
