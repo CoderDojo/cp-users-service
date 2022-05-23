@@ -35,7 +35,7 @@
     "cp-permissions-plugin": "https://github.com/CoderDojo/cp-permissions-plugin#1.0.5",
     "cp-translations": "^1.0.149",
     "decamelize": "^1.2.0",
-    "ejs": "1.0.0",
+    "ejs": "3.1.7",
     "jed": "1.1.0",
     "js-yaml": "3.2.7",
     "le_node": "1.1.0",
