@@ -49,7 +49,7 @@
     "pg-large-object": "0.0.1",
     "po2json": "0.4.2",
     "postgrator": "2.8.1",
-    "request": "2.58.0",
+    "request": "2.88.2",
     "seneca": "1.4",
     "seneca-auth": "1.0",
     "seneca-mail": "^0.2.2",
