@@ -3499,17 +3499,14 @@ node-pre-gyp@^0.6.39:
     tar "^2.2.1"
     tar-pack "^3.4.0"
 
-node-uuid@1.4.3:
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/node-uuid/-/node-uuid-1.4.3.tgz#319bb7a56e7cb63f00b5c0cd7851cd4b4ddf1df9"
-
 node-uuid@1.4.7:
   version "1.4.7"
   resolved "https://registry.yarnpkg.com/node-uuid/-/node-uuid-1.4.7.tgz#6da5a17668c4b3dd59623bda11cf7fa4c1f60a6f"
 
-node-uuid@~1.4.0:
+node-uuid@1.4.8, node-uuid@~1.4.0:
   version "1.4.8"
   resolved "https://registry.yarnpkg.com/node-uuid/-/node-uuid-1.4.8.tgz#b040eb0923968afabf8d32fb1f17f1167fdab907"
+  integrity sha1-sEDrCSOWivq/jTL7HxfxFn/auQc=
 
 nodemailer-direct-transport@^1.0.2:
   version "1.1.0"
