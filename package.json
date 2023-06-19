@@ -27,7 +27,7 @@
     "url": "https://github.com/CoderDojo/community-platform/issues"
   },
   "dependencies": {
-    "async": "0.9.0",
+    "async": "2.6.4",
     "bcryptjs": "2.4.3",
     "camelcase": "^4.1.0",
     "cp-i18n-lib": "https://github.com/CoderDojo/cp-i18n-lib.git",
